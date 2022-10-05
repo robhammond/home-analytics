@@ -1,0 +1,27 @@
+<h3>Entities</h3>
+<p><a href="/admin/add-entity" class="btn btn-success">Add new</a></p>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (entity of entities) { %>
+            <tr>
+                <td><a href="/admin/view-entity?id=<%= entity.id %>">
+                        <%= entity.entity_name %>
+                    </a></td>
+                <td>
+                    <%= entity.entity_type %>
+                </td>
+                <td>
+                    <a href="/admin/edit-entity?id=<%= entity.id %>" class="btn btn-primary">Edit</a>
+                    <a href="/admin/delete-entity?id=<%= entity.id %>" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+            <% } %>
+    </tbody>
+</table>

@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  ha_web:
+    build:
+      context: ./app
+      dockerfile: ./express.dockerfile
+      args:
+        - DB_URL_WITH_PROTOCOL=file:${HA_DB_URL}
+    container_name: ha_web
+    restart: unless-stopped
+    network_mode: bridge
+    environment:
+      - APP_ENV=production
+      - HA_DB_URL=${HA_DB_URL}
+      - NODE_ENV=production
+    ports:
+      - 3000:3000
+    volumes:
+      - ./app/db:/app/db
+  ha_tasks:
+    build:
+      context: ./app
+      dockerfile: ./tasks.dockerfile
+      args:
+        - HA_DB_URL=${HA_DB_URL}
+    container_name: ha_tasks
+    restart: unless-stopped
+    depends_on:
+      - ha_web
+    network_mode: bridge
+    environment:
+      - APP_ENV=production
+      - HA_DB_URL=${HA_DB_URL}
+    volumes:
+      - ./app/db:/app/db

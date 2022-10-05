@@ -1,0 +1,119 @@
+<div id="piCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner" id="piInnerCarousel">
+        <%- include('carousel/usage-today') %>
+        <%- include('carousel/usage-today-v2') %>
+        <%- include('carousel/usage-yesterday') %>
+        <%- include('carousel/usage-last7days') %>
+        <%#- include('carousel/usage-last30days') %>
+        <%- include('carousel/usage-last7days-daily') %>
+        <%- include('carousel/car-charging-3months') %>
+        <%#- include('carousel/carbon-intensity') %>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#piCarousel" data-bs-slide="prev">
+        <span class="" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#piCarousel" data-bs-slide="next">
+        <span class="" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+</div>
+
+<script>
+$(document).ready(function() {
+    loadCarStatus();
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= yday_date %>',
+            end: '<%= yday_date %>'
+        },
+        method: "GET",
+        success: function(res) {
+            for (let r of res.rates) {
+                $('#yday-kwh').append('<tr class="pi-data-row"><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">'+r.total_kwh.toFixed(2)+'</td></tr>');
+                $('#yday-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">£'+r.total_cost.toFixed(2)+'</td></tr>');
+            }
+            $('#yday-kwh-total').html(res.totals.kwh.toFixed(2));
+            $('#yday-cost-total').html("£" + res.totals.cost.toFixed(2));
+        }
+    });
+
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= today_date %>',
+            end: '<%= today_date %>'
+        },
+        method: "GET",
+        success: function(res) {
+            for (let r of res.rates) {
+                $('#today-kwh').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">'+r.total_kwh.toFixed(2)+'</td></tr>');
+                $('#today-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">£'+r.total_cost.toFixed(2)+'</td></tr>');
+            }
+            $('#today-kwh-total').html(res.totals.kwh.toFixed(2));
+            $('#today-cost-total').html("£" + res.totals.cost.toFixed(2));
+        }
+    });
+
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= l7d_date %>',
+            end: '<%= yday_date %>'
+        },
+        method: "GET",
+        success: function(res) {
+            for (let r of res.rates) {
+                $('#l7d-kwh').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">'+r.total_kwh.toFixed(0)+'</td></tr>');
+                $('#l7d-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">£'+r.total_cost.toFixed(0)+'</td></tr>');
+            }
+            $('#l7d-kwh-total').html(res.totals.kwh.toFixed(0));
+            $('#l7d-cost-total').html("£" + res.totals.cost.toFixed(0));
+        }
+    });
+    
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= l30d_date %>',
+            end: '<%= yday_date %>'
+        },
+        method: "GET",
+        success: function(res) {
+            for (let r of res.rates) {
+                $('#l30d-kwh').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">'+r.total_kwh.toFixed(0)+'</td></tr>');
+                $('#l30d-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
+                    '</td><td align="right">£'+r.total_cost.toFixed(0)+'</td></tr>');
+            }
+            $('#l30d-kwh-total').html(res.totals.kwh.toFixed(0));
+            $('#l30d-cost-total').html("£" + res.totals.cost.toFixed(0));
+        }
+    });
+
+    loadUsagePie("ydayUsagePie", "<%= yday_date %>", "<%= yday_date %>");
+    loadUsagePie("l7dUsagePie", "<%= l7d_date %>", "<%= yday_date %>");
+    loadUsagePie("l30dUsagePie", "<%= l30d_date %>", "<%= yday_date %>");
+    loadUsage7Day();
+    loadTodayUsage("<%= yday_date %>", "<%= today_date %>");
+    loadTodayUsagev2("<%= today_date %>");
+    loadCarCharging("month", "<%= l3m_start %>", "<%= l3m_end %>");
+    // loadCarbonPie("carbonPie", "<%= yday_date %>", "<%= yday_date %>");
+    // loadCarbonLine("<%= yday_date %>", "<%= yday_date %>", 'hm');
+});
+</script>

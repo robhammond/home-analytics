@@ -1,0 +1,47 @@
+<div class="row">
+    <div class="col-md-6">
+        <h3><%= car.make %> <%= car.model %> <%= car.variant %></h3>
+        <br><br>
+        <p><span class="material-icons">speed</span> <%= carStatus.odometer.toLocaleString() %> miles</p>
+        <p><span class="material-icons">battery_full</span> <%= carStatus.batteryPercent %>%</p>
+        <p><span class="material-icons">route</span> <%= carStatus.estimatedRange %> miles</p>
+        <% if (car.purchaseOdometer) { %>
+            <p><span class="material-icons">analytics</span> <b>Miles since purchase:</b> <%= (carStatus.odometer - car.purchaseOdometer).toLocaleString() %> miles</p>
+            <p><span class="material-icons">analytics</span> <b>Avg miles per month:</b> <%= ((carStatus.odometer - car.purchaseOdometer) / monthsOwned["months"]).toFixed(2).toLocaleString() %> miles</p>
+        <% } %> 
+        <% if (car.serviceDate) { %>
+            <p><span class="material-icons">event</span> <b>Next Service:</b> <%= car.serviceDate %></p>
+        <% } %>
+        <% if (car.motDate) { %>
+            <p><span class="material-icons">event</span> <b>Next MOT:</b> <%= car.motDate %></p>
+        <% } %>
+        <% if (car.taxDate) { %>
+            <p><span class="material-icons">event</span> <b>Next Tax:</b> <%= car.taxDate %></p>
+        <% } %>
+    </div>
+    <div class="col-md-6">
+        <img src="<%= car.imageUrl %>" style="max-width:500px;">
+        <div><span class="reg-plate"><%= car.registrationNumber %></span></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h3>Trips</h3>
+        <table class="table table-bordered table-striped table-sm">
+            <thead>
+                <th>Date</th>
+                <th>Odometer (mi)</th>
+                <th>Distance Travelled (mi)</th>
+            </thead>
+            <tbody>
+                <% for (let trip of carTrips) { %>
+                    <tr>
+                        <td><%= trip.datetime %></td>
+                        <td style="text-align:right;"><%= trip.odometer.toLocaleString() %></td>
+                        <td style="text-align:right;"><%= trip.distance_travelled %></td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

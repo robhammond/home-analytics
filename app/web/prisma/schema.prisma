@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-arm64-openssl-1.1.x", "debian-openssl-1.1.x", "darwin"]
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DB_URL_WITH_PROTOCOL")
+}
+
+model Electricity {
+    id             Int       @id @default(autoincrement())
+    datetime_start DateTime?
+    datetime       DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
+    kwh            Float
+    granularity    String
+    rate           Rates?    @relation(fields: [rateId], references: [id])
+    rateId         Int?
+    source         String?
+
+    @@unique([datetime, granularity], name: "sqlite_autoindex_electricity")
+}
+
+model Heating {
+    id           Int      @id @default(autoincrement())
+    datetime     DateTime
+    kwh_consumed Float
+    kwh_produced Float
+    heating_cop  Float
+    granularity  String   @default("daily")
+
+    @@unique([datetime, granularity], name: "sqlite_autoindex_heating")
+}
+
+model Cooling {
+    id           Int      @id @default(autoincrement())
+    datetime     DateTime
+    kwh_consumed Float
+    kwh_produced Float
+    cooling_cop  Float
+    granularity  String   @default("daily")
+
+    @@unique([datetime, granularity], name: "sqlite_autoindex_cooling")
+}
+
+model HotWater {
+    id            Int      @id @default(autoincrement())
+    datetime      DateTime
+    kwh_produced  Float
+    kwh_consumed  Float
+    hot_water_cop Float
+    granularity   String   @default("daily")
+
+    @@unique([datetime, granularity], name: "sqlite_autoindex_hotwater")
+}
+
+model Temperature {
+    id                  Int      @id @default(autoincrement())
+    datetime            DateTime
+    outsideTemperature Float?
+    insideTemperature  Float?
+    tankTemperature    Float?
+    granularity         String   @default("daily")
+
+    @@unique([datetime, granularity], name: "sqlite_autoindex_temperature")
+}
+
+model Car {
+    id                  Int         @id @default(autoincrement())
+    make                String
+    model               String
+    variant             String?
+    batterySize         Int?
+    registrationNumber String?
+    vin                 String?
+    purchasePrice      Float?
+    purchaseOdometer   Int?
+    salePrice          Float?
+    motDate            String?
+    serviceDate        String?
+    taxDate            String?
+    imageUrl            String?
+    dateAcquired        String?
+    dateSold            String?
+    carUsage            CarUsage[]
+    carStatus           CarStatus[]
+    insurance           Insurance[]
+}
+
+model CarUsage {
+    id              Int      @id @default(autoincrement())
+    car             Car      @relation(fields: [carId], references: [id])
+    carId           Int
+    datetime        DateTime
+    granularity     String
+    distanceTravelled Float?
+    distanceUnit    Float?
+    kwhUsed        Float?
+}
+
+model CarStatus {
+    id                    Int      @id @default(autoincrement())
+    car                   Car      @relation(fields: [carId], references: [id])
+    carId                 Int
+    datetime              DateTime
+    odometer              Float?
+    odometerUnit          String?
+    batteryPercent        Int?
+    batteryTemp           Int?
+    batteryTempUnit       String?
+    estimatedRange        Float?
+    rangeUnit             String?
+    chargingStatus        Int?
+    chargingRemainingTime Int?
+    chargingTargetPercent Int?
+    isLocked              Int?
+    locationLatLon        String?
+
+    @@unique([carId, datetime], name: "sqlite_autoindex_carstatus")
+}
+
+model Insurance {
+    id          Int     @id @default(autoincrement())
+    provider    String
+    type        String
+    dateStart  String
+    dateEnd    String
+    annualCost Float
+    entity      Entity? @relation(fields: [entityId], references: [id])
+    entityId    Int?
+    car         Car?    @relation(fields: [carId], references: [id])
+    carId       Int?
+}
+
+model Entity {
+    id              Int           @id @default(autoincrement())
+    entity_name     String
+    entity_type     String
+    entity_url      String?
+    entity_image    String?
+    entity_location String?
+    entity_usage    EntityUsage[]
+    insurance       Insurance[]
+    credentials     Credentials[]
+}
+
+model EntityUsage {
+    id               Int      @id @default(autoincrement())
+    datetime_start   DateTime
+    datetime_end     DateTime
+    duration_seconds Int?
+    duration_minutes Int?
+    entity           Entity   @relation(fields: [entityId], references: [id])
+    entityId         Int
+    granularity      String
+    kwh_used         Float
+    energy_cost      Float?
+
+    @@unique([entityId, datetime_start, datetime_end, granularity], name: "sqlite_autoindex_entityusage")
+}
+
+model Supplier {
+    id              Int       @id @default(autoincrement())
+    supplier        String
+    tariff_name     String
+    standing_charge Float
+    supplier_start  DateTime?
+    supplier_end    DateTime?
+    rates           Rates[]
+}
+
+model Rates {
+    id          Int           @id @default(autoincrement())
+    supplier    Supplier      @relation(fields: [supplierId], references: [id])
+    supplierId  Int
+    rate_type   String // flat, peak, off-peak
+    start_time  String?
+    end_time    String?
+    cost        Float
+    currency    String        @default("gbp")
+    electricity Electricity[]
+}
+
+model CarbonIntensity {
+    id                Int      @id @default(autoincrement())
+    datetime_start    DateTime
+    datetime_end      DateTime
+    postcode          String
+    intensityForecast Int
+    intensityIndex    String
+    biomass           Float
+    coal              Float
+    gas               Float
+    hydro             Float
+    imports           Float
+    nuclear           Float
+    other             Float
+    solar             Float
+    wind              Float
+
+    @@unique([datetime_start, datetime_end, postcode], name: "sqlite_autoindex_carbonintensity")
+}
+
+model Credentials {
+    id       Int    @id @default(autoincrement())
+    entity   Entity @relation(fields: [entityId], references: [id])
+    entityId Int
+    key      String
+    value    String
+}

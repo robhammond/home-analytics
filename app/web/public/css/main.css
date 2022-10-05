@@ -1,0 +1,43 @@
+@font-face {
+	font-family: 'UKNumberPlate';
+	src: url('/fonts/UKNumberPlate.woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.reg-plate {
+    background-color: #ffd307;
+    padding: 0.25em 0.5em 0.25em 1em;
+    text-transform: uppercase;
+    font-size: 2.5em;
+    border-radius: 5px;
+    color: black !important;
+    position: relative;
+    font-family: "UKNumberPlate", monospace;
+}
+
+.reg-plate:before {
+    content: "";
+    display: block;
+    width: 27px;
+    height: 100%;
+    background: #5eb400;
+    position: absolute;
+    top: 0;
+    border-radius: 5px 0 0 5px;
+    color: #f8d038;
+    font-size: 0.5em;
+    line-height: 85px;
+    padding-left: 5px;
+}
+
+.material-icons {
+    vertical-align: middle;
+}
+
+#totalkWh, #totalCost {
+    font-size: 2.5em;
+    background-color: gainsboro;
+    margin:5px;
+    vertical-align: middle;
+}

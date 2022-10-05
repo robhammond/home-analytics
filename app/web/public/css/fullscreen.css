@@ -1,0 +1,126 @@
+body {
+    background-color: black;
+    font-family: "Open Sans" !important;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+span,
+div {
+    color: white;
+}
+h1 {
+    font-size: 30px;
+}
+div.carInfo {
+    font-size: 85px !important;
+    font-weight: 600 !important;
+    margin-bottom: -10px;
+}
+.car-locked,
+.car-locked span {
+    color: green;
+    font-size: 40px;
+    margin: 0;
+}
+.car-unlocked,
+.car-unlocked span {
+    color: red;
+    font-size: 40px;
+    margin: 0;
+}
+.car-locked span,
+.car-unlocked span {
+    vertical-align: baseline;
+}
+
+span.battery-full {
+    color: green;
+}
+span.battery-6 {
+    color: green;
+}
+span.battery-5 {
+    color: green;
+}
+span.battery-4 {
+    color: green;
+}
+span.battery-3 {
+    color: green;
+}
+span.battery-2 {
+    color: goldenrod;
+}
+span.battery-1 {
+    color: orange;
+}
+span.battery-0 {
+    color: red;
+}
+span.carBatteryIcon {
+    font-size: 95px !important;
+    margin-top: 18px;
+}
+span.carRouteIcon {
+    font-size: 95px !important;
+    margin-top: 20px;
+    color: darkslategrey;
+}
+.usage-table {
+    font-size: 1.3em;
+    padding: 10px;
+}
+th {
+    font-size: 120%;
+    color: white;
+}
+tr.pi-data-row {
+    color: cornsilk;
+}
+
+@font-face {
+	font-family: 'UKNumberPlate';
+	src: url('/fonts/UKNumberPlate.woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.reg-plate {
+    background-color: #ffd307;
+    padding: 0.25em 0.5em 0.25em 1em;
+    text-transform: uppercase;
+    font-size: 2.5em;
+    border-radius: 5px;
+    color: black !important;
+    position: relative;
+    font-family: "UKNumberPlate", monospace;
+}
+
+.reg-plate:before {
+    content: "";
+    display: block;
+    width: 27px;
+    height: 100%;
+    background: #5eb400;
+    position: absolute;
+    top: 0;
+    border-radius: 5px 0 0 5px;
+    color: #f8d038;
+    font-size: 0.5em;
+    line-height: 85px;
+    padding-left: 5px;
+}
+
+.material-icons {
+    vertical-align: middle !important;
+}
+
+div.todayCostBig {
+    /* height:430px; */
+    font-size: 100px;
+    padding-top: 150px;
+    font-weight: bold;
+}

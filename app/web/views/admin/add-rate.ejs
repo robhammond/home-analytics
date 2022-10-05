@@ -1,0 +1,51 @@
+<h3>Add Rate</h3>
+<form method="post" class="form-horizontal" role="form">
+    <input type="hidden" name="supplier_id" value="<%= supplier_id %>">
+    <div class="form-group">
+        <label for="rate_type" class="control-label col-lg-2">
+            Rate Type
+            <span data-toggle="tooltip" data-placement="top" title="rate_type" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
+        </label>
+        <div class="col-lg-6">
+            <select name="rate_type" class="form-select">
+                <option value="fixed">Fixed</option>
+                <option value="off-peak">Off-Peak</option>
+                <option value="peak">Peak</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="cost" class="control-label col-lg-2">
+            Cost (p/kWh)
+            <span data-toggle="tooltip" data-placement="top" title="cost" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
+        </label>
+        <div class="col-lg-6">
+            <input type="text" name="cost" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="start_time" class="control-label col-lg-2">
+            Start Time
+            <span data-toggle="tooltip" data-placement="top" title="start_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
+        </label>
+        <div class="col-lg-6">
+            <input type="text" name="start_time" class="form-control" placeholder="00:00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="end_time" class="control-label col-lg-2">
+            End Time
+            <span data-toggle="tooltip" data-placement="top" title="end_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
+        </label>
+        <div class="col-lg-6">
+            <input type="text" name="end_time" class="form-control" placeholder="00:00">
+        </div>
+    </div>
+	<input type="submit" value="Add rate &raquo;" class="btn btn-primary">
+</form>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+</script>
+    

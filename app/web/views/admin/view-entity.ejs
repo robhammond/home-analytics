@@ -1,0 +1,49 @@
+<h3>Entity Details</h3>
+<br>
+<div class="row">
+    <div class="col-md-3">
+        <table class="table table-sm">
+            <tr>
+                <th>Entity Name</th>
+                <td><%= entity.entity_name %></td>
+            </tr>
+            <tr>
+                <th>Entity Type</th>
+                <td><%= entity.entity_type %></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h5>Credentials</h5>
+        <p><a href="/admin/add-credentials?id=<%= entity.id %>" class="btn btn-sm btn-success">Add</a></p>
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let c of creds) { %>
+                    <tr>
+                        <td><%= c.key %></td>
+                        <td>
+                            <% if (c.key == 'password') { %>
+                                *****
+                            <% } else { %>
+                                <%=c.value%>
+                            <% } %>
+                        </td>
+                        <td>
+                            <a href="/admin/edit-credentials?id=<%= c.id %>" class="btn btn-sm btn-primary">Edit</a> 
+                            <a href="/admin/delete-credentials?id=<%= c.id %>" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

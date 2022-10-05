@@ -1,0 +1,44 @@
+<h3>Tariffs</h3>
+<p><a href="/admin/add-tariff" class="btn btn-success">Add new</a></p>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Supplier</th>
+            <th>Tariff Name</th>
+            <th>Prices</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (tariff of tariffs) { %>
+        <tr>
+            <td><%= tariff.supplier %></td>
+            <td><%= tariff.tariff_name %></td>
+            <td>
+                <small>
+                    <ul>
+                    <% for (let rate of tariff.rates) { %>
+                        <li><%= rate["rate_type"][0].toUpperCase() + rate["rate_type"].substring(1) %>: <%= rate.cost %>p / kWh</li>
+                    <% } %>
+                        <li>Standing charge: <%= tariff.standing_charge %>p / day</li>
+                    </ul>
+                </small>
+            </td>
+            <td>
+                <small>
+                    <%= tariff.supplier_start.toISOString().substr(0,10) %> - 
+                    <% if (tariff.supplier_end) { %>
+                        <%= tariff.supplier_end.toISOString().substr(0,10) %>
+                    <% } %>
+                </small>
+            </td>
+            <td>
+                <a href="/admin/add-rate?supplier_id=<%= tariff.id %>">Add rate</a> |
+                <a href="/admin/edit-tariff?id=<%= tariff.id %>">Edit</a> |
+                <a href="/admin/delete-tariff?id=<%= tariff.id %>">Delete</a>
+            </td>
+        </tr>
+        <% } %>
+    </tbody>
+</table>

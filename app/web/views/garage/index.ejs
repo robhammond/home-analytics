@@ -1,0 +1,18 @@
+<h3>Garage</h3>
+
+<div class="row">
+<% for (let car of cars) { %>
+    <div class="col-md-6">
+        <div class="card" style="width:18rem;">
+            <img src="<%= car.imageUrl %>" class="card-image-top">
+            <div class="card-body">
+                <h5 class="card-title"><%= car.make %> <%= car.model %></h5>
+                <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
+                <p><span class="material-icons">battery_full</span> <%= car.batteryPercent %>%</p>
+                <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
+                <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary">View</a>
+            </div>
+        </div>
+    </div>
+<% } %>
+</div>

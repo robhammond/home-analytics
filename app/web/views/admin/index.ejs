@@ -1,0 +1,47 @@
+<h3>Admin</h3>
+<div class="row">
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><span class="material-icons">bolt</span> Electricity</h5>
+                <p class="card-text">Add electricity suppliers and tariff information.</p>
+                <a href="/admin/list-tariffs" class="btn btn-primary">List tariffs</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><span class="material-icons">category</span> Entities</h5>
+                <p class="card-text">Details for energy consuming entities and details for APIs used.</p>
+                <a href="/admin/list-entities" class="btn btn-primary">List Entities</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><span class="material-icons">garage</span> Garage</h5>
+                <p class="card-text">Add details for vehicles.</p>
+                <a href="/admin/list-vehicles" class="btn btn-primary">List vehicles</a>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-sm-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><span class="material-icons">engineering</span> Debug</h5>
+                <code>
+                    <p>Local Time: <%= envDate %></p>
+                    <p>App Env: <%= appEnv %></p>
+                    <p>DB File: <%= envDb %></p>
+                </code>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4"></div>
+</div>

@@ -1,0 +1,23 @@
+<h3>Vehicles</h3>
+<p><a href="/admin/add-vehicle" class="btn btn-success">Add new</a></p>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (vehicle of vehicles) { %>
+        <tr>
+            <td><%= vehicle.make %></td>
+            <td><%= vehicle.model %></td>
+            <td>
+                <a href="/admin/edit-vehicle?id=<%= vehicle.id %>">Edit</a> |
+                <a href="/admin/delete-vehicle?id=<%= vehicle.id %>">Delete</a>
+            </td>
+        </tr>
+        <% } %>
+    </tbody>
+</table>

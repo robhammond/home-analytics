@@ -1,0 +1,13 @@
+HA_DB_URL="$HA_DB_URL"
+TZ="$TZ"
+
+# run energy usage collection periodically:
+0 6-23 * * * /usr/local/bin/python3 /app/fetch-n3rgy.py >> /var/log/cron.log 2>&1
+
+# Enable depending on usage or add your own
+# 0 5 * * * /usr/local/bin/python3 /app/carbon_intensity.py >> /var/log/cron.log 2>&1
+# 30 6-23 * * * /usr/local/bin/python3 /app/renault.py >> /var/log/cron.log 2>&1
+# 30 6-23 * * * /usr/local/bin/python3 /app/kia.py >> /var/log/cron.log 2>&1
+# 0 6 * * * /usr/local/bin/python3 /app/podpoint.py >> /var/log/cron.log 2>&1
+# 0 5 * * * /usr/local/bin/python3 /app/melcloud.py >> /var/log/cron.log 2>&1
+

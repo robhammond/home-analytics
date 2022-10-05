@@ -1,0 +1,113 @@
+<h3>Energy Stats</h3>
+<div class="row">
+    <div class="col-md-3">
+        <form id="filter" class="form-horizontal">
+            <input type="hidden" name="start" value="<%= start %>">
+            <input type="hidden" name="end" value="<%= end %>">
+            <input type="hidden" name="unit" value="<%= unit %>">
+            <label for="filter" class="form-label sr-only">Filter</label>
+            <select class="form-select form-select-sm" name="filter" id="filter">
+                <option <% if (filter == 'all') { %>selected <% } %>value="all">All</option>
+                <option <% if (filter == 'heating') { %>selected <% } %>value="heating">Heating</option>
+                <option <% if (filter == 'hot_water') { %>selected <% } %>value="hot_water">Hot Water</option>
+                <option <% if (filter == 'car_charges') { %>selected <% } %>value="car_charges">Car Charges</option>
+            </select>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <form id="granularity" class="form-horizontal">
+            <input type="hidden" name="start" value="<%= start %>">
+            <input type="hidden" name="end" value="<%= end %>">
+            <input type="hidden" name="filter" value="<%= filter %>">
+            <label for="unit" class="form-label sr-only">Unit</label>
+            <select class="form-select form-select-sm" name="unit">
+                <option <% if (unit == 'halfhour') { %>selected <% } %>value="halfhour">Half Hour</option>
+                <option <% if (unit == 'hour') { %>selected <% } %>value="hour">Hour</option>
+                <option <% if (unit == 'day') { %>selected <% } %>value="day">Day</option>
+                <option <% if (unit == 'month') { %>selected <% } %>value="month">Month</option>
+            </select>
+        </form>
+    </div>
+    <div class="col-md-3 offset-md-3">
+        <label for="reportrange" class="sr-only">Date</label>
+        <div id="reportrange" class="pull-right" style="cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
+            <i class="fas fa-calendar"></i>&nbsp;
+            <span></span> <b class="caret"></b>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="text-bg-light col-md-3" id="totalkWh"></div>
+    <div class="text-bg-light col-md-3" id="totalCost"></div>
+</div>
+<hr>
+
+<div id="usageMain"></div>
+<div class="row">
+    <div class="col-md-8">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>kWh</th>
+                    <th>Usage Cost</th>
+                </tr>
+            </thead>
+            <tbody id="usageDataTable"></tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <div id="usagePie"></div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        let start = moment("<%= start %>");
+        let end = moment("<%= end %>");
+        $(function() {
+            $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                "showDropdowns": true,
+                "locale": {
+                    "format": "DD/MM/YYYY",
+                    "separator": " - ",
+                    "applyLabel": "Apply",
+                    "cancelLabel": "Cancel",
+                    "fromLabel": "From",
+                    "toLabel": "To",
+                    // "customRangeLabel": "Custom",
+                },
+                "alwaysShowCalendars": true,
+                "opens": "left",
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 12 Months': [moment().subtract(12, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 13 Months': [moment().subtract(13, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }, function(start, end, label) {
+                $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+            });
+            $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+                window.location = "?start=" + picker.startDate.format("YYYY-MM-DD") 
+                    + "&end=" + picker.endDate.format("YYYY-MM-DD")
+                    + "&unit=<%= unit %>"
+                    + "&filter=<%= filter %>";
+            });
+        });
+        
+        loadUsageMain("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
+        loadUsageTable("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
+        loadUsagePie(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+        $('select[name="unit"]').change(function(){ $('form#granularity').submit(); })
+        $('select[name="filter"]').change(function(){ $('form#filter').submit(); })
+    });
+</script>

@@ -1,0 +1,7 @@
+-- CreateTable
+CREATE TABLE "PeakTimes" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "rateId" INTEGER NOT NULL,
+    "time" TEXT NOT NULL,
+    CONSTRAINT "PeakTimes_rateId_fkey" FOREIGN KEY ("rateId") REFERENCES "Rates" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
