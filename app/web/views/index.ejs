@@ -71,11 +71,11 @@
 
 <script>
     $(document).ready(function() {
-        loadTodayUsage("<%= yday_date %>", "<%= today_date %>");
-        loadUsagePie("<%= l7d_date %>", "<%= yday_date %>");
-        loadUsageByRateTable("<%= today_date %>", "<%= today_date %>", "table#today-usage");
-        loadUsageByRateTable("<%= yday_date %>", "<%= yday_date %>", "table#yday-usage");
-        loadUsageTable("day", "<%= l7d_date %>", "<%= yday_date %>");
+        loadTodayUsage('<%= dates["yday"] %>', "<%= dates['today'] %>");
+        loadUsagePie("<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
+        loadUsageByRateTable("<%= dates['today'] %>", "<%= dates['today'] %>", "table#today-usage");
+        loadUsageByRateTable("<%= dates['yday'] %>", "<%= dates['yday'] %>", "table#yday-usage");
+        loadUsageTable("day", "<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
     });
 </script>
 <script src="/js/main.js"></script>

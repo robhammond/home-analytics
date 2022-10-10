@@ -124,3 +124,13 @@ div.todayCostBig {
     padding-top: 150px;
     font-weight: bold;
 }
+
+div.mtdCostBig {
+    font-size: 100px;
+    padding-top: 10px;
+    font-weight: bold;
+}
+
+div.mtdCostCompare {
+    font-weight: bold;
+}
