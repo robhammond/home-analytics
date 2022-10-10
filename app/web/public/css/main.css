@@ -5,6 +5,18 @@
 	font-style: normal;
 }
 
+#logo, #logo a {
+    font-family: "Blinker", sans-serif;
+    font-size: 32px;
+}
+.logoA, .logoA a {
+    color: #16793b !important;;
+}
+.bolt {
+    color: gold !important;
+    font-size: 75%;
+}
+
 .reg-plate {
     background-color: #ffd307;
     padding: 0.25em 0.5em 0.25em 1em;

@@ -33,11 +33,7 @@
             <li><a href="#setting-up-n3rgy">Setting up n3rgy</a></li>
         </ul>
     </li>
-    <li><a href="#-raspbery-pi-installation">Raspberry Pi Installation</a>
-        <ul>
-            <li><a href="#-pi-kiosk-display">Setting up n3rgy</a></li>
-        </ul>
-    </li>
+    <li><a href="#-raspbery-pi-installation">Raspberry Pi Installation</a></li>
     <li><a href="#-integrations">Integrations</a>
         <ul>
             <li><a href="#-heating">Heating</a></li>
@@ -278,6 +274,7 @@ Then enable the `/app/tasks/carbon_intensity.py` script in the crontab.
 - [ ] Add Pi display screen management
 - [ ] Tidy up Javascript for Pi screen
 - [ ] Add more smart devices
+- [ ] Add Octopus Energy API as an alternative half-hourly data source
 
 See the [open issues](https://github.com/electric-sheep-energy/home-analytics/issues) for a full list of proposed features (and known issues).
 

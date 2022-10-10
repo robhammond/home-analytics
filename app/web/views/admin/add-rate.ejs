@@ -1,51 +1,34 @@
 <h3>Add Rate</h3>
+<div class="col-8">
+    <p>Add your single fixed rate or a variable rate to an existing tariff.</p>
+</div>
 <form method="post" class="form-horizontal" role="form">
     <input type="hidden" name="supplier_id" value="<%= supplier_id %>">
-    <div class="form-group">
-        <label for="rate_type" class="control-label col-lg-2">
-            Rate Type
-            <span data-toggle="tooltip" data-placement="top" title="rate_type" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-        <div class="col-lg-6">
-            <select name="rate_type" class="form-select">
-                <option value="fixed">Fixed</option>
-                <option value="off-peak">Off-Peak</option>
-                <option value="peak">Peak</option>
-            </select>
-        </div>
+    <div class="col-6 mb-3">
+        <label for="rate_type" class="form-label">Rate Type</label>
+        <select name="rate_type" class="form-select">
+            <option value="fixed">Fixed</option>
+            <option value="off-peak">Off-Peak</option>
+            <option value="peak">Peak</option>
+        </select>
     </div>
-    <div class="form-group">
-        <label for="cost" class="control-label col-lg-2">
-            Cost (p/kWh)
-            <span data-toggle="tooltip" data-placement="top" title="cost" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-        <div class="col-lg-6">
-            <input type="text" name="cost" class="form-control">
+    <div class="col-6 mb-3">
+        <label for="cost" class="form-label">Cost</label>
+        <div class="input-group">
+            <input type="number" name="cost" class="form-control" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
+            <div class="input-group-text">pence / kWh</div>
         </div>
+        <div class="form-text">Enter the rate cost in pence per kWh</div>
     </div>
-    <div class="form-group">
-        <label for="start_time" class="control-label col-lg-2">
-            Start Time
-            <span data-toggle="tooltip" data-placement="top" title="start_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-        <div class="col-lg-6">
-            <input type="text" name="start_time" class="form-control" placeholder="00:00">
-        </div>
+    <div class="col-6 mb-3">
+        <label for="start_time" class="form-label">Start Time</label>
+        <input type="text" name="start_time" class="form-control" placeholder="hh:mm">
+        <div class="form-text">Leave blank if you are on a fixed rate</div>
     </div>
-    <div class="form-group">
-        <label for="end_time" class="control-label col-lg-2">
-            End Time
-            <span data-toggle="tooltip" data-placement="top" title="end_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-        <div class="col-lg-6">
-            <input type="text" name="end_time" class="form-control" placeholder="00:00">
-        </div>
+    <div class="col-6 mb-3">
+        <label for="end_time" class="form-label">End Time</label>
+        <input type="text" name="end_time" class="form-control" placeholder="hh:mm">
+        <div class="form-text">Leave blank if you are on a fixed rate</div>
     </div>
 	<input type="submit" value="Add rate &raquo;" class="btn btn-primary">
 </form>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>
-    

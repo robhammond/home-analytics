@@ -6,12 +6,12 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 
-HA_DB_URL = os.getenv('HA_DB_URL')
+HA_DB_URL = os.getenv("HA_DB_URL")
 
 
 def daterange(start_date, end_date):
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
@@ -48,16 +48,16 @@ def fetch_usage(start_date=None, end_date=None):
     try:
         res = c.execute(sql).fetchall()
         for r in res:
-            if r[0] == 'device_id':
-                creds['device_id'] = r[1]
-            if r[0] == 'mitsi_context_key':
-                creds['mitsi_context_key'] = r[1]
+            if r[0] == "device_id":
+                creds["device_id"] = r[1]
+            if r[0] == "mitsi_context_key":
+                creds["mitsi_context_key"] = r[1]
     except Exception as e:
         raise Exception("Creds not found in DB")
-    
-    if 'device_id' not in creds:
+
+    if "device_id" not in creds:
         raise Exception("Missing device_id in database")
-    if 'mitsi_context_key' not in creds:
+    if "mitsi_context_key" not in creds:
         raise Exception("Missing mitsi_context_key in database")
 
     print(f"{start_date} ---> {end_date}")
@@ -75,13 +75,13 @@ def fetch_usage(start_date=None, end_date=None):
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
             "sec-gpc": "1",
-            "x-mitscontextkey": creds['mitsi_context_key'],
+            "x-mitscontextkey": creds["mitsi_context_key"],
             "x-requested-with": "XMLHttpRequest",
             "Referer": "https://app.melcloud.com/",
             "Referrer-Policy": "strict-origin-when-cross-origin",
         },
         json={
-            "DeviceId": creds['device_id'],
+            "DeviceId": creds["device_id"],
             "FromDate": start_date,
             "ToDate": end_date,
             "UseCurrency": False,
@@ -102,33 +102,38 @@ def fetch_usage(start_date=None, end_date=None):
                 else:
                     hot_water_cop = 0
                 if hp_data["ProducedCooling"][i] != 0 and hp_data["Cooling"][i] != 0:
-                    cooling_cop = round((hp_data["ProducedCooling"][i] / hp_data["Cooling"][i]),4)
+                    cooling_cop = round((hp_data["ProducedCooling"][i] / hp_data["Cooling"][i]), 4)
                 else:
                     cooling_cop = 0
                 if hp_data["ProducedHeating"][i] != 0 and hp_data["Heating"][i] != 0:
-                    heating_cop = round((hp_data["ProducedHeating"][i] / hp_data["Heating"][i]),4)
+                    heating_cop = round((hp_data["ProducedHeating"][i] / hp_data["Heating"][i]), 4)
                 else:
                     heating_cop = 0
 
-                data["hot_water"].append({
-                    "datetime": single_date.strftime("%Y-%m-%d"),
-                    "kwh_consumed": hp_data["HotWater"][i],
-                    "kwh_produced": hp_data["ProducedHotWater"][i],
-                    "hot_water_cop": hot_water_cop
-                })
-                data["cooling"].append({
-                    "datetime": single_date.strftime("%Y-%m-%d"),
-                    "kwh_consumed": hp_data["Cooling"][i],
-                    "kwh_produced": hp_data["ProducedCooling"][i],
-                    "cooling_cop": cooling_cop
-                })
-                data["heating"].append({
-                    "datetime": single_date.strftime("%Y-%m-%d"),
-                    "kwh_consumed": hp_data["Heating"][i],
-                    "kwh_produced": hp_data["ProducedHeating"][i],
-                    "heating_cop": heating_cop
-                })
-
+                data["hot_water"].append(
+                    {
+                        "datetime": single_date.strftime("%Y-%m-%d"),
+                        "kwh_consumed": hp_data["HotWater"][i],
+                        "kwh_produced": hp_data["ProducedHotWater"][i],
+                        "hot_water_cop": hot_water_cop,
+                    }
+                )
+                data["cooling"].append(
+                    {
+                        "datetime": single_date.strftime("%Y-%m-%d"),
+                        "kwh_consumed": hp_data["Cooling"][i],
+                        "kwh_produced": hp_data["ProducedCooling"][i],
+                        "cooling_cop": cooling_cop,
+                    }
+                )
+                data["heating"].append(
+                    {
+                        "datetime": single_date.strftime("%Y-%m-%d"),
+                        "kwh_consumed": hp_data["Heating"][i],
+                        "kwh_produced": hp_data["ProducedHeating"][i],
+                        "heating_cop": heating_cop,
+                    }
+                )
 
             for value in data["hot_water"]:
 
@@ -154,7 +159,7 @@ def fetch_usage(start_date=None, end_date=None):
                 except Exception as e:
                     print(f"Error inserting: {e}")
                     pass
-            
+
             for value in data["cooling"]:
 
                 sql = f"""
@@ -210,53 +215,6 @@ def fetch_usage(start_date=None, end_date=None):
     conn.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     fetch_usage()
 
-    # response = {
-    #     "HotWater": [1.25, 1.63, 0.46, 2.09, 1.29, 1.25, 1.24, 1.74],
-    #     "InternalTemperature1": None,
-    #     "InternalTemperature2": None,
-    #     "ExternalTemperature": None,
-    #     "Cooling": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    #     "Heating": [1.18, 0.98, 1.88, 1.53, 1.29, 1.08, 1.77, 1.31],
-    #     "CoP": [
-    #         1.94238683127572,
-    #         2.4099616858237547,
-    #         0.5807692307692308,
-    #         2.3812154696132595,
-    #         1.8682170542635659,
-    #         2.0901287553648067,
-    #         1.6710963455149503,
-    #         2.2098360655737705,
-    #     ],
-    #     "MissingSampleQuarter": [None, None, None, None],
-    #     "MissingSampleMonth": [None, None, None, None, None, None, None, None, None, None, None, None],
-    #     "ProducedHotWater": [4.72, 6.29, 1.359, 8.62, 4.82, 4.87, 5.03, 6.74],
-    #     "ProducedCooling": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    #     "ProducedHeating": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    #     "TotalHeatingConsumed": 11.020000000000001,
-    #     "TotalCoolingConsumed": 0.0,
-    #     "TotalHotWaterConsumed": 10.95,
-    #     "TotalHeatingProduced": 0.0,
-    #     "TotalCoolingProduced": 0.0,
-    #     "TotalHotWaterProduced": 42.449,
-    #     "AverageInternalTemperature": 0.0,
-    #     "AverageExternalTemperature": 0.0,
-    #     "Status": 0,
-    #     "LabelType": 1,
-    #     "TempLabels": None,
-    #     "Labels": [10, 11, 12, 13, 14, 15, 16, 17],
-    #     "HasZone2": False,
-    #     "CurrencySymbol": "kWh",
-    #     "FromDate": "2022-07-10T00:00:00",
-    #     "ToDate": "2022-07-17T00:00:00",
-    #     "DeviceName": "House",
-    #     "BuildingAddress": None,
-    #     "BuildingCity": None,
-    #     "BuildingCountry": None,
-    #     "CustomerName": None,
-    #     "costs": None,
-    #     "TotalMinutes": 10080,
-    #     "MissingMinutes": -1440,
-    # }

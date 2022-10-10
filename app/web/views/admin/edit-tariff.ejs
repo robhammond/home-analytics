@@ -4,101 +4,64 @@
 <h3>Edit Tariff</h3>
 <form method="post" class="form-horizontal" role="form">
     <input type="hidden" name="id" value="<%= supplier.id %>">
-    <div class="form-group">
-		<label for='supplier' class='control-label col-lg-2'>
-			Supplier
-			<span data-toggle="tooltip" data-placement="top" title="The entity type" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="supplier" class="form-control" value="<%= supplier.supplier %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="supplier" class="form-label">Supplier</label>
+        <input type="text" name="supplier" class="form-control" value="<%= supplier.supplier %>">
+        <div class="form-text">Your electricity provider's name (ie Octopus Energy, EON, etc)</div>
 	</div>
-	<div class="form-group">
-		<label for="tariff_name" class='control-label col-lg-2'>
-			Tariff Name
-			<span data-toggle="tooltip" data-placement="top" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-		<div class="col-lg-6">
-			<input type="text" name='tariff_name' class="form-control" value="<%= supplier.tariff_name %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="tariff_name" class="form-label">Tariff Name</label>
+        <input type="text" name='tariff_name' class="form-control" value="<%= supplier.tariff_name %>">
+        <div class="form-text">Enter the name of your electricity tariff (ie Go, EV, etc)</div>
 	</div>
-	<div class="form-group">
-		<label for="standing_charge" class="control-label col-lg-3">
-			Standing Charge (p/day)
-			<span data-toggle="tooltip" data-placement="top" title="standing_charge" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="number" name="standing_charge" class="form-control" value="<%= supplier.standing_charge %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="standing_charge" class="form-label">Standing Charge</label>
+        <div class="input-group">
+            <input type="number" name="standing_charge" class="form-control" value="<%= supplier.standing_charge %>" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
+            <div class="input-group-text">pence / day</div>
+        </div>
+        <div class="form-text">Enter your tariff's fixed daily standing charge in pence per day</div>
 	</div>
-	<div class="form-group">
-		<label for="supplier_start" class="control-label col-lg-2">
-			Supplier Start
-			<span data-toggle="tooltip" data-placement="top" title="supplier_start" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="supplier_start" class="form-control" placeholder="2020-01-01" value="<%= supplier.supplier_start %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="supplier_start" class="form-label">Tariff Start Date</label>
+        <input type="date" name="supplier_start" class="form-control" placeholder="2020-01-01" value="<%= supplier.supplier_start %>">
+        <div class="form-text">Enter the date your electricity tariff started</div>
 	</div>
-	<div class="form-group">
-		<label for="supplier_end" class="control-label col-lg-2">
-			Supplier End
-			<span data-toggle="tooltip" data-placement="top" title="supplier_end" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="supplier_end" class="form-control" placeholder="2020-02-01" value="<%= supplier.supplier_end %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="supplier_end" class="form-label">Tariff End Date</label>
+        <input type="date" name="supplier_end" class="form-control" placeholder="2020-02-01" value="<%= supplier.supplier_end %>">
+        <div class="form-text">Leave blank for your current tariff</div>
 	</div>
     <hr>
     <h3>Rates</h3>
     <% for (let rate of supplier.rates) { %>
-        <div class="form-group">
-            <label for="rate_type" class="control-label col-lg-2">
-                Rate Type
-                <span data-toggle="tooltip" data-placement="top" title="rate_type" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-            </label>
-            <div class="col-lg-6">
-                <select name="rate_type" class="form-select">
-                    <option value="fixed"<% if (rate.rate_type == 'fixed') { %> selected<% } %>>Fixed</option>
-                    <option value="fixed"<% if (rate.rate_type == 'off-peak') { %> selected<% } %>>Off-peak</option>
-                    <option value="fixed"<% if (rate.rate_type == 'peak') { %> selected<% } %>>Peak</option>
-                </select>
-            </div>
+        <div class="col-6 mb-3">
+            <label for="rate_type" class="form-label">Rate Type</label>
+            <select name="rate_type" class="form-select">
+                <option value="fixed"<% if (rate.rate_type == 'fixed') { %> selected<% } %>>Fixed</option>
+                <option value="fixed"<% if (rate.rate_type == 'off-peak') { %> selected<% } %>>Off-peak</option>
+                <option value="fixed"<% if (rate.rate_type == 'peak') { %> selected<% } %>>Peak</option>
+            </select>
         </div>
-        <div class="form-group">
-            <label for="variable_cost" class="control-label col-lg-3">
-                Pence per kWh
-                <span data-toggle="tooltip" data-placement="top" title="variable_cost" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-            </label>
-            <div class="col-lg-6">
-                <input type="number" name="variable_cost" class="form-control" value="<%= rate.cost %>">
+        <div class="col-6 mb-3">
+            <label for="cost" class="form-label">Cost</label>
+            <div class="input-group">
+                <input type="number" name="cost" class="form-control" value="<%= rate.cost %>" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
+                <div class="input-group-text">pence / kWh</div>
             </div>
+            <div class="form-text">Enter the rate cost in pence per kWh</div>
         </div>
-        <div class="form-group">
-            <label for="start_time" class="control-label col-lg-2">
-                Start Time
-                <span data-toggle="tooltip" data-placement="top" title="start_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-            </label>
-            <div class="col-lg-6">
-                <input type="text" name="start_time" class="form-control" placeholder="00:00" value="<%= rate.start_time %>">
-            </div>
+        <div class="col-6 mb-3">
+            <label for="start_time" class="form-label">Start Time</label>
+            <input type="text" name="start_time" class="form-control" placeholder="hh:mm" value="<%= rate.start_time %>">
+            <div class="form-text">Leave blank if you are on a fixed rate</div>
         </div>
-        <div class="form-group">
-            <label for="end_time" class="control-label col-lg-2">
-                End Time
-                <span data-toggle="tooltip" data-placement="top" title="end_time" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-            </label>
-            <div class="col-lg-6">
-                <input type="text" name="end_time" class="form-control" placeholder="00:00" value="<%= rate.end_time %>">
-            </div>
+        <div class="col-6 mb-3">
+            <label for="end_time" class="form-label">End Time</label>
+            <input type="text" name="end_time" class="form-control" placeholder="hh:mm" value="<%= rate.end_time %>">
+            <div class="form-text">Leave blank if you are on a fixed rate</div>
         </div>
         <hr>
     <% } %>
-	<input type="submit" value="Save supplier &raquo;" class="btn btn-primary">
+	<input type="submit" value="Save Tariff &raquo;" class="btn btn-primary">
 </form>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>
-    

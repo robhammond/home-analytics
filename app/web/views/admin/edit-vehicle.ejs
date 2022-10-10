@@ -4,107 +4,69 @@
 <h3>Edit Vehicle</h3>
 <form method="post" class="form-horizontal" role="form">
     <input type="hidden" value="<%= vehicle.id %>" name="id">
-	<div class="form-group">
-		<label for='make' class='control-label col-lg-2'>
-			Make
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="make" class="form-control" value="<%= vehicle.make %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for='make' class='form-label'>Manufacturer</label>
+        <input type="text" name="make" class="form-control" value="<%= vehicle.make %>">
+        <div class="form-text">Enter your car's manufacturer</div>
 	</div>
-    <div class="form-group">
-		<label for="model" class='control-label col-lg-2'>
-			Model
-        </label>
-		<div class="col-lg-6">
-			<input type="text" name='model' class="form-control" value="<%= vehicle.model %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="model" class='form-label'>Model</label>
+        <input type="text" name='model' class="form-control" value="<%= vehicle.model %>">
+        <div class="form-text">Enter your car's model</div>
 	</div>
-    <div class="form-group">
-		<label for="variant" class='control-label col-lg-2'>
-			Variant
-        </label>
-		<div class="col-lg-6">
-			<input type="text" name='variant' class="form-control" value="<%= vehicle.variant %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="variant" class='form-label'>Variant</label>
+        <input type="text" name='variant' class="form-control" value="<%= vehicle.variant %>">
+        <div class="form-text">Enter your car's variant</div>
 	</div>
-    <div class="form-group">
-		<label for="imageUrl" class='control-label col-lg-2'>
-			Image URL
-        </label>
-		<div class="col-lg-6">
-			<input type="text" name='imageUrl' class="form-control" value="<%= vehicle.imageUrl %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="imageUrl" class='form-label'>Image URL</label>
+        <input type="text" name='imageUrl' class="form-control" value="<%= vehicle.imageUrl %>">
+        <div class="form-text">Optional: Enter an absolute or relative URL. Preferably a transparent PNG or WEBP format.</div>
 	</div>
-	<div class="form-group">
-		<label for="registrationNumber" class="control-label col-lg-2">
-			Registration Number
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="registrationNumber" class="form-control" value="<%= vehicle.registrationNumber %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="registrationNumber" class="form-label">Registration Number</label>
+        <input type="text" name="registrationNumber" class="form-control" value="<%= vehicle.registrationNumber %>" style="text-transform:uppercase;">
+        <div class="form-text">Optional: Enter your car's registration number</div>
 	</div>
-    <div class="form-group">
-		<label for="vin" class="control-label col-lg-2">
-			VIN
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="vin" class="form-control" value="<%= vehicle.vin %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="vin" class="form-label">VIN</label>
+        <input type="text" name="vin" class="form-control" value="<%= vehicle.vin %>">
+        <div class="form-text">Optional: Enter your vehicle's VIN</div>
 	</div>
-	<div class="form-group">
-		<label for="purchasePrice" class="control-label col-lg-2">
-			Purchase Price (GBP)
-		</label>
-		<div class="col-lg-6">
-			<input type="number" name="purchasePrice" class="form-control" placeholder="20071" value="<%= vehicle.purchasePrice %>">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="purchasePrice" class="form-label">Purchase Price</label>
+        <div class="input-group">
+            <div class="input-group-text">&pound;</div>
+            <input type="number" name="purchasePrice" class="form-control" placeholder="5000" value="<%= vehicle.purchasePrice %>">
+        </div>
+        <div class="form-text">Optional: The cost of your vehicle when you bought it</div>
 	</div>
-    <div class="form-group">
-		<label for="purchaseOdometer" class="control-label col-lg-2">
-			Odometer on Purchase
-		</label>
-		<div class="col-lg-6">
-			<input type="number" name="purchaseOdometer" class="form-control" placeholder="0" value="<%= vehicle.purchaseOdometer %>">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="purchaseOdometer" class="form-label">Odometer on Purchase</label>
+        <input type="number" name="purchaseOdometer" class="form-control" placeholder="0" value="<%= vehicle.purchaseOdometer %>">
+        <div class="form-text">Optional: Entering this helps calculate an average monthly mileage figure</div>
 	</div>
-	<div class="form-group">
-		<label for="motDate" class="control-label col-lg-2">
-			MOT Date
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="motDate" class="form-control" value="<%= vehicle.motDate %>" pattern="\d{4}-\d{2}-\d{2}">
-		</div>
+    <div class="col-6 mb-3">
+        <label for="dateAcquired" class="form-label">Purchase Date</label>
+        <input type="date" name="dateAcquired" class="form-control" value="<%= vehicle.dateAcquired %>" pattern="\d{4}-\d{2}-\d{2}">
+        <div class="form-text">Optional: Entering this helps calculate an average monthly mileage figure</div>
+    </div>
+	<div class="col-6 mb-3">
+		<label for="motDate" class="form-label">MOT Date</label>
+        <input type="date" name="motDate" class="form-control" value="<%= vehicle.motDate %>" pattern="\d{4}-\d{2}-\d{2}">
+        <div class="form-text">Optional: Keep track of your MOT date</div>
 	</div>
-	<div class="form-group">
-		<label for="serviceDate" class="control-label col-lg-2">
-			Service Date
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="serviceDate" class="form-control" value="<%= vehicle.serviceDate %>" pattern="\d{4}-\d{2}-\d{2}">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="serviceDate" class="form-label">Service Date</label>
+        <input type="date" name="serviceDate" class="form-control" value="<%= vehicle.serviceDate %>" pattern="\d{4}-\d{2}-\d{2}">
+        <div class="form-text">Optional: Keep track of your service date</div>
 	</div>
-	<div class="form-group">
-		<label for="taxDate" class="control-label col-lg-2">
-			Tax Date
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="taxDate" class="form-control" min="2020-01-01" value="<%= vehicle.taxDate %>" pattern="\d{4}-\d{2}-\d{2}">
-		</div>
-	</div>
-	<div class="form-group">
-		<label for="dateAcquired" class="control-label col-lg-2">
-			Date Acquired
-		</label>
-		<div class="col-lg-6">
-			<input type="date" name="dateAcquired" class="form-control" value="<%= vehicle.dateAcquired %>" pattern="\d{4}-\d{2}-\d{2}">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="taxDate" class="form-label">Tax Date</label>
+        <input type="date" name="taxDate" class="form-control" min="2020-01-01" value="<%= vehicle.taxDate %>" pattern="\d{4}-\d{2}-\d{2}">
+        <div class="form-text">Optional: Keep track of your tax date</div>
 	</div>
     <br>
 	<input type="submit" value="Update Vehicle &raquo;" class="btn btn-primary">
 </form>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>

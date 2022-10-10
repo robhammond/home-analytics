@@ -1,4 +1,7 @@
 <h3>Vehicles</h3>
+<p>Add details of the vehicles you own to keep track of MOT dates etc.</p>
+<p>If your car has a supported integration, you can also keep track of your EV's state of charge, daily trips, and trip
+    efficiency.</p>
 <p><a href="/admin/add-vehicle" class="btn btn-success">Add new</a></p>
 <table class="table table-bordered table-striped">
     <thead>
@@ -10,14 +13,18 @@
     </thead>
     <tbody>
         <% for (vehicle of vehicles) { %>
-        <tr>
-            <td><%= vehicle.make %></td>
-            <td><%= vehicle.model %></td>
-            <td>
-                <a href="/admin/edit-vehicle?id=<%= vehicle.id %>">Edit</a> |
-                <a href="/admin/delete-vehicle?id=<%= vehicle.id %>">Delete</a>
-            </td>
-        </tr>
-        <% } %>
+            <tr>
+                <td>
+                    <%= vehicle.make %>
+                </td>
+                <td>
+                    <%= vehicle.model %>
+                </td>
+                <td>
+                    <a href="/admin/edit-vehicle?id=<%= vehicle.id %>">Edit</a> |
+                    <a href="/admin/delete-vehicle?id=<%= vehicle.id %>">Delete</a>
+                </td>
+            </tr>
+            <% } %>
     </tbody>
 </table>

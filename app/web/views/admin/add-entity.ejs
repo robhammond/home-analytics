@@ -3,56 +3,25 @@
 
 <h3>Add Entity</h3>
 <form method="post" class="form-horizontal" role="form">
-	<div class="form-group">
-		<label for='entity_name' class='control-label col-lg-2'>
-			Name
-			<span data-toggle="tooltip" data-placement="top" title="The entity type" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="entity_name" class="form-control">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="entity_name" class="form-label">Entity Name</label>
+        <input type="text" name="entity_name" class="form-control">
 	</div>
-    <div class="form-group">
-		<label for="entity_type" class='control-label col-lg-2'>
-			Entity Type
-			<span data-toggle="tooltip" data-placement="top" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-        </label>
-		<div class="col-lg-6">
-			<input type="text" name='entity_type' class="form-control">
-		</div>
+    <div class="col-6 mb-3">
+		<label for="entity_type" class="form-label">Entity Type</label>
+        <input type="text" name="entity_type" class="form-control">
 	</div>
-	<div class="form-group">
-		<label for="entity_url" class="control-label col-lg-2">
-			URL (Optional)
-			<span data-toggle="tooltip" data-placement="top" title="entity_url" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="entity_url" class="form-control">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="entity_url" class="form-label">URL (Optional)</label>
+        <input type="text" name="entity_url" class="form-control">
 	</div>
-	<div class="form-group">
-		<label for="entity_image" class="control-label col-lg-2">
-			Image (Optional)
-			<span data-toggle="tooltip" data-placement="top" title="entity_image" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="entity_image" class="form-control" placeholder="https://example.com/picture.png">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="entity_image" class="form-label">Image (Optional)</label>
+        <input type="text" name="entity_image" class="form-control" placeholder="https://example.com/picture.png">
 	</div>
-	<div class="form-group">
-		<label for="entity_location" class="control-label col-lg-2">
-			Location (Optional)
-			<span data-toggle="tooltip" data-placement="top" title="entity_location" data-container="body"><i class="fas fa-question-circle" style="color:#4f9fcf"></i></span>
-		</label>
-		<div class="col-lg-6">
-			<input type="text" name="entity_location" class="form-control" placeholder="Kitchen">
-		</div>
+	<div class="col-6 mb-3">
+		<label for="entity_location" class="form-label">Location (Optional)</label>
+        <input type="text" name="entity_location" class="form-control" placeholder="Kitchen">
 	</div>
 	<input type="submit" value="Add Entity &raquo;" class="btn btn-primary">
 </form>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>
-    

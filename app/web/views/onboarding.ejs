@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="col-md-6">
+        <h3>Setup</h3>
+    </div>
+</div>
+<hr>
+<% if (params["tariff"] == 'false') { %>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Set electricity costs</h4>
+            <p><b><a href="/admin/add-tariff">Add a current Electricity Tariff </a></b></p>
+            <p>In order to calculate your costs, you need to add details about your tariff first.</p>
+            <p>You can also add historical tariffs for date ranges where you have consumption data.</p>
+        </div>
+        <div class="col-md-6">
+            <img src="/img/tariff-setup.png">
+        </div>
+    </div>
+    <hr>
+<% } %>
+<% if (params["n3rgy"] == 'false') { %>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Set usage data source</h4>
+            <p><b><a href="/admin/edit-credentials?id=1">Update n3rgy credentials</a></b></p>
+            <p>Follow the instructions to <a href="https://github.com/Electric-Sheep-Energy/home-analytics#setting-up-n3rgy">find your n3rgy API key</a>, then update the <a href="/admin/view-entity?id=1">dummy credential here</a>.</p>
+        </div>
+        <div class="col-md-6">
+            <img src="/img/n3rgy-setup.png">
+        </div>
+    </div>
+<% } %>
+
