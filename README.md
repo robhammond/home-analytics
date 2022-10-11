@@ -275,6 +275,7 @@ Then enable the `/app/tasks/carbon_intensity.py` script in the crontab.
 - [ ] Tidy up Javascript for Pi screen
 - [ ] Add more smart devices
 - [ ] Add Octopus Energy API as an alternative half-hourly data source
+- [ ] Add instructions/functionality for [mDNS function](https://developer.ridgerun.com/wiki/index.php/How_to_use_mDNS_to_access_a_device_without_knowing_the_IP_address)
 
 See the [open issues](https://github.com/electric-sheep-energy/home-analytics/issues) for a full list of proposed features (and known issues).
 

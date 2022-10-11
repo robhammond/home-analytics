@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const { dateShortcuts } = require("../globals");
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
-    dates = req.app.locals.dateShortcuts;
-
     try {
         let setupStatus = { tariff: false, n3rgy: false, vehicle: false };
         const supplierSetup = await prisma.supplier.findFirst();
@@ -35,7 +34,7 @@ router.get("/", async (req, res) => {
 
     res.render("index", {
         page_title: "Home",
-        dates: dates,
+        dates: dateShortcuts,
     });
 });
 
