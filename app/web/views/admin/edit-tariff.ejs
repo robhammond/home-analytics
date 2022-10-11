@@ -39,8 +39,8 @@
             <label for="rate_type" class="form-label">Rate Type</label>
             <select name="rate_type" class="form-select">
                 <option value="fixed"<% if (rate.rate_type == 'fixed') { %> selected<% } %>>Fixed</option>
-                <option value="fixed"<% if (rate.rate_type == 'off-peak') { %> selected<% } %>>Off-peak</option>
-                <option value="fixed"<% if (rate.rate_type == 'peak') { %> selected<% } %>>Peak</option>
+                <option value="off-peak"<% if (rate.rate_type == 'off-peak') { %> selected<% } %>>Off-peak</option>
+                <option value="peak"<% if (rate.rate_type == 'peak') { %> selected<% } %>>Peak</option>
             </select>
         </div>
         <div class="col-6 mb-3">

@@ -5,23 +5,36 @@
 <form method="post" class="form-horizontal" role="form">
 	<div class="col-6 mb-3">
 		<label for="entity_name" class="form-label">Entity Name</label>
-        <input type="text" name="entity_name" class="form-control">
+        <input type="text" name="entity_name" class="form-control" placeholder="Ecodan">
+        <div class="form-text">The name of the device or service</div>
 	</div>
     <div class="col-6 mb-3">
 		<label for="entity_type" class="form-label">Entity Type</label>
-        <input type="text" name="entity_type" class="form-control">
+        <input type="text" name="entity_type" class="form-control" placeholder="Heat Pump">
+        <div class="form-text">The type of device or service</div>
+	</div>
+    <div class="col-6 mb-3">
+		<label for="entity_backend" class='form-label'>Entity Backend</label>
+        <select name="entity_backend" class="form-select">
+            <option value="api">API</option>
+            <option value="tasmota_mqtt">Tasmota MQTT</option>
+        </select>
+        <div class="form-text">How is data for the device or service obtained</div>
 	</div>
 	<div class="col-6 mb-3">
 		<label for="entity_url" class="form-label">URL (Optional)</label>
-        <input type="text" name="entity_url" class="form-control">
+        <input type="url" name="entity_url" class="form-control">
+        <div class="form-text">A reference URL to the product or service</div>
 	</div>
 	<div class="col-6 mb-3">
 		<label for="entity_image" class="form-label">Image (Optional)</label>
         <input type="text" name="entity_image" class="form-control" placeholder="https://example.com/picture.png">
+        <div class="form-text">An absolute or relative URL to a preview image of the device or service</div>
 	</div>
 	<div class="col-6 mb-3">
 		<label for="entity_location" class="form-label">Location (Optional)</label>
         <input type="text" name="entity_location" class="form-control" placeholder="Kitchen">
+        <div class="form-text">Where in the house the entity is located</div>
 	</div>
 	<input type="submit" value="Add Entity &raquo;" class="btn btn-primary">
 </form>

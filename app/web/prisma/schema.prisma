@@ -139,6 +139,7 @@ model Entity {
     id              Int           @id @default(autoincrement())
     entity_name     String
     entity_type     String
+    entity_backend  String?
     entity_url      String?
     entity_image    String?
     entity_location String?
