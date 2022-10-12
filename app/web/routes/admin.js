@@ -150,7 +150,7 @@ router.post("/add-tariff", async (req, res) => {
         },
     });
 
-    res.redirect("/admin/");
+    res.redirect("/admin/list-tariffs");
 });
 
 router.get("/list-tariffs", async (req, res) => {
@@ -216,7 +216,7 @@ router.post("/add-vehicle", async (req, res) => {
             dateAcquired: dateAcquired,
         },
     });
-    res.redirect("/admin/");
+    res.redirect("/admin/list-vehicles");
 });
 
 router.get("/edit-vehicle", async (req, res) => {
@@ -285,7 +285,7 @@ router.post("/edit-vehicle", async (req, res) => {
             id: Number(id),
         },
     });
-    res.redirect("/admin/");
+    res.redirect("/admin/list-vehicles");
 });
 
 router.get("/add-entity", async (req, res) => {
@@ -293,18 +293,19 @@ router.get("/add-entity", async (req, res) => {
 });
 
 router.post("/add-entity", async (req, res) => {
-    let { entity_name, entity_type, entity_url, entity_image, entity_location } = req.body;
+    let { entity_name, entity_type, entity_backend, entity_url, entity_image, entity_location } = req.body;
 
     await prisma.entity.create({
         data: {
             entity_name: entity_name,
             entity_type: entity_type,
+            entity_backend: entity_backend,
             entity_url: entity_url,
             entity_image: entity_image,
             entity_location: entity_location,
         },
     });
-    res.redirect("/admin/");
+    res.redirect("/admin/list-entities");
 });
 
 router.get("/list-entities", async (req, res) => {
@@ -336,7 +337,7 @@ router.get("/edit-entity", async (req, res) => {
 });
 
 router.post("/edit-entity", async (req, res) => {
-    let { id, entity_name, entity_type, entity_url, entity_image, entity_location } = req.body;
+    let { id, entity_name, entity_type, entity_backend, entity_url, entity_image, entity_location } = req.body;
 
     await prisma.entity.update({
         where: {
@@ -345,6 +346,7 @@ router.post("/edit-entity", async (req, res) => {
         data: {
             entity_name: entity_name,
             entity_type: entity_type,
+            entity_backend: entity_backend,
             entity_url: entity_url,
             entity_image: entity_image,
             entity_location: entity_location,
