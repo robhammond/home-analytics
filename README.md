@@ -206,7 +206,7 @@ To enable the integrations, uncomment the relevant lines in the crontab.
 
 ### 🌞 Heating
 
-**Mitsubishi Ecodan**
+#### Mitsubishi Ecodan
 To add a Mitsubishi Ecodan heat pump, you need to examine the HTTP requests that the [MelCloud web app](https://app.melcloud.com/) sends to find your heat pump's device ID and the MITSI_CONTEXT_KEY. 
 
 For the `MITSI_CONTEXT_KEY` value, log in to the MelCloud app and inspect the value of the **x-mitscontextkey**:
@@ -224,7 +224,7 @@ Then <a href="http://localhost:3000/admin/list-entities">add an entity</a> named
 Next, enable the `/app/tasks/melcloud.py` script in the crontab.
 
 ### 🚘 Cars
-**Kia**
+#### Kia
 Tested on an E-Niro EV, however the integration should work for Kia cars, and possibly Hyundai vehicles (untested).
 
 To set up a Kia vehicle, add its details in **Admin > Garage** (including VIN), then <a href="http://localhost:3000/admin/list-entities">add an entity</a> with your app login credentials as follows:
@@ -233,7 +233,7 @@ To set up a Kia vehicle, add its details in **Admin > Garage** (including VIN), 
 
 Then enable the `/app/tasks/kia.py` script in the crontab.
 
-**Renault**
+#### Renault
 Tested on a Renault Zoe ZE40.
 
 To set up a Renault vehicle, add its details in **Admin > Garage**, then <a href="http://localhost:3000/admin/list-entities">add an entity</a> with your app login credentials as follows:
@@ -243,7 +243,7 @@ To set up a Renault vehicle, add its details in **Admin > Garage**, then <a href
 Then enable the `/app/tasks/renault.py` script in the crontab.
 
 ### ⛽️ Car Charging
-**Pod Point**
+#### Pod Point
 Usage and cost data can be obtained if you have a Pod Point home charger. Tested on a Solo 1 model.
 
 To set up, <a href="http://localhost:3000/admin/list-entities">add an entity</a> named 'Pod Point', and add your user credentials that you use to log into your app:
@@ -252,9 +252,80 @@ To set up, <a href="http://localhost:3000/admin/list-entities">add an entity</a>
 
 Then enable the `/app/tasks/podpoint.py` script in the crontab.
 
+### 🔌 Energy Monitoring Smart Plugs
+#### Tasmota
+*Note: This is an under-development feature so may change without notice.*
+
+Smart plugs that use the Tasmota software can publish energy usage data that can be consumed by homeAnalytics.
+
+**Step 1:**
+Set up your MQTT broker. If you have one already set-up, you can skip this step.
+
+If you're using a Raspberry Pi or similar, always-on server, you can follow these steps:
+
+```sh
+sudo apt update && sudo apt upgrade
+sudo apt install -y mosquitto mosquitto-clients
+sudo systemctl enable mosquitto.service
+
+sudo nano /etc/mosquitto/mosquitto.conf
+```
+
+Then add the following lines to the bottom of the `mosquitto.conf` file:
+```
+listener 1883
+allow_anonymous true
+```
+
+Next, restart the MQTT broker:
+
+```sh
+sudo systemctl restart mosquitto
+```
+
+Note the local IP address of your server/Pi:
+```sh
+hostname -I
+```
+
+**Step 2:**
+Configure your smart plug - go to your smart plug's IP address, and click **Configuration -> Configure MQTT**.
+
+Then enter your MQTT Broker's Host IP, and rename the Topic to something easier to read:
+
+![Tasmota Smart Plug setup](/assets/tasmota-setup.png)
+
+The plug will now start publishing to the broker every 5 minutes.
+
+**Step 3**
+
+Add a `.env` file to the `/app/tasks/` folder, containing the MQTT broker IP address, for example:
+
+```
+MQTT_BROKER=10.0.0.03
+```
+
+**Step 4**
+Add the smart plug(s) as entities in homeAnalytics Admin area, setting the **Entity Backend** select box to 'Tasmota MQTT'. 
+
+Then add a credential with `topic` as the key, and the energy sensor as the value. This is generally in the format **tele/your_device_topic/SENSOR**, for instance:
+
+```
+tele/conservatory_heater/SENSOR
+```
+
+**Step 5**
+Run the `tasks/tasmota.py` script in the background - it will continuously run and consume the data for all devices.
+
+For example:
+
+```sh
+nohup python3 tasmota.py 2>1 &
+```
+
 ### Others
 
-**Carbon Intensity**
+#### 💨 Carbon Intensity
 You can collect Carbon Intensity data for your postcode from [CarbonIntensity.org](https://api.carbonintensity.org.uk/), just add an entity called 'Carbon Intensity', with the credential key/value of `postcode` and the first segment of your postcode.
 
 Then enable the `/app/tasks/carbon_intensity.py` script in the crontab.
