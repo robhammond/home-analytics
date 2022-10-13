@@ -320,7 +320,8 @@ Run the `tasks/tasmota.py` script in the background - it will continuously run a
 For example:
 
 ```sh
-nohup python3 tasmota.py 2>1 &
+pm2 start "cd /[PROJECT_PATH]/app/tasks/; python3 tasmota.py"
+pm2 save
 ```
 
 ### Others
