@@ -10,9 +10,97 @@
                 <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
                 <p><span class="material-icons">battery_full</span> <%= car.batteryPercent %>%</p>
                 <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
-                <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary">View</a>
+                <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary stretched-link">View</a>
             </div>
         </div>
     </div>
 <% } %>
 </div>
+<% if (carEfficiency.length > 0) { %>
+    <hr>
+<div class="row">
+    <div class="col-md-12">
+        <h3>Efficiency Stats</h3>
+        <p>The chart below shows the distance travelled and efficiency gained by the cars in your garage</p>
+        <div id="carEfficiency"></div>
+    </div>
+</div>
+<script>
+    function loadChart() {
+        let dataSeries = [];
+        let xAxisCats = [
+            <% for ( let dt of carEfficiency[0]) { %>'<%= dt["datetime"] %>',<% } %>
+        ];
+
+        dataSeries.push(
+            <% for ( let car of carEfficiency) { %>
+                {
+                    name: '<%= car[0]["carName"] %>',
+                    type: 'column',
+                    data: [ <% for (let dt of car) { %><%= dt["distance_travelled"] %>,<% } %> ]
+                },
+            <% } %>
+        );
+        dataSeries.push(
+            <% for ( let car of carEfficiency) { %>
+                {
+                    name: '<%= car[0]["carName"] %>',
+                    type: 'spline',
+                    yAxis:1,
+                    data: [ <% for (let dt of car) { %><%= dt["mpkwh"] %>,<% } %> ]
+                },
+            <% } %>
+        );
+
+        let usageMain = Highcharts.chart({
+            chart: {
+                renderTo: 'carEfficiency',
+            },
+            credits: false,
+            title: {
+                text: "",
+            },
+            plotOptions: {
+                series: {
+                    stacking: "normal",
+                }
+            },
+            legend: {
+                itemStyle: {
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    align: 'right'
+                }
+            },
+            xAxis : {
+                title: {
+                    text: "Day",
+                },
+                labels: {
+                },
+                categories: xAxisCats,
+            },
+            yAxis : [{
+                title: {
+                    text: "Miles Travelled",
+                },
+                labels: {
+                    format: '{value} miles',
+                },
+                gridLineWidth: 0,
+            },{
+                title: {
+                    text: "Efficiency",
+                },
+                labels: {
+                    format: '{value} mi/kWh',
+                },
+                opposite: true,
+                gridLineWidth: 0,
+            }],
+            series: dataSeries
+        });
+    }
+    loadChart();
+</script>
+<% } %>

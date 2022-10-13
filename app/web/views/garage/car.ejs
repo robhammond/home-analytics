@@ -44,4 +44,30 @@
             </tbody>
         </table>
     </div>
+    <div class="col-md-6">
+        <% if (car.batterySize > 0) { %>
+            <h3>Estimated Efficiency</h3>
+            <table class="table table-bordered table-striped table-sm">
+                <thead>
+                    <th>Date</th>
+                    <th>Distance Travelled (mi)</th>
+                    <th>Miles per kWh</th>
+                </thead>
+                <tbody>
+                    <% for (let trip of carEfficiency) { %>
+                        <tr>
+                            <td><%= trip.datetime %></td>
+                            <td style="text-align:right;"><%= trip.distance_travelled.toLocaleString() %></td>
+                            <td style="text-align:right;"><%= trip.mpkwh %></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <br><br>
+            <div class="alert alert-primary" role="alert">
+                Add your car's <a href="/admin/edit-vehicle?id=<%= car.id %>">battery capacity</a> to see estimated efficiency stats here
+            </div>
+            <% } %>
+    </div>
 </div>

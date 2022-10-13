@@ -19,6 +19,14 @@
         <div class="form-text">Enter your car's variant</div>
 	</div>
     <div class="col-6 mb-3">
+		<label for="batterySize" class="form-label">Battery Size</label>
+        <div class="input-group">
+            <input type="text" name="batterySize" class="form-control">
+            <div class="input-group-text">kWh</div>
+        </div>
+        <div class="form-text">Optional: This helps calculate kWh/mi efficiency details</div>
+	</div>
+    <div class="col-6 mb-3">
 		<label for="imageUrl" class='form-label'>Image URL</label>
         <input type="text" name='imageUrl' class="form-control" placeholder="/img/car.png">
         <div class="form-text">Optional: Enter an absolute or relative URL. Preferably a transparent PNG or WEBP format.</div>
@@ -43,7 +51,10 @@
 	</div>
 	<div class="col-6 mb-3">
 		<label for="purchaseOdometer" class="form-label">Odometer on Purchase</label>
-        <input type="number" name="purchaseOdometer" class="form-control" placeholder="0">
+        <div class="input-group">
+            <input type="number" name="purchaseOdometer" class="form-control" placeholder="0">
+            <div class="input-group-text">miles</div>
+        </div>
         <div class="form-text">Optional: Entering this helps calculate an average monthly mileage figure</div>
 	</div>
     <div class="col-6 mb-3">
