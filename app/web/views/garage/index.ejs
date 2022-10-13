@@ -21,6 +21,10 @@
 <div class="row">
     <div class="col-md-12">
         <h3>Efficiency Stats</h3>
+        <div class="row">
+            <div class="col-md-4"><div id="sumMiles"></div></div>
+            <div class="col-md-4"><div id="avgEffic"></div></div>
+        </div>
         <p>The chart below shows the distance travelled and efficiency gained by the cars in your garage</p>
         <div id="carEfficiency"></div>
     </div>
@@ -28,6 +32,8 @@
 <script>
     function loadChart() {
         let dataSeries = [];
+        <% let sumMiles = 0;
+        let avgEffic = 0; %>
         let xAxisCats = [
             <% for ( let dt of carEfficiency[0]) { %>'<%= dt["datetime"] %>',<% } %>
         ];
@@ -37,7 +43,8 @@
                 {
                     name: '<%= car[0]["carName"] %>',
                     type: 'column',
-                    data: [ <% for (let dt of car) { %><%= dt["distance_travelled"] %>,<% } %> ]
+                    stacking: "normal",
+                    data: [ <% for (let dt of car) { sumMiles += dt["distance_travelled"]; %><%= dt["distance_travelled"] %>,<% } %> ]
                 },
             <% } %>
         );
@@ -47,7 +54,7 @@
                     name: '<%= car[0]["carName"] %>',
                     type: 'spline',
                     yAxis:1,
-                    data: [ <% for (let dt of car) { %><%= dt["mpkwh"] %>,<% } %> ]
+                    data: [ <% for (let dt of car) { avgEffic += dt["mpkwh"]; %><%= dt["mpkwh"] %>,<% } %> ]
                 },
             <% } %>
         );
@@ -59,11 +66,6 @@
             credits: false,
             title: {
                 text: "",
-            },
-            plotOptions: {
-                series: {
-                    stacking: "normal",
-                }
             },
             legend: {
                 itemStyle: {
@@ -96,10 +98,17 @@
                     format: '{value} mi/kWh',
                 },
                 opposite: true,
-                gridLineWidth: 0,
             }],
             series: dataSeries
         });
+        let sumMiles = <%= sumMiles %>;
+        let avgEffic = <%= avgEffic %>;
+        $('#sumMiles').html(`<div class="alert alert-dark" role="alert">
+            ${sumMiles} miles driven
+        </div>`);
+        $('#avgEffic').html(`<div class="alert alert-dark" role="alert">
+            ${ (avgEffic / (xAxisCats.length * <%= carEfficiency.length %>)).toFixed(2) } avg miles / kWh
+        </div>`);
     }
     loadChart();
 </script>
