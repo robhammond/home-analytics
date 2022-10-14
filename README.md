@@ -87,9 +87,8 @@ docker-compose -f docker-compose.yml up
 
 This will build 2 containers, 1 for the web UI and one for the data collection tasks. The SQLite database will be created using the path defined in the `/.env` file for the variable `HA_DB_URL`.
 
-When the containers are up and running, navigate to http://localhost:3000/admin/list-tariffs and add in the details of your Electricity tariff. For your current tariff, leave the end date blank, for example:
-
-![tariff data](assets/tariff-data.png)
+### Setup
+Navigate to http://localhost:3000/admin/list-tariffs and add in the details of your Electricity tariff and rates.
 
 You then need to follow the steps below for setting up n3rgy API account, and enter the authorization header value as the value for `auth_header` at http://localhost:3000/admin/view-entity?id=1
 
