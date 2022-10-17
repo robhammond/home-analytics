@@ -36,7 +36,7 @@
     <li><a href="#-raspbery-pi-installation">Raspberry Pi Installation</a></li>
     <li><a href="#-integrations">Integrations</a>
         <ul>
-            <li><a href="#-heating">Heating</a></li>
+            <li><a href="#-central-heating">Central Heating</a></li>
             <li><a href="#-cars">Cars</a></li>
             <li><a href="#-car-charging">Car Charging</a></li>
             <li><a href="#others">Others</a></li>
@@ -203,7 +203,7 @@ A small number of smart home integrations are available in the Python tasks fold
 
 To enable the integrations, uncomment the relevant lines in the crontab.
 
-### 🌞 Heating
+### 🌞 Central Heating
 
 #### Mitsubishi Ecodan
 To add a Mitsubishi Ecodan heat pump, you need to examine the HTTP requests that the [MelCloud web app](https://app.melcloud.com/) sends to find your heat pump's device ID and the MITSI_CONTEXT_KEY. 

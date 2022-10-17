@@ -7,9 +7,15 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
     let unit = req.query.unit || 'day';
-    let start = req.query.start || DateTime.now().minus({days: 31}).toFormat("yyyy-MM-dd");;
-    let end = req.query.end || DateTime.now().minus({days: 1}).toFormat("yyyy-MM-dd");;
+    let start = req.query.start || DateTime.now().minus({days: 30}).toFormat("yyyy-MM-dd");;
+    let end = req.query.end || DateTime.now().toFormat("yyyy-MM-dd");;
     let filter = req.query.filter || 'all';
+    let entityTypes = await prisma.$queryRaw`
+        SELECT 
+            DISTINCT entity_type
+        FROM
+            Entity
+    `;
 
     res.render("energy", { 
         page_title: "Energy",
@@ -17,6 +23,7 @@ router.get("/", async (req, res) => {
         start: start,
         end: end,
         filter: filter,
+        entityTypes: entityTypes,
     });
 });
 

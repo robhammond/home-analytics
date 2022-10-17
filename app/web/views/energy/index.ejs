@@ -8,9 +8,12 @@
             <label for="filter" class="form-label sr-only">Filter</label>
             <select class="form-select form-select-sm" name="filter" id="filter">
                 <option <% if (filter == 'all') { %>selected <% } %>value="all">All</option>
-                <option <% if (filter == 'heating') { %>selected <% } %>value="heating">Heating</option>
+                <option <% if (filter == 'central-heating') { %>selected <% } %>value="central-heating">Central Heating</option>
                 <option <% if (filter == 'hot_water') { %>selected <% } %>value="hot_water">Hot Water</option>
                 <option <% if (filter == 'car_charges') { %>selected <% } %>value="car_charges">Car Charges</option>
+                <% for (let eT of entityTypes) { %>
+                    <option <% if (filter == eT["entity_type"]) { %>selected <% } %>value="<%= eT["entity_type"] %>"><%= eT["entity_type"] %></option>
+                <% } %>
             </select>
         </form>
     </div>
