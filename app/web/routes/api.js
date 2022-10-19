@@ -561,6 +561,7 @@ router.get("/usage/main", async (req, res) => {
                     DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
             `;
         } else {
+            // TODO: Improve performance of these queries
             usage = await prisma.$queryRaw`
                 WITH rate_list AS (
                     SELECT 

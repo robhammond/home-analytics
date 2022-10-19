@@ -1,6 +1,6 @@
 // https://developer.apple.com/design/human-interface-guidelines/foundations/color/
 Highcharts.setOptions({
-    colors: ['#43D158', '#F6453A', '#F99F0D', '#64D2FF', '#F5375F', '#BF5AF3', '#AC8E68']
+    colors: ['#43D158', '#F6453A', '#F99F0D', '#64D2FF', '#F5375F', '#BF5AF3', '#AC8E68', '#FFD525', '#66D3CF']
 });
 
 function loadUsagePie(renderDiv, start, end) {
