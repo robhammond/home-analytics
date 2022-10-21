@@ -24,3 +24,26 @@
         </div>
     </div>
 </div>
+<script>
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= dates["yday"] %>',
+            end: '<%= dates["yday"] %>'
+        },
+        method: "GET",
+        success: function (res) {
+            for (let r of res.rates) {
+                $('#yday-kwh').append('<tr class="pi-data-row"><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">' + r.total_kwh.toFixed(2) + '</td></tr>');
+                $('#yday-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">£' + r.total_cost.toFixed(2) + '</td></tr>');
+            }
+            $('#yday-kwh-total').html(res.totals.kwh.toFixed(2));
+            $('#yday-cost-total').html("£" + res.totals.cost.toFixed(2));
+        }
+    });
+    loadUsagePie("ydayUsagePie", '<%= dates["yday"] %>', '<%= dates["yday"] %>');
+</script>

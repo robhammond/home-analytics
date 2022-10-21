@@ -27,11 +27,13 @@ app.use(function (req, res, next) {
         minus91d: DateTime.now().minus({days: 91}).toFormat("yyyy-MM-dd"),
         minus1m: DateTime.now().minus({months: 1}).toFormat("yyyy-MM-dd"),
         minus1mStart: DateTime.now().minus({months: 1}).set({day: 1}).toFormat("yyyy-MM-dd"),
-        minus3mStart: DateTime.now().minus({months: 3}).set({day: 1}).toFormat("yyyy-MM-dd"),
         minus1mEnd: DateTime.now().minus({months: 1}).set({day: DateTime.now().minus({months: 1}).daysInMonth}).toFormat("yyyy-MM-dd"),
+        minus3mStart: DateTime.now().minus({months: 3}).set({day: 1}).toFormat("yyyy-MM-dd"),
         thisMonthStart: DateTime.now().set({day: 1}).toFormat("yyyy-MM-dd"),
+        thisMonthName: DateTime.now().toFormat("MMMM yyyy"),
         minus1y: DateTime.now().minus({years:1}).toFormat("yyyy-MM-dd"),
         minus1yMonthStart: DateTime.now().minus({years:1}).set({day: 1}).toFormat("yyyy-MM-dd"),
+        minus1yMonthEnd: DateTime.now().minus({years:1}).set({day: DateTime.now().minus({years: 1}).daysInMonth}).toFormat("yyyy-MM-dd"),
     };
     next();
 });

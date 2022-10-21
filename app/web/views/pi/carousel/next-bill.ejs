@@ -1,0 +1,151 @@
+<div class="carousel-item" data-bs-interval="10000">
+    <div class="row">
+        <div class="col-md-7">
+            <h1>Predicted bill for <%= dates["thisMonthName"] %></h1>
+            <figure class="highcharts-figure" style="width:450px;height:350px;">
+                <div id="nextBill-container-estCost" class="chart-container"></div>
+            </figure>
+        </div>
+        <div class="col-md-5">
+            <div class="nextBillCostCompare text-center w-100 h-65 d-inline-block"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    async function loadEstBill(date1, date2) {
+        const result = $.ajax({
+            url: '/api/usage/sum',
+            type: "GET",
+            dataType: "json",
+            data: {
+                start: date1,
+                end: date2
+            },
+            success: async function(res) {
+                let kwh = Number(res["totals"]["kwh"].toFixed(0));
+                let cost = Number(res["totals"]["cost"].toFixed(0));
+                let estCost = Number(((cost / res["days"].length) * 31).toFixed(0));
+
+                let lastMonth = await loadEstSums('<%= dates["minus1mStart"] %>', '<%= dates["minus1mEnd"] %>');
+                let lastYear = await loadEstSums('<%= dates["minus1yMonthStart"] %>', '<%= dates["minus1yMonthEnd"] %>');
+
+                let lmDiff = estCost - lastMonth['totals']['cost'];
+                let lyDiff = estCost - lastYear['totals']['cost'];
+                $('.nextBillCostCompare').html(`
+                    <hr>
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">Last Month</span><br>
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastMonth['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lyDiff<0?"green":"red")}">${(lmDiff<0?"-":"+") + "&pound;" + lmDiff.toFixed(0)}</span></span><br>
+                    <hr>
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">Last Year</span><br>
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastYear['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lyDiff<0?"green":"red")}">${(lyDiff<0?"-":"+") + "&pound;" + lyDiff.toFixed(0)}</span></span>`);
+
+                let gaugeOptions = {
+                    chart: {
+                        type: 'solidgauge',
+                        backgroundColor: 'black',
+                    },
+                    title: null,
+                    pane: {
+                        center: ['50%', '85%'],
+                        size: '115%',
+                        startAngle: -90,
+                        endAngle: 90,
+                        background: {
+                            backgroundColor:
+                                Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
+                            innerRadius: '60%',
+                            outerRadius: '100%',
+                            shape: 'arc'
+                        }
+                    },
+                    tooltip: {
+                        enabled: false
+                    },
+                    yAxis: {
+                        stops: [
+                            [0.1, '#55BF3B'], // green
+                            [0.5, '#DDDF0D'], // yellow
+                            [0.7, '#DF5353'] // red
+                        ],
+                        lineWidth: 0,
+                        tickWidth: 0,
+                        minorTickInterval: null,
+                        tickAmount: 2,
+                        title: {
+                            y: -90
+                        },
+                        labels: {
+                            y: 16
+                        }
+                    },
+                    plotOptions: {
+                        solidgauge: {
+                            dataLabels: {
+                                y: 5,
+                                borderWidth: 0,
+                                useHTML: true
+                            }
+                        }
+                    },
+                };
+                let chartEstCost = Highcharts.chart('nextBill-container-estCost', Highcharts.merge(gaugeOptions, {
+                    yAxis: {
+                        min: 0,
+                        max: 400,
+                        title: {
+                            text: ''
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'cost',
+                        data: [estCost],
+                        dataLabels: {
+                            y: -110,
+                            format:
+                                '<div style="text-align:center">' +
+                                '<span style="font-size:70px">{y}</span><br/>' +
+                                '<span style="font-size:30px;opacity:0.8">GBP</span>' +
+                                '</div>',
+                            
+                        },
+                        tooltip: {
+                            valueSuffix: ' GBP',
+                        }
+                    }]
+                }));
+            },
+            error: function(xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+    }
+
+    async function loadEstSums(d1,d2) {
+        const result = await $.ajax({
+            url: '/api/usage/sum',
+            type: "GET",
+            dataType: "json",
+            data: {
+                start: d1,
+                end: d2
+            },
+            success: async function(res) {
+                let kwh = Number(res["totals"]["kwh"].toFixed(0));
+                let cost = Number(res["totals"]["cost"].toFixed(0));
+                return {kwh: kwh, cost: cost};
+            },
+            error: function(xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+        return result;
+    }
+loadEstBill("<%= dates['thisMonthStart'] %>", "<%= dates['yday'] %>");
+</script>

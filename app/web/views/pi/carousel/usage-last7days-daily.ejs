@@ -6,3 +6,121 @@
         </div>
     </div>
 </div>
+<script>
+    function loadUsage7Day() {
+        $.ajax({
+            url: '/api/usage/days',
+            type: "GET",
+            data: {
+                num: 7
+            },
+            dataType: "json",
+            success: function (res) {
+                let kwh = [];
+                let cost = [];
+                let xaxis = [];
+                for (let row of res.data) {
+                    kwh.push(row.total_kwh);
+                    cost.push(row.total_rate);
+                    xaxis.push(row.dow);
+                }
+
+                let usage7day = Highcharts.chart({
+                    chart: {
+                        renderTo: 'usage7day',
+                        zoomType: 'xy',
+                        backgroundColor: 'black',
+                        plotBorderWidth: 0,
+                        plotShadow: false,
+                    },
+                    credits: false,
+                    title: {
+                        text: "",
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.1,
+                            borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                color: 'white'
+                            }
+                        }
+                    },
+                    legend: {
+                        itemStyle: {
+                            color: 'white',
+                            fontWeight: 'normal',
+                            fontSize: '14px',
+                            align: 'right'
+                        }
+                    },
+                    xAxis: {
+                        title: {
+                            text: ""
+                        },
+                        labels: {
+                            style: {
+                                color: "white",
+                            }
+                        },
+                        categories: xaxis,
+                    },
+                    yAxis: [{
+                        title: {
+                            text: "kWh",
+                            style: {
+                                color: "white"
+                            }
+                        },
+                        labels: {
+                            style: {
+                                color: "white",
+                            }
+                        },
+                        gridLineWidth: 0,
+                    }, {
+                        title: {
+                            text: "Cost",
+                            style: {
+                                color: "white"
+                            }
+                        },
+                        labels: {
+                            format: '£{value}',
+                            style: {
+                                color: "white",
+                            }
+                        },
+                        opposite: true,
+                        gridLineWidth: 0,
+                    }],
+                    series: [
+                        {
+                            name: "kWh",
+                            type: "column",
+                            data: kwh,
+                            yAxis: 0
+                        },
+                        {
+                            name: "Cost",
+                            type: "column",
+                            lineWidth: 5,
+                            data: cost,
+                            yAxis: 1,
+                            dataLabels: {
+                                format: "£{y}"
+                            }
+                        }
+                    ]
+                });
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+    }
+
+    loadUsage7Day();
+</script>

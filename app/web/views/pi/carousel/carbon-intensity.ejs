@@ -9,3 +9,164 @@
         </div>
     </div>
 </div>
+<script>
+    function loadCarbonPie(renderDiv, start, end) {
+        let pieData = [];
+        $.ajax({
+            url: '/api/carbon/breakdown',
+            type: "GET",
+            data: {
+                start: start,
+                end: end,
+            },
+            dataType: "json",
+            success: function (res) {
+                for (const [key, value] of Object.entries(res.data)) {
+                    if (value > 0) {
+                        var name = key[0].toUpperCase() + key.substring(1);
+                        pieData.push({ name: name, y: value });
+                    }
+                }
+
+                let carbonPie = Highcharts.chart({
+                    chart: {
+                        renderTo: renderDiv,
+                        type: 'pie',
+                        backgroundColor: 'black',
+                        plotBorderWidth: 0,
+                        plotShadow: false,
+                    },
+                    credits: false,
+                    legend: {
+                        align: 'right',
+                        layout: 'vertical',
+                        verticalAlign: 'middle',
+                        itemStyle: {
+                            color: "white",
+                            fontSize: "22px",
+                            fontWeight: "normal",
+                        },
+                        itemMarginTop: 10,
+                        itemMarginBottom: 10,
+                    },
+                    title: {
+                        text: ''
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            showInLegend: false,
+                            // borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                // distance: -10,
+                                style: {
+                                    fontWeight: 'normal',
+                                    color: 'white',
+                                    fontSize: '22px'
+                                }
+                            },
+                        },
+                        series: {
+                            dataLabels: {
+                                enabled: true,
+                                color: 'white'
+                            }
+                        },
+                    },
+                    series: [{
+                        name: "Generation Type",
+                        data: pieData,
+                        innerSize: "50%",
+                    }]
+                });
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+    }
+
+    function loadCarbonLine(date1, date2, label_format) {
+        $.ajax({
+            url: '/api/carbon/main',
+            type: "GET",
+            data: {
+                date1: date1,
+                date2: date2,
+                label_format: label_format,
+            },
+            dataType: "json",
+            success: function (res) {
+                let forecast = [];
+                let xCats = [];
+                for (let row of res.data) {
+                    forecast.push(row.forecast);
+                    xCats.push(row.dt);
+                }
+
+                let carbonLine = Highcharts.chart({
+                    chart: {
+                        renderTo: 'carbonLine',
+                        type: 'column',
+                        backgroundColor: 'black',
+                        plotBorderWidth: 0,
+                        plotShadow: false,
+                    },
+                    credits: false,
+                    title: {
+                        text: "",
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.1,
+                            borderWidth: 0
+                        }
+                    },
+                    legend: {
+                        // itemStyle: {
+                        //     color: 'white',
+                        //     fontWeight: 'normal',
+                        //     fontSize: '14px',
+                        //     align: 'right'
+                        // },
+                        enabled: false
+                    },
+                    xAxis: {
+                        categories: xCats,
+                        labels: {
+                            style: {
+                                color: "white",
+                            }
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: "Forecast",
+                            style: {
+                                color: "white"
+                            }
+                        },
+                        labels: {
+                            style: {
+                                color: "white",
+                            }
+                        },
+                        gridLineWidth: 0,
+                    },
+                    series: [
+                        { name: "carbon", data: forecast }
+                    ],
+                });
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+    }
+    loadCarbonPie("carbonPie", "<%= dates['yday'] %>", "<%= dates['yday'] %>");
+    loadCarbonLine("<%= dates['yday'] %>", "<%= dates['yday'] %>", 'hm');
+</script>

@@ -26,3 +26,109 @@
         </div>
     </div>
 </div>
+<script>
+    $.ajax({
+        url: "/api/usage/by-rate",
+        data: {
+            start: '<%= dates["today"] %>',
+            end: '<%= dates["today"] %>'
+        },
+        method: "GET",
+        success: function (res) {
+            for (let r of res.rates) {
+                $('#today-kwh').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">' + r.total_kwh.toFixed(2) + '</td></tr>');
+                $('#today-cost').append('<tr class="pi-data-row">><td>'
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">£' + r.total_cost.toFixed(2) + '</td></tr>');
+            }
+            $('#today-kwh-total').html(res.totals.kwh.toFixed(2));
+            $('#today-cost-total').html("£" + res.totals.cost.toFixed(2));
+        }
+    });
+
+    function loadTodayUsage(date1, date2) {
+    $.ajax({
+        url: '/api/usage/hourly/compare',
+        type: "GET",
+        data : {
+            date1: date1,
+            date2: date2,
+        },
+        dataType: "json",
+        success: function(res) {
+            let d1 = [];
+            let d2 = [];
+            for (let row of res.data) {
+                d1.push(row.kwh_yd);
+                d2.push(row.kwh_td);
+            }
+
+            let todayUsage = Highcharts.chart({
+                chart: {
+                    renderTo: 'todayUsage',
+                    type: 'column',
+                    backgroundColor: 'black',
+                    plotBorderWidth: 0,
+                    plotShadow: false,
+                },
+                credits: false,
+                title: {
+                    text: "",
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.1,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    itemStyle: {
+                        color: 'white',
+                        fontWeight: 'normal',
+                        fontSize: '14px',
+                        align: 'right'
+                    }
+                },
+                xAxis : {
+                    title: {
+                        text: "Hour",
+                        style: {
+                            color: "white"
+                        }
+                    },
+                    labels: {
+                        style: {
+                            color: "white",
+                        }
+                    }
+                },
+                yAxis : {
+                    title: {
+                        text: "kWh",
+                        style: {
+                            color: "white"
+                        }
+                    },
+                    labels: {
+                        style: {
+                            color: "white",
+                        }
+                    },
+                    gridLineWidth: 0,
+                },
+                series: [
+                    {name: "Yesterday", data: d1},
+                    {name: "Today", data: d2}
+                ],
+            });
+        },
+        error: function(xhr) {
+            console.log(xhr);
+        },
+        cache: false
+    });
+}
+loadTodayUsage('<%= dates["yday"] %>', '<%= dates["today"] %>');
+</script>
