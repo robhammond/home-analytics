@@ -359,6 +359,15 @@ router.post("/edit-entity", async (req, res) => {
     res.redirect("/admin/list-entities");
 });
 
+router.get("/delete-entity", async (req, res) => {
+    const entity = await prisma.entity.delete({
+        where: {
+            id: Number(req.query.id),
+        },
+    });
+    res.redirect("back");
+});
+
 router.get("/delete-credentials", async (req, res) => {
     const creds = await prisma.credentials.delete({
         where: {
