@@ -32,107 +32,109 @@
     </div>
 </div>
 <script>
-    function loadCarCharging(unit, start, end) {
-    $.ajax({
-        url: '/api/usage/vehicles',
-        type: "GET",
-        data : {
-            start: start,
-            end: end,
-            unit: unit,
-        },
-        dataType: "json",
-        success: function(res) {
-            let kwh = [];
-            let cost = [];
-            let xCats = [];
-            for (let row of res.data) {
-                kwh.push(row.kwh);
-                cost.push(row.cost);
-                xCats.push(row.dt);
-            }
+    $(document).ready(function() {
+        function loadCarCharging(unit, start, end) {
+            $.ajax({
+                url: '/api/usage/vehicles',
+                type: "GET",
+                data : {
+                    start: start,
+                    end: end,
+                    unit: unit,
+                },
+                dataType: "json",
+                success: function(res) {
+                    let kwh = [];
+                    let cost = [];
+                    let xCats = [];
+                    for (let row of res.data) {
+                        kwh.push(row.kwh);
+                        cost.push(row.cost);
+                        xCats.push(row.dt);
+                    }
 
-            let carCharging = Highcharts.chart({
-                chart: {
-                    renderTo: 'carCharging',
-                    type: 'column',
-                    backgroundColor: 'black',
-                    plotBorderWidth: 0,
-                    plotShadow: false,
-                },
-                credits: false,
-                title: {
-                    text: "",
-                },
-                plotOptions: {
-                    column: {
-                        pointPadding: 0.1,
-                        borderWidth: 0,
-                        dataLabels: {
-                            enabled: true,
-                            color: 'white'
-                        }
-                    }
-                },
-                legend: {
-                    itemStyle: {
-                        color: 'white',
-                        fontWeight: 'normal',
-                        fontSize: '14px',
-                        align: 'right'
-                    }
-                },
-                xAxis : {
-                    labels: {
-                        style: {
-                            color: "white",
-                        }
-                    },
-                    categories: xCats
-                },
-                yAxis : {
-                    title: {
-                        text: "kWh",
-                        style: {
-                            color: "white"
-                        }
-                    },
-                    labels: {
-                        style: {
-                            color: "white",
-                        }
-                    },
-                    gridLineWidth: 0,
-                },
-                series: [
-                    {
-                        name: "kWh",
-                        data: kwh,
-                    },
-                    {
-                        name: "Cost",
-                        data: cost,
-                        dataLabels: {
-                            format: "£{y}"
+                    let carCharging = Highcharts.chart({
+                        chart: {
+                            renderTo: 'carCharging',
+                            type: 'column',
+                            backgroundColor: 'black',
+                            plotBorderWidth: 0,
+                            plotShadow: false,
                         },
-                    }
-                ]
-            });
-            const momCostChange = (((cost[cost.length -1] - cost[cost.length -2]) / cost[cost.length - 2]) * 100).toFixed(0);
-            const costHtml = `£${cost[cost.length -1].toFixed(0)} (${momCostChange}%)`;
-            const momkWhChange = (((kwh[kwh.length -1] - kwh[kwh.length -2]) / kwh[kwh.length - 2]) * 100).toFixed(0);
-            const kWhHtml = `${kwh[kwh.length -1].toFixed(0)} (${momkWhChange}%)`;
-            const milesHtml = `${(kwh[kwh.length -1] * 4).toFixed(0)}`;
+                        credits: false,
+                        title: {
+                            text: "",
+                        },
+                        plotOptions: {
+                            column: {
+                                pointPadding: 0.1,
+                                borderWidth: 0,
+                                dataLabels: {
+                                    enabled: true,
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white',
+                                fontWeight: 'normal',
+                                fontSize: '14px',
+                                align: 'right'
+                            }
+                        },
+                        xAxis : {
+                            labels: {
+                                style: {
+                                    color: "white",
+                                }
+                            },
+                            categories: xCats
+                        },
+                        yAxis : {
+                            title: {
+                                text: "kWh",
+                                style: {
+                                    color: "white"
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: "white",
+                                }
+                            },
+                            gridLineWidth: 0,
+                        },
+                        series: [
+                            {
+                                name: "kWh",
+                                data: kwh,
+                            },
+                            {
+                                name: "Cost",
+                                data: cost,
+                                dataLabels: {
+                                    format: "£{y}"
+                                },
+                            }
+                        ]
+                    });
+                    const momCostChange = (((cost[cost.length -1] - cost[cost.length -2]) / cost[cost.length - 2]) * 100).toFixed(0);
+                    const costHtml = `£${cost[cost.length -1].toFixed(0)} (${momCostChange}%)`;
+                    const momkWhChange = (((kwh[kwh.length -1] - kwh[kwh.length -2]) / kwh[kwh.length - 2]) * 100).toFixed(0);
+                    const kWhHtml = `${kwh[kwh.length -1].toFixed(0)} (${momkWhChange}%)`;
+                    const milesHtml = `${(kwh[kwh.length -1] * 4).toFixed(0)}`;
 
-            $('#car-l3m-cost-total').append(costHtml);
-            $('#car-l3m-kwh-total').append(kWhHtml);
-            $('#car-l3m-miles-total').append(milesHtml);
-        },
-        error: function(xhr) {
-            console.log(xhr);
-        },
-        cache: false
+                    $('#car-l3m-cost-total').append(costHtml);
+                    $('#car-l3m-kwh-total').append(kWhHtml);
+                    $('#car-l3m-miles-total').append(milesHtml);
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                },
+                cache: false
+            });
+        }
+        loadCarCharging("month", '<%= dates["minus3mStart"] %>', '<%= dates["today"] %>');
     });
-}
-loadCarCharging("month", '<%= dates["minus3mStart"] %>', '<%= dates["today"] %>');
 </script>

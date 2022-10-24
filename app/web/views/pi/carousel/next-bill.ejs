@@ -147,5 +147,7 @@
         });
         return result;
     }
-loadEstBill("<%= dates['thisMonthStart'] %>", "<%= dates['yday'] %>");
+    $(document).ready(function() {
+        loadEstBill("<%= dates['thisMonthStart'] %>", "<%= dates['yday'] %>");
+    });
 </script>

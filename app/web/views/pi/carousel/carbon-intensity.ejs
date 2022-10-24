@@ -167,6 +167,8 @@
             cache: false
         });
     }
-    loadCarbonPie("carbonPie", "<%= dates['yday'] %>", "<%= dates['yday'] %>");
-    loadCarbonLine("<%= dates['yday'] %>", "<%= dates['yday'] %>", 'hm');
+    $(document).ready(function() {
+        loadCarbonPie("carbonPie", "<%= dates['yday'] %>", "<%= dates['yday'] %>");
+        loadCarbonLine("<%= dates['yday'] %>", "<%= dates['yday'] %>", 'hm');
+    });
 </script>

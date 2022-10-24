@@ -146,5 +146,7 @@
         });
         return result;
     }
-loadMtdUsage("<%= dates['thisMonthStart'] %>", "<%= dates['today'] %>");
+    $(document).ready(function() {
+        loadMtdUsage("<%= dates['thisMonthStart'] %>", "<%= dates['today'] %>");
+    });
 </script>
