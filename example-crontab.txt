@@ -1,6 +1,7 @@
-# run these periodically:
+# Adjust/uncomment as required:
 
-0 6-23 * * * cd /var/www/homeanalytics/app/tasks; python3 fetch-n3rgy.py >> /var/log/cron.log 2>&1
+# 0 6-23 * * * cd /var/www/homeanalytics/app/tasks; python3 fetch-n3rgy.py >> /var/log/cron.log 2>&1
+# 0 6 * * * cd /var/www/homeanalytics/app/tasks; python3 octopus-energy.py >> /var/log/cron.log 2>&1
 
 # Enable depending on usage
 # 30 6-23 * * * cd /var/www/homeanalytics/app/tasks; python3 renault.py >> /var/log/cron.log 2>&1

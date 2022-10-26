@@ -26,7 +26,7 @@
             success: async function(res) {
                 let kwh = Number(res["totals"]["kwh"].toFixed(0));
                 let cost = Number(res["totals"]["cost"].toFixed(0));
-                let estCost = Number(((cost / res["days"].length) * 31).toFixed(0));
+                let estCost = Number(((cost / res["days"].length) * <%= dates["thisMonthNumDays"] %>).toFixed(0));
 
                 let lastMonth = await loadEstSums('<%= dates["minus1mStart"] %>', '<%= dates["minus1mEnd"] %>');
                 let lastYear = await loadEstSums('<%= dates["minus1yMonthStart"] %>', '<%= dates["minus1yMonthEnd"] %>');
@@ -148,6 +148,6 @@
         return result;
     }
     $(document).ready(function() {
-        loadEstBill("<%= dates['thisMonthStart'] %>", "<%= dates['yday'] %>");
+        loadEstBill("<%= dates['minus31d'] %>", "<%= dates['yday'] %>");
     });
 </script>

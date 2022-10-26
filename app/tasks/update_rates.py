@@ -15,7 +15,7 @@ def refresh_db():
 
     sql = """
         SELECT * 
-        FROM electricity 
+        FROM Electricity 
         WHERE 
             rateId IS NULL
     """
@@ -23,7 +23,10 @@ def refresh_db():
     usage = c.execute(sql).fetchall()
 
     for el in usage:
-        dt = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S")
+        try:
+            dt = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            dt = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S%z")
         utc = pytz.timezone("UTC")
         dt = utc.localize(dt)
 
@@ -87,17 +90,14 @@ def refresh_db():
 
                     # fake the start and end of this rate window
                     dt_start = dt_start.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
-
                     dt_end = dt_end.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
 
                     dt_end = dt_end + timedelta(days=1)
                     dt_end = dt_end - timedelta(seconds=1)
 
-                    # print(f"Start: {dt_start}    End: {dt_end}")
                     time_range = DateTimeRange(dt_start, dt_end)
 
                     if dt in time_range:
-                        # print(f"if {el_time} in time slots - set rate {rate['id']} ({rate['rate_type']})")
 
                         sql = f"""
                             UPDATE

@@ -31,6 +31,7 @@ app.use(function (req, res, next) {
         minus3mStart: DateTime.now().minus({months: 3}).set({day: 1}).toFormat("yyyy-MM-dd"),
         thisMonthStart: DateTime.now().set({day: 1}).toFormat("yyyy-MM-dd"),
         thisMonthName: DateTime.now().toFormat("MMMM yyyy"),
+        thisMonthNumDays: new Date(DateTime.now().toFormat("yyyy"), DateTime.now().toFormat("M"), 0).getDate(),
         minus1y: DateTime.now().minus({years:1}).toFormat("yyyy-MM-dd"),
         minus1yMonthStart: DateTime.now().minus({years:1}).set({day: 1}).toFormat("yyyy-MM-dd"),
         minus1yMonthEnd: DateTime.now().minus({years:1}).set({day: DateTime.now().minus({years: 1}).daysInMonth}).toFormat("yyyy-MM-dd"),

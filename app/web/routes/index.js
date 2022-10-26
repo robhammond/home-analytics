@@ -6,26 +6,45 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
     try {
-        let setupStatus = { tariff: false, n3rgy: false, vehicle: false };
+        let setupStatus = { tariff: false, consumption: false, vehicle: false };
         const supplierSetup = await prisma.supplier.findFirst();
         const ratesSetup = await prisma.rates.findFirst();
-        const n3rgySetup = await prisma.$queryRaw`
-            SELECT 
-                value 
+        const dataSourceSetup = await prisma.$queryRaw`
+            SELECT
+                LOWER(entity_name) AS entity_name,
+                entity_type,
+                key,
+                value
             FROM Credentials c
             JOIN Entity e ON
                 e.id = c.entityId
-            WHERE key = 'auth_header' 
-                AND e.entity_name = 'n3rgy'
+            WHERE 
+                entity_type = "Consumption Data Source"
+                OR
+                entity_name IN ("n3rgy", "Octopus Energy")
         `;
-        if (n3rgySetup[0]["value"] != "12345") {
-            setupStatus["n3rgy"] = true;
+        let octopus = true;
+        let octopusCreds = [];
+        let n3rgy = true;
+        for (let row of dataSourceSetup) {
+            if (row["entity_name"] == 'n3rgy' && row["value"] == "12345") {
+                n3rgy = false;
+            }
+            if (row["entity_name"] == 'octopus energy') {
+                octopusCreds.push(row["value"]);
+            }
+        }
+        if (octopusCreds.includes("12345")) {
+            octopus = false;
+        }
+        if (n3rgy || octopus) {
+            setupStatus["consumption"] = true;
         }
         if (supplierSetup && ratesSetup) {
             setupStatus["tariff"] = true;
         }
-        if (!setupStatus["tariff"] || !setupStatus["n3rgy"]) {
-            res.redirect(`/onboarding?tariff=${setupStatus["tariff"]}&n3rgy=${setupStatus["n3rgy"]}`);
+        if (!setupStatus["tariff"] || !setupStatus["consumption"]) {
+            res.redirect(`/onboarding?tariff=${setupStatus["tariff"]}&consumption=${setupStatus["consumption"]}`);
         }
     } catch (err) {
         console.log(err);

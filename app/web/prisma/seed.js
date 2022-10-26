@@ -5,7 +5,8 @@ async function main() {
     const n3rgy = await prisma.entity.create({
         data: {
             entity_name: "n3rgy",
-            entity_type: "API",
+            entity_type: "Consumption Data Source",
+            entity_backend: "api",
         },
     });
     
@@ -16,8 +17,22 @@ async function main() {
             value: "12345",
         },
     });
-
-    // console.log({ n3rgy, n3rgyCred });
+    
+    const octopus = await prisma.entity.create({
+        data: {
+            entity_name: "Octopus Energy",
+            entity_type: "Consumption Data Source",
+            entity_backend: "api",
+        },
+    });
+    
+    const octopusCreds = await prisma.credentials.createMany({
+        data: [
+            { entityId: octopus.id, key: "mpan", value: "12345" },
+            { entityId: octopus.id, key: "serial_number", value: "12345" },
+            { entityId: octopus.id, key: "api_key", value: "12345" },
+        ],
+    });
 }
 
 main()

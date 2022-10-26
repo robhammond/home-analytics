@@ -18,12 +18,17 @@
     </div>
     <hr>
 <% } %>
-<% if (params["n3rgy"] == 'false') { %>
+<% if (params["consumption"] == 'false') { %>
     <div class="row">
         <div class="col-md-6">
             <h4>Set usage data source</h4>
-            <p><b><a href="/admin/edit-credentials?id=1">Update n3rgy credentials</a></b></p>
+            <p>You can choose one of two options:</p>
+            <h5>Option 1: n3rgy</h5>
+            <p>n3rgy is slightly harder to set up, but does give you in-day energy usage statistics with a delay of only a few hours.</p>
             <p>Follow the instructions to <a href="https://github.com/Electric-Sheep-Energy/home-analytics#setting-up-n3rgy">find your n3rgy API key</a>, then update the <a href="/admin/view-entity?id=1">dummy credential here</a>.</p>
+            <h5>Option 2: Octopus Energy</h5>
+            <p>Octopus is easier to set up but only offers data up to midnight the previous day.</p>
+            <p>You will need your MPAN, Serial Number and API key, which can be found <a href="https://octopus.energy/login/?next=/dashboard/developer/">in your Octopus dashboard</a>, then update the <a href="/admin/view-entity?id=2">dummy credentials here</a>.</p>
         </div>
         <div class="col-md-6">
             <img src="/img/n3rgy-setup.png">
