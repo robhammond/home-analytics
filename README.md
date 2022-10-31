@@ -12,7 +12,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/electric-sheep-energy/home-analytics">
-    <img src="assets/logo.png" alt="homeAnalytics">
+    <img src="assets/logo-small.png" alt="homeAnalytics">
   </a>
 
   <p align="center">
@@ -31,6 +31,7 @@
     <li><a href="#-getting-started">Getting Started</a>
         <ul>
             <li><a href="#setting-up-n3rgy">Setting up n3rgy</a></li>
+            <li><a href="#setting-up-octopus">Setting up Octopus Energy</a></li>
         </ul>
     </li>
     <li><a href="#-raspbery-pi-installation">Raspberry Pi Installation</a></li>
@@ -58,7 +59,7 @@
 
 ![product-screenshot]
 
-HomeAnalytics aims to open up the data behind your home energy usage and make it more usable, useful, and transparent.
+HomeAnalytics aims to open up the data behind your home energy usage and make it more usable, useful, and transparent. By using as many existing APIs and freely available data, homeAnalytics is a low/no-cost way to track your electricity usage.
 
 With homeAnalytics, you can track your energy usage over time and spot trends that your standard smart meter doesn't provide.
 
@@ -70,10 +71,10 @@ Using a home server such as a Raspberry Pi, you can easily <a href="https://medi
 ## 🎯 Key Features
 
 - View and analyse your energy usage over time
-- Almost real-time data, at half-hourly granularity
+- In-day electricty usage and cost data (when used with n3rgy), at a half-hourly granularity
 - View accurate energy cost data, with support for off-peak tariffs such as Octopus Go
 - View and analyze your EV battery status, range and mileage over time
-- Usable as a Raspberry Pi powered Home Energy Monitor display
+- Usable as a Raspberry Pi powered energy monitor to replace or supplement your In-Home Display
 
 
 <!-- GETTING STARTED -->
@@ -101,6 +102,12 @@ You then need to follow the steps below for setting up n3rgy API account, and en
 - Once you're logged in, click on the 'Download My Data' link, open up Chrome Dev Tools, click the 'Download' link, and find the value of the **authorization** request header as shown below:
 
 ![n3rgy-screenshot]
+
+
+### Setting up Octopus Energy
+Octopus is easier to set up but only offers data up to midnight the previous day.
+
+You will need your **MPAN**, **Serial Number** and **API key**, which can be found in your [Octopus dashboard](https://octopus.energy/login/?next=/dashboard/developer/), then update the dummy credentials you are provided with in the web UI on the first load of homeAnalytics.
 
 
 ## 🥧 Raspbery Pi Installation
