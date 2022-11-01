@@ -5,6 +5,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
+    const dates = res.locals.dateShortcuts;
     const cars = await prisma.$queryRaw`
         SELECT
             cs.carId,
@@ -28,16 +29,19 @@ router.get("/", async (req, res) => {
         JOIN Car c ON
             cs.carId = c.id
         WHERE
-        cs.carId = max_date.carId 
-	    AND cs.datetime = max_date.datetime
+            cs.carId = max_date.carId 
+            AND cs.datetime = max_date.datetime
     `;
-    carEfficiency = [];
+    let carEfficiency = [];
     for (let car of cars) {
         let car_id = car["carId"];
         let efficiency = await prisma.$queryRaw`
             WITH batt AS (
                 SELECT
                     strftime("%Y-%m-%d", cs.datetime, 'localtime') AS datetime,
+                    CAST(strftime("%Y", cs.datetime, 'localtime') AS INT) AS jsYear,
+                    CAST(strftime("%m", cs.datetime, 'localtime') AS INT) - 1 AS jsMonth,
+                    CAST(strftime("%d", cs.datetime, 'localtime') AS INT) AS jsDay,
                     c.id AS car_id,
                     c.batterySize,
                     cs.batteryPercent,
@@ -51,24 +55,31 @@ router.get("/", async (req, res) => {
                     c.id = cs.carId
                 WHERE
                     c.id = ${car_id}
-                GROUP BY 1,2,3,4
+                    AND DATE(cs.datetime, 'localtime') BETWEEN ${dates["minus1mStart"]} AND ${dates["minus1mEnd"]}
+                GROUP BY 1,2,3,4,5,6,7
                 ORDER BY cs.datetime DESC
             )
-            SELECT b.datetime,
+            SELECT 
+                b.datetime,
+                b.jsYear,
+                b.jsMonth,
+                b.jsDay,
                 c.make || ' ' || c.model AS carName,
                 SUM(b.distance_travelled) AS distance_travelled,
                 b.batterySize * (SUM(battery_percent_used)/100) AS kwh_used,
                 ROUND(SUM(b.distance_travelled) / (b.batterySize * (SUM(battery_percent_used)/100)), 2) AS mpkwh
             FROM batt b
-            LEFT JOIN Car c ON c.id = b.car_id
-            WHERE battery_percent_used > 0
-            GROUP BY 1,2
+            LEFT JOIN Car c ON 
+                c.id = b.car_id
+            WHERE
+                battery_percent_used > 0
+            GROUP BY 1,2,3,4,5
             ORDER BY 1
         `;
         carEfficiency.push(efficiency);
     }
 
-    res.render("garage", { page_title: "Garage", cars: cars, carEfficiency: carEfficiency });
+    res.render("garage", { page_title: "Garage", cars: cars, carEfficiency: carEfficiency, dates: dates, });
 });
 
 router.get("/car", async (req, res) => {

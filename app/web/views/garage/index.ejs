@@ -20,43 +20,68 @@
     <hr>
 <div class="row">
     <div class="col-md-12">
-        <h3>Efficiency Stats</h3>
+        <h3>Efficiency Stats - Last Month</h3>
         <div class="row">
             <div class="col-md-4"><div id="sumMiles"></div></div>
             <div class="col-md-4"><div id="avgEffic"></div></div>
+            <div class="col-md-4"><div id="kwhUsed"></div></div>
+            <div class="col-md-4"><div id="kwhCharged"></div></div>
+            <div class="col-md-4"><div id="kwhCost"></div></div>
+            <div class="col-md-4"><div id="costPerMile"></div></div>
         </div>
         <p>The chart below shows the distance travelled and efficiency gained by the cars in your garage</p>
         <div id="carEfficiency"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-sm table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Miles Driven</th>
+                            <th>kWh Used</th>
+                            <th>Miles / kWh</th>
+                        </tr>
+                    </thead>
+                    <tbody id="carPerformance"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script>
+$(document).ready(function() {
+    <% let sumMiles = 0;
+        let sumKwh = 0;
+        let carSplit = {};
+    %>
     function loadChart() {
         let dataSeries = [];
-        <% let sumMiles = 0;
-        let avgEffic = 0; %>
-        let xAxisCats = [
-            <% for ( let dt of carEfficiency[0]) { %>'<%= dt["datetime"] %>',<% } %>
-        ];
-
+        
         dataSeries.push(
-            <% for ( let car of carEfficiency) { %>
+            <% for ( let car of carEfficiency) { 
+                let carMiles = 0;
+            %>
                 {
                     name: '<%= car[0]["carName"] %>',
                     type: 'column',
                     stacking: "normal",
-                    data: [ <% for (let dt of car) { sumMiles += dt["distance_travelled"]; %><%= dt["distance_travelled"] %>,<% } %> ]
+                    data: [ <% for (let dt of car) { sumMiles += dt["distance_travelled"]; carMiles += dt["distance_travelled"]; %>[Date.UTC(<%= dt["jsYear"] %>, <%= dt["jsMonth"] %>, <%= dt["jsDay"] %>), <%= dt["distance_travelled"] %>],<% } %> ]
                 },
-            <% } %>
+                <% carSplit[car[0]["carName"]] = {"miles": carMiles};
+            } %>
         );
         dataSeries.push(
-            <% for ( let car of carEfficiency) { %>
+            <% for ( let car of carEfficiency) {
+                let carKwh = 0;
+            %>
                 {
                     name: '<%= car[0]["carName"] %>',
                     type: 'spline',
                     yAxis:1,
-                    data: [ <% for (let dt of car) { avgEffic += dt["mpkwh"]; %><%= dt["mpkwh"] %>,<% } %> ]
+                    data: [ <% for (let dt of car) { sumKwh += dt["kwh_used"]; carKwh += dt["kwh_used"] %>[Date.UTC(<%= dt["jsYear"] %>, <%= dt["jsMonth"] %>, <%= dt["jsDay"] %>), <%= dt["mpkwh"] %>],<% } %> ]
                 },
-            <% } %>
+                <% carSplit[car[0]["carName"]]["kwh"] = carKwh;
+            } %>
         );
 
         let usageMain = Highcharts.chart({
@@ -80,7 +105,8 @@
                 },
                 labels: {
                 },
-                categories: xAxisCats,
+                type: 'datetime',
+                ordinal: false,
             },
             yAxis : [{
                 title: {
@@ -102,14 +128,75 @@
             series: dataSeries
         });
         let sumMiles = <%= sumMiles %>;
-        let avgEffic = <%= avgEffic %>;
-        $('#sumMiles').html(`<div class="alert alert-dark" role="alert">
-            ${sumMiles} miles driven
+        let sumKwh = <%= sumKwh %>;
+        let avgMpKwh = sumMiles / sumKwh;
+        $('#sumMiles').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+            <div class="card-header">Miles Driven</div>
+            <div class="card-body">
+                <h5 class="card-title">${sumMiles}</h5>
+            </div>
         </div>`);
-        $('#avgEffic').html(`<div class="alert alert-dark" role="alert">
-            ${ (avgEffic / (xAxisCats.length * <%= carEfficiency.length %>)).toFixed(2) } avg miles / kWh
+        $('#avgEffic').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+            <div class="card-header">Avg miles / kWh</div>
+            <div class="card-body">
+                <h5 class="card-title">${ avgMpKwh.toFixed(2) }</h5>
+            </div>
         </div>`);
+        $('#kwhUsed').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+            <div class="card-header">kWh Used</div>
+            <div class="card-body">
+                <h5 class="card-title">${ sumKwh.toFixed(2) }</h5>
+            </div>
+        </div>`);
+        <% for (let car in carSplit) { %>
+            $('#carPerformance').append(`<tr>
+                <th><%= car %></th>
+                <td><%= carSplit[car]["miles"] %> miles</td>
+                <td><%= carSplit[car]["kwh"].toFixed(2) %></td>
+                <td><%= (carSplit[car]["miles"] / carSplit[car]["kwh"]).toFixed(2) %></td>
+                </tr>`);
+        <% } %>
+        chargeStats(sumKwh, sumMiles, avgMpKwh);
     }
+    
+    function chargeStats(sumKwh, sumMiles, avgMpKwh) {
+        let chargingCost = 0;
+        let chargingKwh = 0;
+        $.ajax({
+            url: '/api/usage/vehicles',
+            type: "GET",
+            data : {
+                start: '<%= dates["minus1mStart"] %>',
+                end: '<%= dates["minus1mEnd"] %>',
+                unit: 'month',
+            },
+            dataType: "json",
+            success: function(res) {
+                chargingCost = res["totals"]["cost"];
+                chargingKwh = res["totals"]["kwh"];
+                $('#kwhCharged').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+                    <div class="card-header">kWh Charged</div>
+                    <div class="card-body">
+                        <h5 class="card-title">${ chargingKwh }</h5>
+                    </div>
+                </div>`);
+                $('#kwhCost').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Total Cost</div>
+                    <div class="card-body">
+                        <h5 class="card-title">£${ chargingCost }</h5>
+                    </div>
+                </div>`);
+                $('#costPerMile').html(`<div class="card border-info mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Cost per Mile</div>
+                    <div class="card-body">
+                        <h5 class="card-title">£${ ((sumKwh * (chargingCost / chargingKwh) ) / sumMiles).toFixed(2) }</h5>
+                    </div>
+                </div>`);
+            }
+        });
+    }
+
     loadChart();
+});
 </script>
 <% } %>
