@@ -47,9 +47,3 @@
     vertical-align: middle;
 }
 
-#totalkWh, #totalCost {
-    font-size: 2.5em;
-    background-color: gainsboro;
-    margin:5px;
-    vertical-align: middle;
-}
