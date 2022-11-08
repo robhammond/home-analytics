@@ -1,0 +1,64 @@
+<h3>Heating</h3>
+<div class="row">
+    <div class="col-md-3 offset-md-9">
+        <label for="reportrange" class="sr-only">Date</label>
+        <div id="reportrange" class="pull-right" style="cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
+            <i class="fas fa-calendar"></i>&nbsp;
+            <span></span> <b class="caret"></b>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col-md-12">
+        <div id="heatingChart"></div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        let start = moment("<%= start %>");
+        let end = moment("<%= end %>");
+        $(function () {
+            $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                "showDropdowns": true,
+                "locale": {
+                    "format": "DD/MM/YYYY",
+                    "separator": " - ",
+                    "applyLabel": "Apply",
+                    "cancelLabel": "Cancel",
+                    "fromLabel": "From",
+                    "toLabel": "To",
+                    // "customRangeLabel": "Custom",
+                },
+                "alwaysShowCalendars": true,
+                "opens": "left",
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 12 Months': [moment().subtract(12, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                }
+            }, function (start, end, label) {
+                $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+            });
+            $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
+                window.location = "?start=" + picker.startDate.format("YYYY-MM-DD")
+                    + "&end=" + picker.endDate.format("YYYY-MM-DD")
+                    + "&unit=<%= unit %>"
+                    + "&filter=<%= filter %>";
+            });
+        });
+
+        loadHeatingChart("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
+    });
+    
+</script>

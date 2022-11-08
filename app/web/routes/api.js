@@ -293,7 +293,7 @@ router.get("/usage/hourly/compare", async (req, res) => {
     res.json({ data: hourlyUsage });
 });
 
-router.get("/usage/central-heating", async (req, res) => {
+router.get("/usage/heating", async (req, res) => {
     let start = req.query.start;
     let end = req.query.end;
     let unit = req.query.unit || "day";
@@ -318,7 +318,11 @@ router.get("/usage/central-heating", async (req, res) => {
             SELECT
                 strftime('%Y-%m-%d', h.datetime, 'localtime') AS dt,
                 ROUND(SUM(hw.kwh_consumed),2) AS hot_water_kwh,
-                ROUND(SUM(h.kwh_consumed),2) AS heating_kwh
+                ROUND(SUM(h.kwh_consumed),2) AS heating_kwh,
+                ROUND(SUM(hw.kwh_produced),2) AS hot_water_kwh_produced,
+                ROUND(SUM(h.kwh_produced),2) AS heating_kwh_produced,
+                ROUND(SUM(hw.hot_water_cop),2) AS hot_water_cop,
+                ROUND(SUM(h.heating_cop),2) AS heating_cop
             FROM HotWater hw
             JOIN Heating h ON 
                 h.datetime = hw.datetime
@@ -333,7 +337,11 @@ router.get("/usage/central-heating", async (req, res) => {
         SELECT
             strftime('%Y-%m', h.datetime, 'localtime') AS dt,
             ROUND(SUM(hw.kwh_consumed),2) AS hot_water_kwh,
-            ROUND(SUM(h.kwh_consumed),2) AS heating_kwh
+            ROUND(SUM(h.kwh_consumed),2) AS heating_kwh,
+            ROUND(SUM(hw.kwh_produced),2) AS hot_water_kwh_produced,
+            ROUND(SUM(h.kwh_produced),2) AS heating_kwh_produced,
+            ROUND(SUM(hw.hot_water_cop),2) AS hot_water_cop,
+            ROUND(SUM(h.heating_cop),2) AS heating_cop
         FROM HotWater hw
         JOIN Heating h ON 
             h.datetime = hw.datetime
