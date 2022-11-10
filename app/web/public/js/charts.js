@@ -59,7 +59,7 @@ function loadUsagePie(startDate, endDate) {
             for (let row of res.data) {
                 row_data.push({name: row.name, y: row.kwh});
             }
-            usagePie.addSeries({name: "Usage Type", data: row_data, innerSize: "50%"});
+            usagePie.addSeries({name: "kWh", data: row_data, innerSize: "50%"});
         },
         error: function(xhr) {
             console.log(xhr);

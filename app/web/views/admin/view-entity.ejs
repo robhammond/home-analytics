@@ -15,6 +15,14 @@
                     <%= entity.entity_type %>
                 </td>
             </tr>
+            <% if (entity.entity_url) { %>
+            <tr>
+                <th>Entity URL</th>
+                <td>
+                    <a href="<%= entity.entity_url %>" target="_blank"><%= entity.entity_url %></a>
+                </td>
+            </tr>
+            <% } %>
         </table>
     </div>
 </div>

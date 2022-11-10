@@ -36,10 +36,10 @@
                 $('.nextBillCostCompare').html(`
                     <hr>
                     <span style="font-size:30px;color:#efefef;" class="pb-0">Last Month</span><br>
-                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastMonth['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lyDiff<0?"green":"red")}">${(lmDiff<0?"-":"+") + "&pound;" + lmDiff.toFixed(0)}</span></span><br>
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastMonth['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lmDiff<0?"green":"red")}">${(lmDiff<0?"-":"+") + "&pound;" + lmDiff.toFixed(0)}</span></span><br>
                     <hr>
                     <span style="font-size:30px;color:#efefef;" class="pb-0">Last Year</span><br>
-                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastYear['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lyDiff<0?"green":"red")}">${(lyDiff<0?"-":"+") + "&pound;" + lyDiff.toFixed(0)}</span></span>`);
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">£${lastYear['totals']['cost'].toFixed(0)} &nbsp;<span style="color:${(lyDiff<0?"green":"red")}">${(lyDiff<0?"-":"+") + "&pound;" + Math.abs(lyDiff.toFixed(0))}</span></span>`);
 
                 let gaugeOptions = {
                     chart: {
