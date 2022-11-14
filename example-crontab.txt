@@ -10,6 +10,6 @@
 # 0 5 * * * cd /var/www/homeanalytics/app/tasks; python3 carbon_intensity.py >> /var/log/cron.log 2>&1
 
 # Turn off display at night
-0 23 * * * vcgencmd display_power 0
+0 23 * * * DISPLAY=:0 xrandr --output DSI-1 --off
 # Turn on display
-0 6 * * * vcgencmd display_power 1
+0 6 * * * DISPLAY=:0 xrandr --output DSI-1 --auto
