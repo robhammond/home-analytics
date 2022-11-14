@@ -58,47 +58,48 @@ model HotWater {
 }
 
 model Temperature {
-    id                  Int      @id @default(autoincrement())
-    datetime            DateTime
+    id                 Int      @id @default(autoincrement())
+    datetime           DateTime
+    setTemperature     Float?
     outsideTemperature Float?
     insideTemperature  Float?
     tankTemperature    Float?
-    granularity         String   @default("daily")
+    unit               String   @default("hour")
 
-    @@unique([datetime, granularity], name: "sqlite_autoindex_temperature")
+    @@unique([datetime, unit], name: "sqlite_autoindex_temperature")
 }
 
 model Car {
-    id                  Int         @id @default(autoincrement())
-    make                String
-    model               String
-    variant             String?
-    batterySize         Int?
+    id                 Int         @id @default(autoincrement())
+    make               String
+    model              String
+    variant            String?
+    batterySize        Int?
     registrationNumber String?
-    vin                 String?
+    vin                String?
     purchasePrice      Float?
     purchaseOdometer   Int?
     salePrice          Float?
     motDate            String?
     serviceDate        String?
     taxDate            String?
-    imageUrl            String?
-    dateAcquired        String?
-    dateSold            String?
-    carUsage            CarUsage[]
-    carStatus           CarStatus[]
-    insurance           Insurance[]
+    imageUrl           String?
+    dateAcquired       String?
+    dateSold           String?
+    carUsage           CarUsage[]
+    carStatus          CarStatus[]
+    insurance          Insurance[]
 }
 
 model CarUsage {
-    id              Int      @id @default(autoincrement())
-    car             Car      @relation(fields: [carId], references: [id])
-    carId           Int
-    datetime        DateTime
-    granularity     String
+    id                Int      @id @default(autoincrement())
+    car               Car      @relation(fields: [carId], references: [id])
+    carId             Int
+    datetime          DateTime
+    granularity       String
     distanceTravelled Float?
-    distanceUnit    Float?
-    kwhUsed        Float?
+    distanceUnit      Float?
+    kwhUsed           Float?
 }
 
 model CarStatus {
@@ -123,16 +124,16 @@ model CarStatus {
 }
 
 model Insurance {
-    id          Int     @id @default(autoincrement())
-    provider    String
-    type        String
+    id         Int     @id @default(autoincrement())
+    provider   String
+    type       String
     dateStart  String
     dateEnd    String
     annualCost Float
-    entity      Entity? @relation(fields: [entityId], references: [id])
-    entityId    Int?
-    car         Car?    @relation(fields: [carId], references: [id])
-    carId       Int?
+    entity     Entity? @relation(fields: [entityId], references: [id])
+    entityId   Int?
+    car        Car?    @relation(fields: [carId], references: [id])
+    carId      Int?
 }
 
 model Entity {

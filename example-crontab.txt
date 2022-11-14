@@ -7,6 +7,7 @@
 # 30 6-23 * * * cd /var/www/homeanalytics/app/tasks; python3 renault.py >> /var/log/cron.log 2>&1
 # 0 6 * * * cd /var/www/homeanalytics/app/tasks; python3 podpoint.py >> /var/log/cron.log 2>&1
 # 0 5 * * * cd /var/www/homeanalytics/app/tasks; python3 melcloud.py >> /var/log/cron.log 2>&1
+# 0 5 * * * cd /var/www/homeanalytics/app/tasks; python3 melcloud-temperatures.py >> /var/log/cron.log 2>&1
 # 0 5 * * * cd /var/www/homeanalytics/app/tasks; python3 carbon_intensity.py >> /var/log/cron.log 2>&1
 
 # Turn off display at night
