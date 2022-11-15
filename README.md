@@ -347,9 +347,11 @@ Then enable the `/app/tasks/carbon_intensity.py` script in the crontab.
 ## 🛣 Roadmap
 
 - [ ] Add install script for Raspberry Pi
+- [ ] Make onboarding for n3rgy easier
 - [ ] Add authentication to access admin area
 - [ ] Add web UI management of cron tasks
 - [ ] Add Pi display screen management
+- [ ] Add local weather forecast to Pi kiosk screen
 - [ ] Add instructions/functionality for [mDNS function](https://developer.ridgerun.com/wiki/index.php/How_to_use_mDNS_to_access_a_device_without_knowing_the_IP_address)
 - [ ] Add guide to contributing new integrations
 - [ ] Add entity usage estimates for entities that use a highly consistent amount of energy, that may already have been measured. For example a router is unlikely to vary much in its energy consumption.
