@@ -229,6 +229,8 @@ Then <a href="http://localhost:3000/admin/list-entities">add an entity</a> named
 
 Next, enable the `/app/tasks/melcloud.py` script in the crontab.
 
+To add hourly temperature data, add your 'location' number (found in the header request) as a credential, then enable the `/app/tasks/melcloud-temperatures.py`.
+
 ### 🚘 Cars
 #### Kia
 Tested on an E-Niro EV, however the integration should work for Kia cars, and possibly Hyundai vehicles (untested).

@@ -355,6 +355,57 @@ router.get("/usage/heating", async (req, res) => {
     res.json({ data: usage });
 });
 
+router.get("/usage/heating/temperatures", async (req, res) => {
+    let start = req.query.start;
+    let end = req.query.end;
+    let unit = req.query.unit || "hour";
+    if (!start) {
+        if (unit == "day") {
+            start = DateTime.now().minus({ days: 31 }).toFormat("yyyy-MM-dd");
+        } else if (unit == "month") {
+            start = DateTime.now().minus({ months: 13 }).toFormat("yyyy-MM-dd");
+        }
+    } else {
+        // validate it's in yyyy-mm-dd format
+    }
+    if (!end) {
+        end = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
+    } else {
+        // validate it's in yyyy-mm-dd format
+    }
+
+    let usage = [];
+    if (unit == "hour") {
+        usage = await prisma.$queryRaw`
+            SELECT
+                strftime('%Y-%m-%d %H', datetime, 'localtime') AS dt,
+                ROUND(setTemperature,2) AS setTemperature,
+                ROUND(outsideTemperature,2) AS outsideTemperature,
+                ROUND(insideTemperature,2) AS insideTemperature,
+                ROUND(tankTemperature,2) AS tankTemperature
+            FROM Temperature
+            WHERE
+                unit = 'hour'
+                AND DATE(datetime, 'localtime') BETWEEN ${start} AND ${end}
+            GROUP BY 1 ORDER BY 1
+        `;
+    } else if (unit == "day") {
+        usage = await prisma.$queryRaw`
+        SELECT
+                strftime('%Y-%m-%d', datetime, 'localtime') AS dt,
+                ROUND(AVG(setTemperature),2) AS setTemperature,
+                ROUND(AVG(outsideTemperature),2) AS outsideTemperature,
+                ROUND(AVG(insideTemperature),2) AS insideTemperature,
+                ROUND(AVG(tankTemperature),2) AS tankTemperature
+            FROM Temperature
+            WHERE
+                DATE(datetime, 'localtime') BETWEEN ${start} AND ${end}
+            GROUP BY 1 ORDER BY 1
+        `;
+    }
+    res.json({ data: usage });
+});
+
 router.get("/usage/vehicles", async (req, res) => {
     let start = req.query.start;
     let end = req.query.end;

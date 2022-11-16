@@ -400,3 +400,80 @@ function loadHeatingChart(unit, startDate, endDate) {
         cache: false
     });    
 }
+
+function loadTemperatureChart(unit, startDate, endDate) {
+
+    let dataSeries = [];
+    let xAxisCats = [];
+    $.ajax({
+        url: '/api/usage/heating/temperatures',
+        type: "GET",
+        data : {
+            start: startDate,
+            end: endDate,
+            unit: unit,
+        },
+        dataType: "json",
+        success: function(res) {
+            let setTemperature = [];
+            let outsideTemperature = [];
+            let insideTemperature = [];
+            let tankTemperature = [];
+            for (let row of res.data) {
+                setTemperature.push(row.setTemperature);
+                outsideTemperature.push(row.outsideTemperature);
+                insideTemperature.push(row.insideTemperature);
+                tankTemperature.push(row.tankTemperature);
+                xAxisCats.push(row.dt);
+            }
+            dataSeries.push({name: "Set Temperature", data: setTemperature, type: 'spline'});
+            dataSeries.push({name: "Inside Temperature", data: insideTemperature, type: 'spline'});
+            dataSeries.push({name: "Outside Temperature", data: outsideTemperature, type: 'spline'});
+            dataSeries.push({name: "Tank Temperature", data: tankTemperature, type: 'spline'});
+
+            let heatingTemperatures = Highcharts.chart({
+                chart: {
+                    // type: 'column',
+                    renderTo: 'heatingTemperatures',
+                    zoomType: 'xy',
+                    backgroundColor: 'white',
+                    plotBorderWidth: 0,
+                    plotShadow: false,
+                },
+                credits: false,
+                title: {
+                    text: "",
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.1,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    itemStyle: {
+                        fontWeight: 'normal',
+                        fontSize: '14px',
+                        align: 'right'
+                    }
+                },
+                xAxis : {
+                    categories: xAxisCats,
+                },
+                yAxis : [{
+                    title: {
+                        text: "C",
+                    },
+                    labels: {
+                    },
+                    gridLineWidth: 0,
+                }],
+                series: dataSeries
+            });
+        },
+        error: function(xhr) {
+            console.log(xhr);
+        },
+        cache: false
+    });    
+}

@@ -1,6 +1,18 @@
 <h3>Heating</h3>
 <div class="row">
-    <div class="col-md-3 offset-md-9">
+    <div class="col-md-3">
+        <form id="granularity" class="form-horizontal">
+            <input type="hidden" name="start" value="<%= start %>">
+            <input type="hidden" name="end" value="<%= end %>">
+            <input type="hidden" name="filter" value="<%= filter %>">
+            <label for="unit" class="form-label sr-only">Unit</label>
+            <select class="form-select form-select-sm" name="unit">
+                <option <% if (unit == 'hour') { %>selected <% } %>value="hour">Hour</option>
+                <option <% if (unit == 'day') { %>selected <% } %>value="day">Day</option>
+            </select>
+        </form>
+    </div>
+    <div class="col-md-3 offset-md-6">
         <label for="reportrange" class="sr-only">Date</label>
         <div id="reportrange" class="pull-right" style="cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
             <i class="fas fa-calendar"></i>&nbsp;
@@ -9,6 +21,14 @@
     </div>
 </div>
 <hr>
+<h4>Heat Pump Temperature Readings</h4>
+<div class="row">
+    <div class="col-md-12">
+        <div id="heatingTemperatures"></div>
+    </div>
+</div>
+<hr>
+<h4>Heat Pump Energy Readings</h4>
 <div class="row">
     <div class="col-md-12">
         <div id="heatingChart"></div>
@@ -58,7 +78,9 @@
             });
         });
 
-        loadHeatingChart("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
+        loadHeatingChart("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+        loadTemperatureChart("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+        $('select[name="unit"]').change(function(){ $('form#granularity').submit(); })
     });
     
 </script>
