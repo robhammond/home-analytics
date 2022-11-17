@@ -195,6 +195,13 @@ sudo raspi-config
 
 Navigate to **Display Options**, find **Screen Blanking** and turn it off. You will need to restart your Pi for changes to take effect.
 
+Next, hide the cursor after a short period of inactivity so it doesn't show on the kiosk display:
+
+```sh
+sudo apt-get install unclutter
+echo "@unclutter -idle 0.5" >> ~/.config/lxsession/LXDE/autostart
+```
+
 Finally run the following command from a VNC terminal window to launch a full screen instance of Chrome:
 
 ```sh
