@@ -2,14 +2,14 @@ function loadUsageTable(unit, startDate, endDate, filter) {
     $.ajax({
         url: '/api/usage/main',
         type: "GET",
-        data : {
+        data: {
             start: startDate,
             end: endDate,
             unit: unit,
             filter: filter,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             reversed_array = res.data.reverse();
             let count = 0;
             for (let row of reversed_array) {
@@ -22,32 +22,32 @@ function loadUsageTable(unit, startDate, endDate, filter) {
                 <div class="card border-info mb-3" style="max-width: 18rem;">
                 <div class="card-header">Total kWh</div>
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">${ Number(totals["kwh"].toFixed(2)).toLocaleString() }</h5>
+                    <h5 class="card-title" style="text-align:right;">${Number(totals["kwh"].toFixed(2)).toLocaleString()}</h5>
                 </div>
             </div>`);
             $('#totalCost').html(`
             <div class="card border-info mb-3" style="max-width: 18rem;">
                 <div class="card-header">Total Cost</div>
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">&pound;${ Number(totals["cost"].toFixed(2)).toLocaleString() }</h5>
+                    <h5 class="card-title" style="text-align:right;">&pound;${Number(totals["cost"].toFixed(2)).toLocaleString()}</h5>
                 </div>
             </div>`);
             $('#avgkWh').html(`
                 <div class="card border-info mb-3" style="max-width: 18rem;">
                 <div class="card-header">Average kWh</div>
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">${ Number((totals["kwh"] / count).toFixed(2)).toLocaleString() }</h5>
+                    <h5 class="card-title" style="text-align:right;">${Number((totals["kwh"] / count).toFixed(2)).toLocaleString()}</h5>
                 </div>
             </div>`);
             $('#avgCost').html(`
             <div class="card border-info mb-3" style="max-width: 18rem;">
                 <div class="card-header">Average Cost</div>
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">&pound;${ Number((totals["cost"] / count).toFixed(2)).toLocaleString() }</h5>
+                    <h5 class="card-title" style="text-align:right;">&pound;${Number((totals["cost"] / count).toFixed(2)).toLocaleString()}</h5>
                 </div>
             </div>`);
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
@@ -62,17 +62,43 @@ function loadUsageByRateTable(startDate, endDate, targetTable) {
             end: endDate
         },
         method: "GET",
-        success: function(res) {
+        success: function (res) {
             for (let r of res.rates) {
                 $(targetTable + ' tbody.kwh').append('<tr class="pi-data-row"><td>'
-                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
-                    '</td><td align="right">'+r.total_kwh.toFixed(2)+'</td></tr>');
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">' + r.total_kwh.toFixed(2) + '</td></tr>');
                 $(targetTable + ' tbody.cost').append('<tr class="pi-data-row"><td>'
-                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) + 
-                    '</td><td align="right">£'+r.total_cost.toFixed(2)+'</td></tr>');
+                    + r.rate_type[0].toUpperCase() + r.rate_type.substring(1) +
+                    '</td><td align="right">£' + r.total_cost.toFixed(2) + '</td></tr>');
             }
             $(targetTable + ' .kwh-total').html(res.totals.kwh.toFixed(2));
             $(targetTable + ' .cost-total').html("£" + res.totals.cost.toFixed(2));
         }
+    });
+}
+
+function loadUsageBreakdown(startDate, endDate) {
+    $.ajax({
+        url: '/api/usage/breakdown',
+        type: "GET",
+        data: {
+            start: startDate,
+            end: endDate,
+        },
+        dataType: "json",
+        success: function (res) {
+            let row_data = [];
+            for (let row of res.data) {
+                row_data.push({ name: row.name, device: row.device, kwh: row.kwh });
+            }
+            for (let u of row_data) {
+                let device = u.device || "";
+                $("#usageBreakdown").append(`<tr><td>${device}</td><td>${u.name}</td><td>${u.kwh}</td></tr>`);
+            }
+        },
+        error: function (xhr) {
+            console.log(xhr);
+        },
+        cache: false
     });
 }

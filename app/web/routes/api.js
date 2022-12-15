@@ -194,6 +194,7 @@ router.get("/usage/breakdown", async (req, res) => {
     `;
     const entities = await prisma.$queryRaw`
         SELECT 
+            e.entity_name,
             e.entity_type,
             ROUND(SUM(kwh_used),2) AS kwh
         FROM EntityUsage en
@@ -202,7 +203,7 @@ router.get("/usage/breakdown", async (req, res) => {
         WHERE 
             DATE(datetime_start, 'localtime') BETWEEN
                 DATE(${start}) AND DATE(${end})
-        GROUP BY 1
+        GROUP BY 1,2
     `;
 
     const centralHeating = await prisma.$queryRaw`
@@ -237,7 +238,7 @@ router.get("/usage/breakdown", async (req, res) => {
     }
     let eSum = 0;
     for (let e of entities) {
-        pieData.push({ name: e.entity_type, kwh: e.kwh });
+        pieData.push({ name: e.entity_type, kwh: e.kwh, device: e.entity_name });
         eSum += e.kwh;
     }
     let pieOthers = 0;
@@ -537,6 +538,12 @@ router.get("/usage/main", async (req, res) => {
                     DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
             `;
         } else {
+            // ddb.all('SELECT 42 AS fortytwo', function(err, res) {
+            //     if (err) {
+            //       throw err;
+            //     }
+            //     console.log(res[0].fortytwo)
+            //   });
             usage = await prisma.$queryRaw`
                 WITH rate_list AS (
                     SELECT 

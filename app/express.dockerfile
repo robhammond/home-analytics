@@ -21,6 +21,6 @@ EXPOSE 3000
 
 USER node
 
-RUN npm ci --only=production
+RUN npm install
 
 ENTRYPOINT [ "bash", "./init-db.sh" ]

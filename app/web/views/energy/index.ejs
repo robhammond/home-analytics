@@ -49,7 +49,8 @@
 
 <div id="usageMain"></div>
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-6">
+        <h4>History</h4>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -61,8 +62,18 @@
             <tbody id="usageDataTable"></tbody>
         </table>
     </div>
-    <div class="col-md-4">
-        <div id="usagePie"></div>
+    <div class="col-md-6">
+        <h4>Breakdown</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Type</th>
+                    <th>kWh</th>
+                </tr>
+            </thead>
+            <tbody id="usageBreakdown"></tbody>
+        </table>
     </div>
 </div>
 
@@ -111,7 +122,7 @@
         
         loadUsageMain("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
         loadUsageTable("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
-        loadUsagePie(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+        loadUsageBreakdown(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
         $('select[name="unit"]').change(function(){ $('form#granularity').submit(); })
         $('select[name="filter"]').change(function(){ $('form#filter').submit(); })
     });
