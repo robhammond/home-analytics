@@ -194,6 +194,88 @@ router.get("/usage/breakdown", async (req, res) => {
     `;
     const entities = await prisma.$queryRaw`
         SELECT 
+            e.entity_type,
+            ROUND(SUM(kwh_used),2) AS kwh
+        FROM EntityUsage en
+        JOIN entity e ON
+            e.id = en.entityId 
+        WHERE 
+            DATE(datetime_start, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+        GROUP BY 1
+        ORDER BY 2 desc
+    `;
+
+    const centralHeating = await prisma.$queryRaw`
+        SELECT
+            ROUND(SUM(kwh_consumed),2) AS kwh
+        FROM heating
+        WHERE
+            DATE(datetime, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+    `;
+
+    const hw = await prisma.$queryRaw`
+        SELECT 
+            ROUND(SUM(kwh_consumed),2) AS kwh
+        FROM hotwater
+        WHERE
+            DATE(datetime, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+    `;
+
+    let pieData = [];
+    let heatSum = 0;
+    if (centralHeating[0]) {
+        let kwh = centralHeating[0].kwh || 0;
+        pieData.push({ name: "Central Heating", kwh: kwh });
+        heatSum += centralHeating[0].kwh;
+    }
+    if (hw[0]) {
+        let kwh = hw[0].kwh || 0;
+        pieData.push({ name: "Hot Water", kwh: kwh });
+        heatSum += hw[0].kwh;
+    }
+    let eSum = 0;
+    for (let e of entities) {
+        pieData.push({ name: e.entity_type, kwh: e.kwh });
+        eSum += e.kwh;
+    }
+    let pieOthers = 0;
+    for (let y of overall_consumption) {
+        pieOthers += y.total_kwh;
+    }
+    pieOthers = pieOthers - (heatSum + eSum);
+    pieData.push({ name: "Other", kwh: Number(pieOthers.toFixed(2)) });
+
+    res.json({ data: pieData });
+});
+
+router.get("/usage/breakdown/by-device", async (req, res) => {
+    let start = req.query.start;
+    let end = req.query.end;
+
+    if (!start) {
+        start = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
+    } else {
+        // TODO: validate it's in yyyy-mm-dd format
+    }
+
+    if (!end) {
+        end = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
+    } else {
+        // TODO: validate it's in yyyy-mm-dd format
+    }
+    const overall_consumption = await prisma.$queryRaw`
+        SELECT
+            ROUND(SUM(e.kwh),2) AS total_kwh
+        FROM electricity e
+        WHERE
+            DATE(datetime_start, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+    `;
+    const entities = await prisma.$queryRaw`
+        SELECT 
             e.entity_name,
             e.entity_type,
             ROUND(SUM(kwh_used),2) AS kwh

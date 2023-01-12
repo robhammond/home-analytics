@@ -79,7 +79,7 @@ function loadUsageByRateTable(startDate, endDate, targetTable) {
 
 function loadUsageBreakdown(startDate, endDate) {
     $.ajax({
-        url: '/api/usage/breakdown',
+        url: '/api/usage/breakdown/by-device',
         type: "GET",
         data: {
             start: startDate,
