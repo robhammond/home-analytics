@@ -111,7 +111,7 @@ You will need your **MPAN**, **Serial Number** and **API key**, which can be fou
 
 
 ## 🥧 Raspbery Pi Installation
-_To install on Raspberry Pi, you need a 64bit OS, as [Prisma.io](https://prisma.io) does not support 32bit._
+**_To install on Raspberry Pi, you need a 64bit OS, as [Prisma.io](https://prisma.io) does not support 32bit._**
 
 1. Open the terminal on your Raspberry Pi and install the Github Client:
 

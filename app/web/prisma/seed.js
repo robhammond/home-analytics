@@ -26,12 +26,16 @@ async function main() {
         },
     });
     
-    const octopusCreds = await prisma.credentials.createMany({
-        data: [
-            { entityId: octopus.id, key: "mpan", value: "12345" },
-            { entityId: octopus.id, key: "serial_number", value: "12345" },
-            { entityId: octopus.id, key: "api_key", value: "12345" },
-        ],
+    const octopusMpan = await prisma.credentials.create({
+        data: { entityId: octopus.id, key: "mpan", value: "12345" },
+    });
+
+    const octopusSerial = await prisma.credentials.create({
+        data: { entityId: octopus.id, key: "serial_number", value: "12345" },
+    });
+    
+    const octopusKey = await prisma.credentials.create({
+        data: { entityId: octopus.id, key: "api_key", value: "12345" },
     });
 }
 
