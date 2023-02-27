@@ -8,8 +8,9 @@ from fastavro import writer as avro_writer, parse_schema as avro_parse_schema
 local_db = os.getenv("HA_DB_URL", "./prod.db")
 gcp_project = os.getenv("GCP_PROJECT")
 # create a service account and rename the JSON file to 'bigquery-creds.json'
-sa_creds_file = "./bigquery-creds.json"
-bq_client = bigquery.Client(project=gcp_project).from_service_account_json(sa_creds_file)
+sa_creds_file = "/var/www/home-analytics/app/db/bigquery-creds.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = sa_creds_file
+bq_client = bigquery.Client(project=gcp_project)
 
 conn = sqlite3.connect(local_db)
 conn.row_factory = sqlite3.Row
