@@ -161,7 +161,7 @@ def get_usage_data(start_date: str = None, end_date: str = None):
             field="datetime_start",
             type_=bigquery.TimePartitioningType.DAY,
         )
-        job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
+        job_config.write_disposition = bigquery.WriteDisposition.WRITE_APPEND
 
         job = bq_client.load_table_from_file(source_file, bq_table_id, job_config=job_config)
         job.result()
