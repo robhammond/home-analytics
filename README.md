@@ -16,7 +16,7 @@
   </a>
 
   <p align="center">
-    Monitor and analyze your home energy usage, costs and trends
+Unleash the Power of Your Home Energy Data
   </p>
 </div>
 
@@ -59,45 +59,47 @@
 
 ![product-screenshot]
 
-HomeAnalytics aims to open up the data behind your home energy usage and make it more usable, useful, and transparent. By using as many existing APIs and freely available data, homeAnalytics is a low/no-cost way to track your electricity usage.
+HomeAnalytics empowers you to understand and manage your home energy usage by presenting the data in a more usable, useful, and transparent way.
 
-With homeAnalytics, you can track your energy usage over time and spot trends that your standard smart meter doesn't provide.
+By leveraging existing APIs and freely available data, HomeAnalytics offers a low-cost or no-cost solution to track your electricity usage.
 
-Using a home server such as a Raspberry Pi, you can easily <a href="https://medium.com/electric-sheep-energy/building-a-diy-energy-monitor-with-a-raspberry-pi-a5ae40c1a2a6">set up homeAnalytics as an always-on display</a>, giving you a fully customizable, near real-time home energy monitor.
+HomeAnalytics allows you to monitor your energy usage over time, identify trends, and access insights that are beyond the capabilities of standard smart meters. 
+
+Utilizing a home server, like a Raspberry Pi, you can <a href="https://medium.com/@robhammond/building-a-diy-energy-monitor-with-a-raspberry-pi-a5ae40c1a2a6">set up an always-on display</a>, providing you with a fully customizable, near real-time home energy monitor.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-## 🎯 Key Features
+## 🌟 Key Features
 
 - View and analyse your energy usage over time
-- In-day electricty usage and cost data (when used with n3rgy), at a half-hourly granularity
-- View accurate energy cost data, with support for off-peak tariffs such as Octopus Go
-- View and analyze your EV battery status, range and mileage over time
-- Usable as a Raspberry Pi powered energy monitor to replace or supplement your In-Home Display
+- Access in-day electricity usage and cost data (when used with n3rgy) at a half-hourly granularity
+- Display accurate energy cost data, with support for off-peak tariffs such as <a href="https://share.octopus.energy/great-sea-220">Octopus Go</a>
+- Monitor and analyze your EV battery status, range, and mileage over time
+- Use as a Raspberry Pi-powered energy monitor to replace or supplement your In-Home Display
 
 
 <!-- GETTING STARTED -->
-## 🙋 Getting Started
+## 🚀 Getting Started
 
-If you just want to try out homeAnalytics, run the Docker Compose script with the following command to get it running:
+To quickly try out HomeAnalytics, simply run the Docker Compose script with the following command:
 
 ```sh
 docker-compose -f docker-compose.yml up
 ```
 
-This will build 2 containers, 1 for the web UI and one for the data collection tasks. The SQLite database will be created using the path defined in the `/.env` file for the variable `HA_DB_URL`.
+This will build two containers, one for the web UI and one for the data collection tasks. The SQLite database will be created using the path defined in the `/.env` file for the `HA_DB_URL` variable.
 
-### Setup
-Navigate to http://localhost:3000/admin/list-tariffs and add in the details of your Electricity tariff and rates.
+### Initial Setup
+1. Navigate to http://localhost:3000/admin/list-tariffs and add in the details of your electricity tariff and rates.
 
-You then need to follow the steps below for setting up n3rgy API account, and enter the authorization header value as the value for `auth_header` at http://localhost:3000/admin/view-entity?id=1
+2. Follow the steps below to set up your n3rgy API account. Enter the authorization header value as the value for auth_header` at http://localhost:3000/admin/view-entity?id=1
 
 
 ### Setting up n3rgy
 
-- Find your MPxN number (a 13 digit number, should be on your electricity bill) and note it down. If you need help finding it, [UK Power Networks](https://www.ukpowernetworks.co.uk/help/who-is-my-electricity-supplier-and-what-is-my-mpan) can help.
-- Find your IHD MAC address and note it down. This is usually on your smart meter device somewhere - [this guide](https://www.howz.com/mac) should help locate it.
+- Find your MPxN number (a 13-digit number found on your electricity bill) and note it down. If you need help finding it, [UK Power Networks](https://www.ukpowernetworks.co.uk/help/who-is-my-electricity-supplier-and-what-is-my-mpan) can help.
+- Locate your IHD MAC address and note it down. This is usually on your smart meter device somewhere. Refer to [this guide](https://www.howz.com/mac) to help find it.
 - Go to the [n3rgy Consumer Site](https://data.n3rgy.com/consumer/home) and enter your MPxN number and IHD MAC address
 - Once you're logged in, click on the 'Download My Data' link, open up Chrome Dev Tools, click the 'Download' link, and find the value of the **authorization** request header as shown below:
 
@@ -107,7 +109,7 @@ You then need to follow the steps below for setting up n3rgy API account, and en
 ### Setting up Octopus Energy
 Octopus is easier to set up but only offers data up to midnight the previous day.
 
-You will need your **MPAN**, **Serial Number** and **API key**, which can be found in your [Octopus dashboard](https://octopus.energy/login/?next=/dashboard/developer/), then update the dummy credentials you are provided with in the web UI on the first load of homeAnalytics.
+You will need your **MPAN**, **Serial Number** and **API key**, which can be found in your [Octopus dashboard](https://octopus.energy/login/?next=/dashboard/developer/), then update the dummy credentials you are provided with in the web UI on the first load of HomeAnalytics.
 
 
 ## 🥧 Raspbery Pi Installation
