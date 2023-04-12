@@ -12,6 +12,7 @@ var adminRouter = require("./routes/admin");
 var energyRouter = require("./routes/energy");
 var heatingRouter = require("./routes/heating");
 var garageRouter = require("./routes/garage");
+var devicesRouter = require("./routes/devices");
 var piRouter = require("./routes/pi");
 var apiRouter = require("./routes/api");
 
@@ -57,6 +58,7 @@ app.use("/admin", adminRouter);
 app.use("/energy", energyRouter);
 app.use("/heating", heatingRouter);
 app.use("/garage", garageRouter);
+app.use("/devices", devicesRouter);
 app.use("/pi", piRouter);
 app.use("/api", apiRouter);
 
