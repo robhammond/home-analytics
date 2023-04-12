@@ -24,6 +24,18 @@ model Electricity {
     @@unique([datetime, granularity], name: "sqlite_autoindex_electricity")
 }
 
+model Solar {
+    id             Int      @id @default(autoincrement())
+    datetime_start DateTime
+    datetime_end   DateTime
+    kwh_produced   Float
+    kwh_consumed   Float
+    kwh_exported   Float
+    kwh_imported   Float
+
+    @@unique([datetime_start, datetime_end], name: "sqlite_autoindex_solar")
+}
+
 model Heating {
     id           Int      @id @default(autoincrement())
     datetime     DateTime
@@ -140,6 +152,7 @@ model Entity {
     id              Int           @id @default(autoincrement())
     entity_name     String
     entity_type     String
+    entity_category String?
     entity_backend  String?
     entity_url      String?
     entity_image    String?

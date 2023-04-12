@@ -13,7 +13,7 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^4.7.1",
+    "@prisma/client": "^4.12.0",
     "cookie-parser": "^1.4.6",
     "debug": "^4.3.4",
     "dotenv": "^16.0.1",
@@ -28,7 +28,7 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
-    "prisma": "^4.7.1",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "prisma": "^4.12.0"
   }
 }

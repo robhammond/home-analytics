@@ -1,4 +1,4 @@
-DateTimeRange==1.2.0
+DateTimeRange==2.1.0
 adax==0.2.0
 asyncio-mqtt==0.12.1
 dateparser==1.1.1

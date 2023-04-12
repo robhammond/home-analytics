@@ -297,12 +297,13 @@ router.get("/add-entity", async (req, res) => {
 });
 
 router.post("/add-entity", async (req, res) => {
-    let { entity_name, entity_type, entity_backend, entity_url, entity_image, entity_location } = req.body;
+    let { entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
 
     await prisma.entity.create({
         data: {
             entity_name: entity_name,
             entity_type: entity_type,
+            entity_category: entity_category,
             entity_backend: entity_backend,
             entity_url: entity_url,
             entity_image: entity_image,
@@ -341,7 +342,7 @@ router.get("/edit-entity", async (req, res) => {
 });
 
 router.post("/edit-entity", async (req, res) => {
-    let { id, entity_name, entity_type, entity_backend, entity_url, entity_image, entity_location } = req.body;
+    let { id, entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
 
     await prisma.entity.update({
         where: {
@@ -350,6 +351,7 @@ router.post("/edit-entity", async (req, res) => {
         data: {
             entity_name: entity_name,
             entity_type: entity_type,
+            entity_category: entity_category,
             entity_backend: entity_backend,
             entity_url: entity_url,
             entity_image: entity_image,
