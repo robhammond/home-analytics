@@ -83,7 +83,7 @@ def update_vehicle_details():
                 data["isLocked"] = 0
             else:
                 data["isLocked"] = 1
-            data["chargingTargetPercent"] = vehicle_details.ev_charge_limits.ac
+            data["chargingTargetPercent"] = vehicle_details.ev_charge_limits_ac
 
             print(data)
 
