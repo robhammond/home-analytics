@@ -68,8 +68,8 @@ def update_vehicle_details():
             data["batteryPercent"] = vehicle_details.ev_battery_percentage
             data["odometer"] = vehicle_details.odometer
             data["odometerUnit"] = vehicle_details._odometer_unit
-            data["estimatedRange"] = vehicle_details.ev_driving_distance
-            data["rangeUnit"] = vehicle_details._ev_driving_distance_unit
+            data["estimatedRange"] = vehicle_details.ev_driving_range
+            data["rangeUnit"] = vehicle_details._ev_driving_range_unit
             last_updated = vehicle_details.last_updated_at
             last_updated = last_updated.astimezone(pytz.utc)
             data["datetime"] = last_updated = datetime.strftime(last_updated, "%Y-%m-%dT%H:%M:%SZ")
@@ -83,10 +83,9 @@ def update_vehicle_details():
                 data["isLocked"] = 0
             else:
                 data["isLocked"] = 1
-            data["chargingTargetPercent"] = vehicle_details.ev_charge_limits.ac
+            data["chargingTargetPercent"] = vehicle_details.ev_charge_limits_ac
 
             print(data)
-            # {'batteryPercent': 49, 'odometer': 9856.7, 'odometerUnit': 'km', 'estimatedRange': 131.1068, 'rangeUnit': 'mi', 'datetime': '2022-09-07T15:36:02Z', 'chargingStatus': 0, 'isLocked': False, 'chargingTargetPercent': 80}
 
             sql = f"""
                 INSERT INTO CarStatus
