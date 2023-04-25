@@ -5,6 +5,140 @@ const { DateTime } = require("luxon");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// DB queries
+async function dbQueryRateInfo(start, end, tryCount = 1) {
+    try {
+        const by_rate = await prisma.$queryRaw`
+          SELECT 
+              rate_type,
+              ROUND(SUM(e.kwh),2) AS total_kwh,
+              ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_cost
+          FROM  electricity e
+          JOIN rates r ON
+              r.id = e.rateId
+          JOIN supplier s ON
+              s.id = r.supplierId
+              WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
+          GROUP BY 1
+          ORDER BY 1
+      `;
+        return by_rate;
+    } catch (e) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+            console.log("Database is locked, retrying...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return dbQueryRateInfo(start, end, tryCount + 1); // Retry the query
+        } else {
+            throw e;
+        }
+    }
+}
+
+async function dbUsageSumInfo(start, end, tryCount = 1) {
+    try {
+        const usageSum = await prisma.$queryRaw`
+            SELECT
+                DATE(datetime_start, 'localtime') AS date,
+                ROUND(SUM(e.kwh),2) AS kwh,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
+            FROM electricity e
+            JOIN rates r ON
+                r.id = e.rateId
+            JOIN supplier s ON
+                s.id = r.supplierId
+            WHERE
+                date(datetime_start, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+            GROUP BY 1
+        `;
+        return usageSum;
+    } catch (e) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+            console.log("Database is locked, retrying...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return dbUsageSumInfo(start, end, tryCount + 1); // Retry the query
+        } else {
+            throw e;
+        }
+    }
+}
+
+async function dbUsageTotals(start, end, tryCount = 1) {
+    try {
+        const usageTotals = await prisma.$queryRaw`
+            SELECT
+                ROUND(SUM(e.kwh),2) AS kwh,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
+            FROM  electricity e
+            JOIN rates r ON
+                r.id = e.rateId
+            JOIN supplier s ON
+                s.id = r.supplierId
+            WHERE
+                date(datetime_start, 'localtime') BETWEEN
+                DATE(${start}) AND DATE(${end})
+        `;
+        return usageTotals;
+    } catch (e) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+            console.log("Database is locked, retrying...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return dbUsageTotals(start, end, tryCount + 1); // Retry the query
+        } else {
+            throw e;
+        }
+    }
+}
+
+async function dbDaysUsage(num_days, tryCount = 1) {
+    try {
+        const days_usage = await prisma.$queryRaw`
+            WITH week(date) AS (
+                SELECT date('now', 'localtime', ${num_days}) 
+                UNION ALL 
+                SELECT date(date, 'localtime', '+1 day') 
+                FROM week 
+                WHERE date < date('now', 'localtime', '-1 day') 
+            )
+            SELECT 
+                DATE(datetime_start, 'localtime') AS date,
+                CASE
+                    WHEN strftime('%w', datetime_start, 'localtime') = '0' THEN 'Sun'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '1' THEN 'Mon'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '2' THEN 'Tue'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '3' THEN 'Wed'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '4' THEN 'Thu'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '5' THEN 'Fri'
+                    WHEN strftime('%w', datetime_start, 'localtime') = '6' THEN 'Sat'
+                END AS dow,
+                ROUND((s.standing_charge/100),2) AS standing_charge,
+                ROUND(SUM(e.kwh),2) AS total_kwh,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_rate,
+                ROUND((SUM((r.cost/100) * e.kwh)) + (s.standing_charge/100),2) AS total_cost
+            FROM week w
+            LEFT JOIN electricity e
+                ON DATE(e.datetime_start, 'localtime') = w.date
+            JOIN rates r ON
+                r.id = e.rateId
+            JOIN supplier s ON
+                s.id = r.supplierId
+            GROUP BY 1,2
+            ORDER BY 1
+        `;
+        return days_usage;
+    } catch (e) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+            console.log("Database is locked, retrying...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return dbDaysUsage(num_days, tryCount + 1); // Retry the query
+        } else {
+            throw e;
+        }
+    }
+}
+
+
+// Routes
 router.get("/suppliers", async (req, res) => {
     const suppliers = await prisma.supplier.findMany({});
     res.json(suppliers);
@@ -41,34 +175,16 @@ router.get("/usage/sum", async (req, res) => {
         unit = "DATE(datetime_start, 'localtime')";
     }
 
-    const usageSum = await prisma.$queryRaw`
-        SELECT
-            DATE(datetime_start, 'localtime') AS date,
-            ROUND(SUM(e.kwh),2) AS kwh,
-            ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
-        FROM electricity e
-        JOIN rates r ON
-            r.id = e.rateId
-        JOIN supplier s ON
-            s.id = r.supplierId
-        WHERE
-            date(datetime_start, 'localtime') BETWEEN
-            DATE(${start}) AND DATE(${end})
-        GROUP BY 1
-    `;
-    const usageTotals = await prisma.$queryRaw`
-        SELECT
-            ROUND(SUM(e.kwh),2) AS kwh,
-            ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
-        FROM  electricity e
-        JOIN rates r ON
-            r.id = e.rateId
-        JOIN supplier s ON
-            s.id = r.supplierId
-        WHERE
-            date(datetime_start, 'localtime') BETWEEN
-            DATE(${start}) AND DATE(${end})
-    `;
+    const usageSum = await dbUsageSumInfo(start, end);
+    if (!usageSum) {
+        res.status(500).json({ error: "Database is locked, try again later." });
+        return;
+    }
+    const usageTotals = await dbUsageTotals();
+    if (!usageTotals) {
+        res.status(500).json({ error: "Database is locked, try again later." });
+        return;
+    }
 
     res.json({ days: usageSum, totals: usageTotals[0] });
 });
@@ -76,39 +192,12 @@ router.get("/usage/sum", async (req, res) => {
 router.get("/usage/days", async (req, res) => {
     let num_days = req.query.num || 7;
     num_days = `-${num_days} day`;
-    const days_usage = await prisma.$queryRaw`
-        WITH week(date) AS (
-            SELECT date('now', 'localtime', ${num_days}) 
-            UNION ALL 
-            SELECT date(date, 'localtime', '+1 day') 
-            FROM week 
-            WHERE date < date('now', 'localtime', '-1 day') 
-        )
-        SELECT 
-            DATE(datetime_start, 'localtime') AS date,
-            CASE
-                WHEN strftime('%w', datetime_start, 'localtime') = '0' THEN 'Sun'
-                WHEN strftime('%w', datetime_start, 'localtime') = '1' THEN 'Mon'
-                WHEN strftime('%w', datetime_start, 'localtime') = '2' THEN 'Tue'
-                WHEN strftime('%w', datetime_start, 'localtime') = '3' THEN 'Wed'
-                WHEN strftime('%w', datetime_start, 'localtime') = '4' THEN 'Thu'
-                WHEN strftime('%w', datetime_start, 'localtime') = '5' THEN 'Fri'
-                WHEN strftime('%w', datetime_start, 'localtime') = '6' THEN 'Sat'
-            END AS dow,
-            ROUND((s.standing_charge/100),2) AS standing_charge,
-            ROUND(SUM(e.kwh),2) AS total_kwh,
-            ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_rate,
-            ROUND((SUM((r.cost/100) * e.kwh)) + (s.standing_charge/100),2) AS total_cost
-        FROM week w
-        LEFT JOIN electricity e
-            ON DATE(e.datetime_start, 'localtime') = w.date
-        JOIN rates r ON
-            r.id = e.rateId
-        JOIN supplier s ON
-            s.id = r.supplierId
-        GROUP BY 1,2
-        ORDER BY 1
-    `;
+    const days_usage = await dbDaysUsage(num_days);
+    if (!days_usage) {
+        res.status(500).json({ error: "Database is locked, try again later." });
+        return;
+    }
+    
     res.json({ data: days_usage });
 });
 
@@ -147,20 +236,12 @@ router.get("/usage/by-rate", async (req, res) => {
         // TODO: validate it's in yyyy-mm-dd format
     }
 
-    const by_rate = await prisma.$queryRaw`
-        SELECT 
-            rate_type,
-            ROUND(SUM(e.kwh),2) AS total_kwh,
-            ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_cost
-        FROM  electricity e
-        JOIN rates r ON
-            r.id = e.rateId
-        JOIN supplier s ON
-            s.id = r.supplierId
-            WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
-        GROUP BY 1
-        ORDER BY 1
-    `;
+    const by_rate = await dbQueryRateInfo(start, end);
+    if (!by_rate) {
+        res.status(500).json({ error: "Database is locked, try again later." });
+        return;
+    }
+
     let totals = { kwh: 0, cost: 0 };
     for (let rate of by_rate) {
         totals["kwh"] += rate["total_kwh"];
