@@ -1,6 +1,6 @@
 -- Note: you may need to alter the rates table for this view to work
 -- For instance, if you have a peak rate that runs from 04:30 to 00:30 
--- it compolicates things, so add 2 peak rates from 00:00 to 00:30, then 04:30 to 23:59
+-- it complicates things, so add 2 peak rates from 00:00 to 00:30, then 04:30 to 23:59
 
 WITH
   rates2 AS (
