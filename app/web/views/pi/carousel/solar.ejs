@@ -1,0 +1,116 @@
+<div class="carousel-item" data-bs-interval="10000">
+    <div class="row">
+        <div class="col-md-7">
+            <h1>Solar Now</h1>
+            <figure class="highcharts-figure" style="width:450px;height:350px;">
+                <div id="container-solar-now" class="chart-container"></div>
+            </figure>
+        </div>
+        <div class="col-md-5">
+            <h1>Solar Today</h1>
+            <div class="todayGenerated text-center w-100 h-20 d-inline-block"></div>
+            <div class="todaySaved text-center w-100 h-20 d-inline-block"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadSolarToday() {
+        $.ajax({
+            url: '/api/solar/realtime',
+            type: "GET",
+            dataType: "json",
+            success: function(res) {
+                let kwh_total = Number(res["yield_today"].toFixed(1));
+                let current_power = Number(res["current_power"]);
+                console.log(res);
+                $('.todayGenerated').html(`<span class="align-middle">${kwh_total} kWh</span>`);
+                $('.todaySaved').html(`<span class="align-middle">£${(kwh_total * 0.3468).toFixed(2)}</span>`);
+
+                let gaugeOptions = {
+                    chart: {
+                        type: 'solidgauge',
+                        backgroundColor: 'black',
+                    },
+                    title: null,
+                    pane: {
+                        center: ['50%', '85%'],
+                        size: '115%',
+                        startAngle: -90,
+                        endAngle: 90,
+                        background: {
+                            backgroundColor:
+                                Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
+                            innerRadius: '60%',
+                            outerRadius: '100%',
+                            shape: 'arc'
+                        }
+                    },
+                    tooltip: {
+                        enabled: false
+                    },
+                    yAxis: {
+                        stops: [
+                            [0.1, '#DF5353'], // red
+                            [0.5, '#DDDF0D'], // yellow
+                            [0.7, '#55BF3B'] // green
+                        ],
+                        lineWidth: 0,
+                        tickWidth: 0,
+                        minorTickInterval: null,
+                        tickAmount: 2,
+                        title: {
+                            y: -90
+                        },
+                        labels: {
+                            y: 16
+                        }
+                    },
+                    plotOptions: {
+                        solidgauge: {
+                            dataLabels: {
+                                y: 5,
+                                borderWidth: 0,
+                                useHTML: true
+                            }
+                        }
+                    },
+                };
+                let chartKwh = Highcharts.chart('container-solar-now', Highcharts.merge(gaugeOptions, {
+                    yAxis: {
+                        min: 0,
+                        max: 6,
+                        title: {
+                            text: ''
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'kWh',
+                        data: [current_power/1000],
+                        dataLabels: {
+                            y: -110,
+                            format:
+                                '<div style="text-align:center">' +
+                                '<span style="font-size:70px">{y}</span><br/>' +
+                                '<span style="font-size:30px;opacity:0.8">kWh</span>' +
+                                '</div>',
+                        },
+                        tooltip: {
+                            valueSuffix: ' kWh'
+                        }
+                    }]
+                }));
+            },
+            error: function(xhr) {
+                console.log(xhr);
+            },
+            cache: false
+        });
+    }
+    $(document).ready(function() {
+        loadSolarToday();
+    });
+</script>

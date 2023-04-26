@@ -30,13 +30,13 @@ def _get_creds():
         for r in res:
             # set this as a static IP on your router
             if r[0] == "ip_addr":
-                creds["ip_addr"] = int(r[1])
+                creds["ip_addr"] = r[1]
             # admin
             if r[0] == "user":
                 creds["user"] = r[1]
             # your wifi password
-            if r[0] == "pass":
-                creds["pass"] = int(r[1])
+            if r[0] == "password":
+                creds["password"] = r[1]
 
     except Exception as e:
         raise Exception("Authorization details not found in DB")

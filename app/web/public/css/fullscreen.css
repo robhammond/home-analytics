@@ -125,6 +125,18 @@ div.todayCostBig {
     font-weight: bold;
 }
 
+div.todayGenerated {
+    font-size: 90px;
+    padding-top: 40px;
+    font-weight: bold;
+}
+
+div.todaySaved {
+    font-size: 90px;
+    padding-top: 30px;
+    font-weight: bold;
+}
+
 div.mtdCostBig {
     font-size: 100px;
     padding-top: 10px;

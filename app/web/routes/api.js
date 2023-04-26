@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { DateTime } = require("luxon");
-
+const axios = require('axios');
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// DB queries
+// DB queries - avoid db locks
 async function dbQueryRateInfo(start, end, tryCount = 1) {
     try {
         const by_rate = await prisma.$queryRaw`
@@ -142,6 +142,48 @@ async function dbDaysUsage(num_days, tryCount = 1) {
 router.get("/suppliers", async (req, res) => {
     const suppliers = await prisma.supplier.findMany({});
     res.json(suppliers);
+});
+
+router.get("/solar/realtime", async (req, res) => {
+    const logger_meta = await prisma.$queryRaw`
+        SELECT
+            key, 
+            value
+        FROM Credentials c
+        JOIN Entity e ON
+            e.id = c.entityId
+        WHERE 
+            LOWER(e.entity_name) = 's3-wifi-st'
+    `;
+    let creds = {};
+    for (let row of logger_meta) {
+        creds[row.key] = row.value;
+    }
+    let now_data = {};
+
+    axios.get(`http://${creds.ip_addr}/inverter.cgi`, { auth: {username: creds.user, password: creds.password}}).then(async function (response) {
+        let logger_content = response.data;
+        const split_content = logger_content.split(";");
+
+        now_data = {
+            firmware_version: split_content[1],
+            inverter_model: split_content[2],
+            inverter_temperature: Number(split_content[3]),
+            current_power: Number(split_content[4]),
+            power_unit: "watts",
+            yield_today: Number(split_content[5]),
+            yield_unit: "kWh",
+        };
+        console.log(now_data);
+        
+        res.json(now_data);
+    }).catch(function (error) {
+        // handle error
+        console.log("error", `API Error: ${error}`);
+        res.status(500).send("Internal Server Error");
+    }).finally(function () {
+        // always executed
+    });
 });
 
 router.get("/entities", async (req, res) => {
