@@ -1,15 +1,13 @@
 <div class="carousel-item" data-bs-interval="10000">
     <div class="row">
         <div class="col-md-7">
-            <h1>Solar Now</h1>
+            <h1>☀️ Solar</h1>
             <figure class="highcharts-figure" style="width:450px;height:350px;">
                 <div id="container-solar-now" class="chart-container"></div>
             </figure>
         </div>
         <div class="col-md-5">
-            <h1>Solar Today</h1>
-            <div class="todayGenerated text-center w-100 h-20 d-inline-block"></div>
-            <div class="todaySaved text-center w-100 h-20 d-inline-block"></div>
+            <div class="todayGenerated text-center w-100 h-65 d-inline-block"></div>
         </div>
     </div>
 </div>
@@ -22,10 +20,15 @@
             dataType: "json",
             success: function(res) {
                 let kwh_total = Number(res["yield_today"].toFixed(1));
-                let current_power = Number(res["current_power"]);
-                console.log(res);
-                $('.todayGenerated').html(`<span class="align-middle">${kwh_total} kWh</span>`);
-                $('.todaySaved').html(`<span class="align-middle">£${(kwh_total * 0.3468).toFixed(2)}</span>`);
+                let current_power = Number(res["current_power"].toFixed(2));
+                
+                $('.todayGenerated').html(`
+                    <hr>
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">Generated Today</span><br>
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">${kwh_total} kWh</span><br>
+                    <hr>
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">Saved Today</span><br>
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">&pound;${(kwh_total * 0.3468).toFixed(2)}</span>`);
 
                 let gaugeOptions = {
                     chart: {
