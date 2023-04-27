@@ -222,7 +222,7 @@ router.get("/usage/sum", async (req, res) => {
         res.status(500).json({ error: "Database is locked, try again later." });
         return;
     }
-    const usageTotals = await dbUsageTotals();
+    const usageTotals = await dbUsageTotals(start, end);
     if (!usageTotals) {
         res.status(500).json({ error: "Database is locked, try again later." });
         return;

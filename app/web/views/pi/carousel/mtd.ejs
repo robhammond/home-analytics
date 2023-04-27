@@ -25,19 +25,37 @@
                 end: date2
             },
             success: async function(res) {
-                let kwh = Number(res["totals"]["kwh"].toFixed(0));
-                let cost = Number(res["totals"]["cost"].toFixed(0));
+                let kwh = 0;
+                let cost = 0;
+                try {
+                    kwh = Number(res["totals"]["kwh"].toFixed(0));
+                    cost = Number(res["totals"]["cost"].toFixed(0));
+                } catch (e) {
+                    console.log(e);
+                }
 
                 let lastMonth = await loadSums('<%= dates["minus1mStart"] %>', '<%= dates["minus1m"] %>');
                 let lastYear = await loadSums('<%= dates["minus1yMonthStart"] %>', '<%= dates["minus1y"] %>');
+                let lmTotalCost = 0;
+                let lyTotalCost = 0;
+                try {
+                    lmTotalCost = Number(lastMonth['totals']['cost'].toFixed(0));
+                } catch (e) {
+                    console.log(e);
+                }
+                try {
+                    lyTotalCost = Number(lastYear['totals']['cost'].toFixed(0));
+                } catch (e) {
+                    console.log(e);
+                }
                 $('.mtdCostBig').html(`£${cost}`);
                 $('.mtdCostCompare').html(`
                     <hr>
                     <span style="font-size:20px;color:#efefef;" class="pb-0">Last Month</span><br>
-                    <span style="font-size:30px;color:#efefef;" class="pb-0">£${lastMonth['totals']['cost'].toFixed(0)}</span><br>
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">£${lmTotalCost}</span><br>
                     <hr>
                     <span style="font-size:20px;color:#efefef;" class="pb-0">Last Year</span><br>
-                    <span style="font-size:30px;color:#efefef;" class="pb-0">£${lastYear['totals']['cost'].toFixed(0)}</span>`);
+                    <span style="font-size:30px;color:#efefef;" class="pb-0">£${lyTotalCost}</span>`);
 
                 let gaugeOptions = {
                     chart: {
@@ -134,8 +152,14 @@
                 end: d2
             },
             success: async function(res) {
-                let kwh = Number(res["totals"]["kwh"].toFixed(0));
-                let cost = Number(res["totals"]["cost"].toFixed(0));
+                let kwh = 0;
+                let cost = 0;
+                try {
+                    kwh = Number(res["totals"]["kwh"].toFixed(0));
+                    cost = Number(res["totals"]["cost"].toFixed(0));
+                } catch (error) {
+                    console.log(error);
+                }
                 // console.log(cost);
                 return {kwh: kwh, cost: cost};
             },
