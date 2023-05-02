@@ -256,7 +256,7 @@ def get_solar_data(start_date: str = None, end_date: str = None):
         start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
-    sql = """
+    sql = f"""
         SELECT
             strftime('%s', datetime_start, 'localtime') * 1000 AS datetime_start,
             strftime('%s', datetime_end, 'localtime') * 1000 AS datetime_end,
@@ -269,7 +269,7 @@ def get_solar_data(start_date: str = None, end_date: str = None):
         FROM
             Solar r
         WHERE
-            (date(datetime, 'localtime') BETWEEN '{start_date}' AND '{end_date}')
+            (date(datetime_start, 'localtime') BETWEEN '{start_date}' AND '{end_date}')
     """
 
     solar = c.execute(sql).fetchall()
