@@ -53,6 +53,23 @@ RATES_SCHEMA = {
     ],
 }
 
+SOLAR_SCHEMA = {
+    "doc": "Solar",
+    "name": "Solar",
+    "namespace": "homeanalytics",
+    "type": "record",
+    "fields": [
+        {"name": "datetime_start", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+        {"name": "datetime_end", "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}]},
+        {"name": "kwh_produced", "type": ["float", "null"]},
+        {"name": "kwh_consumed", "type": ["float", "null"]},
+        {"name": "kwh_exported", "type": ["float", "null"]},
+        {"name": "kwh_imported", "type": ["float", "null"]},
+        {"name": "kwh_battery_charge", "type": ["float", "null"]},
+        {"name": "kwh_battery_discharge", "type": ["float", "null"]},
+    ],
+}
+
 
 def get_usage_data(start_date: str = None, end_date: str = None):
 
@@ -233,6 +250,62 @@ def get_rates_data():
         raise Exception(f"Error deleting avro file: {e}")
 
 
+def get_solar_data(start_date: str = None, end_date: str = None):
+    # default to the past week's data
+    if not start_date and not end_date:
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    sql = """
+        SELECT
+            strftime('%s', datetime_start, 'localtime') * 1000 AS datetime_start,
+            strftime('%s', datetime_end, 'localtime') * 1000 AS datetime_end,
+            kwh_produced,
+            kwh_consumed,
+            kwh_imported,
+            kwh_exported,
+            kwh_battery_charge,
+            kwh_battery_discharge
+        FROM
+            Solar r
+        WHERE
+            (date(datetime, 'localtime') BETWEEN '{start_date}' AND '{end_date}')
+    """
+
+    solar = c.execute(sql).fetchall()
+    solar_data = []
+    for s in solar:
+        s = dict(s)
+        solar_data.append(s)
+    print(solar_data)
+
+    bq_table_id = f"home_analytics.solar"
+
+    avro_file = f"./solar-export.avro"
+    try:
+        with open(avro_file, "wb") as out:
+            avro_writer(out, SOLAR_SCHEMA, solar_data)
+    except Exception as e:
+        raise Exception(f"Error converting to avro: {e}")
+
+    with open(avro_file, "rb") as source_file:
+        job_config = bigquery.job.LoadJobConfig()
+        job_config.source_format = "AVRO"
+        job_config.use_avro_logical_types = True
+        job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
+
+        job = bq_client.load_table_from_file(source_file, bq_table_id, job_config=job_config)
+        job.result()  # Waits for job to complete
+        print(f"Uploaded {source_file} to {bq_table_id}")
+
+    try:
+        print("removing avro file")
+        os.remove(avro_file)
+    except Exception as e:
+        raise Exception(f"Error deleting avro file: {e}")
+
+
 if __name__ == "__main__":
     # get_rates_data()
     get_usage_data()
+    get_solar_data()
