@@ -80,10 +80,10 @@ def fetch_usage(start_date=None, end_date=None):
             """
             try:
                 c.execute(sql)
-                conn.commit()
             except Exception as e:
                 print(f"Error inserting: {e}")
                 pass
+        conn.commit()
 
     conn.close()
     refresh_db()

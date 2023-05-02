@@ -89,7 +89,7 @@ def fetch_usage(start_date=None, end_date=None):
     ) as res:
         if res.status_code == 200:
             hp_data = res.json()
-            print(hp_data)
+            # print(hp_data)
             data = {
                 "hot_water": [],
                 "cooling": [],
@@ -155,10 +155,10 @@ def fetch_usage(start_date=None, end_date=None):
                 """
                 try:
                     c.execute(sql)
-                    conn.commit()
                 except Exception as e:
                     print(f"Error inserting: {e}")
                     pass
+            conn.commit()
 
             for value in data["cooling"]:
 
@@ -180,10 +180,10 @@ def fetch_usage(start_date=None, end_date=None):
                 """
                 try:
                     c.execute(sql)
-                    conn.commit()
                 except Exception as e:
                     print(f"Error inserting: {e}")
                     pass
+            conn.commit()
 
             for value in data["heating"]:
 
@@ -205,10 +205,10 @@ def fetch_usage(start_date=None, end_date=None):
                 """
                 try:
                     c.execute(sql)
-                    conn.commit()
                 except Exception as e:
                     print(f"Error inserting: {e}")
                     pass
+            conn.commit()
         else:
             print(f"Error code {res.status_code} fetching feed")
 

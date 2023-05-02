@@ -174,6 +174,8 @@ def get_station_day(request_date):
     creds = _get_creds()
     canonicalized_resource = "/v1/api/stationDay"  # or the actual API resource path
     endpoint_url = f"{API_BASE}{canonicalized_resource}"
+    conn = sqlite3.connect(HA_DB_URL)
+    c = conn.cursor()
 
     request_body = {
         "money": "GBP",
@@ -186,10 +188,66 @@ def get_station_day(request_date):
     with requests.post(endpoint_url, headers=headers, json=request_body) as res:
         if res.status_code == 200:
             res_json = res.json()
-            # print(f'Response: {res_json["msg"]}\nCode: {res_json["code"]}\nSuccess: {res_json["success"]}')
-            print(json.dumps(res_json, indent=4))
+            # print(json.dumps(res_json, indent=4))
 
-                
+            if res_json.get("success"):
+                for row in res_json.get("data"):
+                    data = {
+                        "kwh_consumed": row["consumeEnergy"] / 1000,
+                        "kwh_produced": row["produceEnergy"] / 1000,
+                    }
+                    battery_power_watts = row["batteryPower"]
+                    if battery_power_watts > 0:
+                        data["kwh_battery_charge"] = battery_power_watts / 1000
+                        data["kwh_battery_discharge"] = 0
+                    else:
+                        data["kwh_battery_charge"] = 0
+                        data["kwh_battery_discharge"] = battery_power_watts / 1000
+
+                    energy_kwh = row["psum"] / 1000
+                    if energy_kwh < 0:
+                        data["kwh_imported"] = energy_kwh
+                        data["kwh_exported"] = 0
+                    else:
+                        data["kwh_imported"] = 0
+                        data["kwh_exported"] = energy_kwh
+
+                    data["datetime_start"] = f"{request_date}T{row['timeStr']}Z"
+                    datetime_start = datetime.strptime(data["datetime_start"], "%Y-%m-%dT%H:%M:%SZ")
+                    # Add 5 minutes to the start time
+                    datetime_end = datetime_start + timedelta(minutes=5)
+                    # Convert the end time back to a string
+                    data["datetime_end"] = datetime_end.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                    sql = """
+                        INSERT INTO solar (
+                            datetime_start,
+                            datetime_end,
+                            kwh_produced,
+                            kwh_consumed,
+                            kwh_exported,
+                            kwh_imported,
+                            kwh_battery_charge,
+                            kwh_battery_discharge
+                        ) VALUES (
+                            :datetime_start,
+                            :datetime_end,
+                            :kwh_produced,
+                            :kwh_consumed,
+                            :kwh_exported,
+                            :kwh_imported,
+                            :kwh_battery_charge,
+                            :kwh_battery_discharge
+                        )
+                    """
+
+                    try:
+                        c.execute(sql, data)
+                    except Exception as e:
+                        print(f"Error inserting: {e}")
+                        pass
+                conn.commit()
+
         elif res.status_code == 502:
             # try again after sleep
             sleep(30)
@@ -225,22 +283,22 @@ def get_station_list():
             for station in res_json["data"]["page"]["records"]:
                 station_data = {}
                 station_data["station_id"] = station["id"]
-                station_data["datetime_created"] = datetime.fromtimestamp(station["createDate"] / 1000) # datetime of first switch on (unix timestamp)
-                station_data["datetime_updated"] = datetime.fromtimestamp(station["updateDate"] / 1000) # datetime of this update (unix timestamp)
-                station_data["energy_today"] = station["dayEnergy"] # total energy generated today (float kwh)
-                station_data["energy_this_month"] = station["monthEnergy"] # total energy generated since first switch on (float kwh)
-                station_data["energy_this_year"] = station["yearEnergy"] # total energy generated since first switch on (float kwh)
-                station_data["energy_all_time"] = station["allEnergy"] # total energy generated since first switch on (float kwh)
-                station_data["battery_discharge_total"] = station["batteryTotalDischargeEnergy"] # total energy discharged from battery (float kwh)
-                station_data["battery_charge_total"] = station["batteryTotalChargeEnergy"] # total energy charged into battery (float kwh)
-                station_data["battery_discharge_today"] = station["batteryTodayDischargeEnergy"] # total energy discharged from battery today (float kwh)
-                station_data["battery_charge_today"] = station["batteryTodayChargeEnergy"] # total energy charged into battery today (float kwh)
-                station_data["grid_purchased_total"] = station["gridPurchasedTotalEnergy"] # total energy purchased from grid (float kwh)
-                station_data["grid_purchased_today"] = station["gridPurchasedTodayEnergy"] # today energy purchased from grid (float kwh)
-                station_data["grid_sell_total"] = station["gridSellTotalEnergy"] # total energy purchased from grid (float kwh)
-                station_data["grid_sell_today"] = station["gridSellTodayEnergy"] # today energy purchased from grid (float kwh)
-                station_data["home_load_total"] = station["homeLoadTotalEnergy"] # total energy purchased from grid (float kwh)
-                station_data["home_load_today"] = station["homeLoadTodayEnergy"] # total energy purchased from grid (float kwh)
+                station_data["datetime_created"] = datetime.fromtimestamp(station["createDate"] / 1000)  # datetime of first switch on (unix timestamp)
+                station_data["datetime_updated"] = datetime.fromtimestamp(station["updateDate"] / 1000)  # datetime of this update (unix timestamp)
+                station_data["energy_today"] = station["dayEnergy"]  # total energy generated today (float kwh)
+                station_data["energy_this_month"] = station["monthEnergy"]  # total energy generated since first switch on (float kwh)
+                station_data["energy_this_year"] = station["yearEnergy"]  # total energy generated since first switch on (float kwh)
+                station_data["energy_all_time"] = station["allEnergy"]  # total energy generated since first switch on (float kwh)
+                station_data["battery_discharge_total"] = station["batteryTotalDischargeEnergy"]  # total energy discharged from battery (float kwh)
+                station_data["battery_charge_total"] = station["batteryTotalChargeEnergy"]  # total energy charged into battery (float kwh)
+                station_data["battery_discharge_today"] = station["batteryTodayDischargeEnergy"]  # total energy discharged from battery today (float kwh)
+                station_data["battery_charge_today"] = station["batteryTodayChargeEnergy"]  # total energy charged into battery today (float kwh)
+                station_data["grid_purchased_total"] = station["gridPurchasedTotalEnergy"]  # total energy purchased from grid (float kwh)
+                station_data["grid_purchased_today"] = station["gridPurchasedTodayEnergy"]  # today energy purchased from grid (float kwh)
+                station_data["grid_sell_total"] = station["gridSellTotalEnergy"]  # total energy purchased from grid (float kwh)
+                station_data["grid_sell_today"] = station["gridSellTodayEnergy"]  # today energy purchased from grid (float kwh)
+                station_data["home_load_total"] = station["homeLoadTotalEnergy"]  # total energy purchased from grid (float kwh)
+                station_data["home_load_today"] = station["homeLoadTodayEnergy"]  # total energy purchased from grid (float kwh)
                 # parse a unix timestamp to a datetime object
                 print(station_data)
         else:
@@ -252,6 +310,12 @@ def get_station_list():
 
 
 if __name__ == "__main__":
+    # Calculate yesterday's date
+    yesterday = datetime.now() - timedelta(days=1)
+    # Format yesterday's date as a string in the "%Y-%m-%d" format
+    yesterday_str = yesterday.strftime("%Y-%m-%d")
+
     # get_inverter_day("2023-04-18")
-    get_station_day("2023-04-16")
+    # Get the current date and time
+    get_station_day(yesterday_str)
     # get_station_list()

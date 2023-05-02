@@ -99,10 +99,10 @@ def fetch_intensity(date_from=None):
             """
             try:
                 c.execute(sql)
-                conn.commit()
             except Exception as e:
                 print(f"Error inserting: {e}")
                 pass
+        conn.commit()
 
     conn.close()
 
