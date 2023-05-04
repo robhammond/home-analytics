@@ -20,7 +20,7 @@
             dataType: "json",
             success: function(res) {
                 let kwh_total = Number(res["yield_today"].toFixed(1));
-                let current_power = Number(res["current_power"].toFixed(2));
+                let current_power = (Number(res["current_power"].toFixed(2)) / 1000).toFixed(2);
                 
                 $('.todayGenerated').html(`
                     <hr>
@@ -28,7 +28,7 @@
                     <span style="font-size:50px;color:#efefef;" class="pb-0">${kwh_total} kWh</span><br>
                     <hr>
                     <span style="font-size:30px;color:#efefef;" class="pb-0">Saved Today</span><br>
-                    <span style="font-size:50px;color:#efefef;" class="pb-0">&pound;${(kwh_total * 0.3468).toFixed(2)}</span>`);
+                    <span style="font-size:50px;color:#efefef;" class="pb-0">&pound;${(kwh_total * Number(res["cost"])).toFixed(2)}</span>`);
 
                 let gaugeOptions = {
                     chart: {
@@ -92,7 +92,7 @@
                     },
                     series: [{
                         name: 'kWh',
-                        data: [current_power/1000],
+                        data: [current_power],
                         dataLabels: {
                             y: -110,
                             format:
