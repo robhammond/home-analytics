@@ -1,19 +1,25 @@
 # Fetch data from Solis Cloud API
 import base64
-import calendar
+import argparse
 import hashlib
 import hmac
 import json
 import logging
 import os
-import re
 import sqlite3
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from time import sleep
-from requests.adapters import HTTPAdapter, Retry
 import requests
 
 logging.basicConfig(level=logging.DEBUG)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Fetch energy data for a specific date or date range.")
+    parser.add_argument("--date", type=str, help="Single date in the format YYYY-MM-DD.")
+    parser.add_argument("--start_date", type=str, help="Start date in the format YYYY-MM-DD.")
+    parser.add_argument("--end_date", type=str, help="End date in the format YYYY-MM-DD.")
+    return parser.parse_args()
 
 
 HA_DB_URL = os.getenv("HA_DB_URL")
@@ -188,23 +194,26 @@ def get_station_day(request_date):
     with requests.post(endpoint_url, headers=headers, json=request_body) as res:
         if res.status_code == 200:
             res_json = res.json()
-            # print(json.dumps(res_json, indent=4))
+            print(json.dumps(res_json, indent=4))
 
             if res_json.get("success"):
+                # convert 5min kw data to kwh
+                kwh_calc = 5 / 60
+
                 for row in res_json.get("data"):
                     data = {
-                        "kwh_consumed": row["consumeEnergy"] / 1000,
-                        "kwh_produced": row["produceEnergy"] / 1000,
+                        "kwh_consumed": (row["consumeEnergy"] / 1000) * kwh_calc,
+                        "kwh_produced": (row["produceEnergy"] / 1000) * kwh_calc,
                     }
                     battery_power_watts = row["batteryPower"]
                     if battery_power_watts > 0:
-                        data["kwh_battery_charge"] = battery_power_watts / 1000
+                        data["kwh_battery_charge"] = (battery_power_watts / 1000) * kwh_calc
                         data["kwh_battery_discharge"] = 0
                     else:
                         data["kwh_battery_charge"] = 0
-                        data["kwh_battery_discharge"] = battery_power_watts / 1000
+                        data["kwh_battery_discharge"] = (battery_power_watts / 1000) * kwh_calc
 
-                    energy_kwh = row["psum"] / 1000
+                    energy_kwh = (row["psum"] / 1000) * kwh_calc
                     if energy_kwh < 0:
                         data["kwh_imported"] = energy_kwh
                         data["kwh_exported"] = 0
@@ -228,7 +237,8 @@ def get_station_day(request_date):
                             kwh_exported,
                             kwh_imported,
                             kwh_battery_charge,
-                            kwh_battery_discharge
+                            kwh_battery_discharge,
+                            time_unit
                         ) VALUES (
                             :datetime_start,
                             :datetime_end,
@@ -237,7 +247,8 @@ def get_station_day(request_date):
                             :kwh_exported,
                             :kwh_imported,
                             :kwh_battery_charge,
-                            :kwh_battery_discharge
+                            :kwh_battery_discharge,
+                            '5min'
                         )
                     """
 
@@ -253,7 +264,81 @@ def get_station_day(request_date):
             sleep(30)
             get_station_day(request_date)
         else:
-            print(f"Status code: {res.status_code}")
+            print(f"Error status code: {res.status_code}")
+            print(res.content)
+
+
+def get_station_day_energy_list(request_date):
+    """
+    Refer to p43 (3.27) of the Solis Cloud API documentation
+    """
+    creds = _get_creds()
+    canonicalized_resource = "/v1/api/stationDayEnergyList"  # or the actual API resource path
+    endpoint_url = f"{API_BASE}{canonicalized_resource}"
+    conn = sqlite3.connect(HA_DB_URL)
+    c = conn.cursor()
+
+    request_body = {
+        "money": "GBP",
+        "time": request_date,
+        "timeZone": 0,
+        "id": creds["station_id"],
+    }
+    headers = _prepare_header(creds, request_body, canonicalized_resource)
+
+    with requests.post(endpoint_url, headers=headers, json=request_body) as res:
+        if res.status_code == 200:
+            res_json = res.json()
+            print(json.dumps(res_json, indent=4))
+
+            if res_json.get("success"):
+
+                for row in res_json.get("data").get("records"):
+                    data = {
+                        "kwh_consumed": row["consumeEnergy"],
+                        "kwh_produced": row["produceEnergy"],
+                        "kwh_battery_charge": row["batteryChargeEnergy"],
+                        "kwh_battery_discharge": row["batteryDischargeEnergy"],
+                        "kwh_imported": row["gridPurchasedEnergy"],
+                        "kwh_exported": row["gridSellEnergy"],
+                        "datetime_start": f"{request_date}T00:00:00Z",
+                    }
+
+                    sql = """
+                        INSERT INTO solar (
+                            datetime_start,
+                            kwh_produced,
+                            kwh_consumed,
+                            kwh_exported,
+                            kwh_imported,
+                            kwh_battery_charge,
+                            kwh_battery_discharge,
+                            time_unit
+                        ) VALUES (
+                            :datetime_start,
+                            :kwh_produced,
+                            :kwh_consumed,
+                            :kwh_exported,
+                            :kwh_imported,
+                            :kwh_battery_charge,
+                            :kwh_battery_discharge,
+                            'day'
+                        )
+                    """
+
+                    try:
+                        c.execute(sql, data)
+                    except Exception as e:
+                        print(f"Error inserting: {e}")
+                        pass
+                conn.commit()
+
+        elif res.status_code == 502:
+            # try again after sleep
+            sleep(30)
+            get_station_day(request_date)
+        else:
+            print(f"Error status code: {res.status_code}")
             print(res.content)
 
 
@@ -309,13 +394,29 @@ def get_station_list():
                 get_station_list()
 
 
-if __name__ == "__main__":
-    # Calculate yesterday's date
-    yesterday = datetime.now() - timedelta(days=1)
-    # Format yesterday's date as a string in the "%Y-%m-%d" format
-    yesterday_str = yesterday.strftime("%Y-%m-%d")
+def main():
+    args = parse_args()
 
-    # get_inverter_day("2023-04-18")
-    # Get the current date and time
-    get_station_day(yesterday_str)
-    # get_station_list()
+    if args.date:
+        get_station_day_energy_list(args.date)
+    elif args.start_date and args.end_date:
+        start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(args.end_date, "%Y-%m-%d")
+        delta = timedelta(days=1)
+
+        while start_date <= end_date:
+            date_str = start_date.strftime("%Y-%m-%d")
+            get_station_day_energy_list(date_str)
+            start_date += delta
+            sleep(10)
+    else:
+        # Calculate yesterday's date
+        yesterday = datetime.now() - timedelta(days=1)
+        # Format yesterday's date as a string in the "%Y-%m-%d" format
+        yesterday_str = yesterday.strftime("%Y-%m-%d")
+
+        get_station_day_energy_list(yesterday_str)
+
+
+if __name__ == "__main__":
+    main()

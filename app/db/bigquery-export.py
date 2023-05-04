@@ -1,5 +1,6 @@
 import os
 import pytz
+import argparse
 import sqlite3
 from datetime import datetime, timedelta, date
 from google.cloud import bigquery
@@ -15,6 +16,15 @@ bq_client = bigquery.Client(project=gcp_project)
 conn = sqlite3.connect(local_db)
 conn.row_factory = sqlite3.Row
 c = conn.cursor()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Upload data to BigQuery for certain datasets.")
+    parser.add_argument("--table", type=str, help="Which table to update.")
+    parser.add_argument("--start_date", type=str, help="Start date in the format YYYY-MM-DD.")
+    parser.add_argument("--end_date", type=str, help="End date in the format YYYY-MM-DD.")
+    return parser.parse_args()
+
 
 USAGE_SCHEMA = {
     "doc": "Usage",
@@ -67,6 +77,7 @@ SOLAR_SCHEMA = {
         {"name": "kwh_imported", "type": ["float", "null"]},
         {"name": "kwh_battery_charge", "type": ["float", "null"]},
         {"name": "kwh_battery_discharge", "type": ["float", "null"]},
+        {"name": "time_unit", "type": ["string", "null"]},
     ],
 }
 
@@ -259,17 +270,20 @@ def get_solar_data(start_date: str = None, end_date: str = None):
     sql = f"""
         SELECT
             strftime('%s', datetime_start, 'localtime') * 1000 AS datetime_start,
-            strftime('%s', datetime_end, 'localtime') * 1000 AS datetime_end,
+            -- strftime('%s', datetime_end, 'localtime') * 1000 AS datetime_end,
+            NULL AS datetime_end,
             kwh_produced,
             kwh_consumed,
             kwh_imported,
             kwh_exported,
             kwh_battery_charge,
-            kwh_battery_discharge
+            kwh_battery_discharge,
+            time_unit
         FROM
             Solar r
         WHERE
             (date(datetime_start, 'localtime') BETWEEN '{start_date}' AND '{end_date}')
+            AND time_unit = 'day'
     """
 
     solar = c.execute(sql).fetchall()
@@ -277,7 +291,7 @@ def get_solar_data(start_date: str = None, end_date: str = None):
     for s in solar:
         s = dict(s)
         solar_data.append(s)
-    print(solar_data)
+    # print(solar_data)
 
     bq_table_id = f"home_analytics.solar"
 
@@ -305,7 +319,21 @@ def get_solar_data(start_date: str = None, end_date: str = None):
         raise Exception(f"Error deleting avro file: {e}")
 
 
+def main():
+    args = parse_args()
+
+    if args.table:
+        if args.table == "usage":
+            get_usage_data(args.start_date, args.end_date)
+        elif args.table == "rates":
+            get_rates_data()
+        elif args.table == "solar":
+            get_solar_data(args.start_date, args.end_date)
+
+    else:
+        get_usage_data()
+        get_solar_data()
+
+
 if __name__ == "__main__":
-    # get_rates_data()
-    get_usage_data()
-    get_solar_data()
+    main()

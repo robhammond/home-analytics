@@ -27,15 +27,16 @@ model Electricity {
 model Solar {
     id                    Int      @id @default(autoincrement())
     datetime_start        DateTime
-    datetime_end          DateTime
+    datetime_end          DateTime?
     kwh_produced          Float?
     kwh_consumed          Float?
     kwh_exported          Float?
     kwh_imported          Float?
     kwh_battery_discharge Float?
     kwh_battery_charge    Float?
+    time_unit             String? @default("day")
 
-    @@unique([datetime_start, datetime_end], name: "sqlite_autoindex_solar")
+    @@unique([datetime_start, time_unit], name: "sqlite_autoindex_solar")
 }
 
 model Heating {
