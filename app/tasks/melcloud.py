@@ -16,6 +16,72 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n)
 
 
+def heat_now():
+    # hits the "heat now" button on the ecodan
+    endpoint_url = "https://app.melcloud.com/Mitsubishi.Wifi.Client/Device/SetAtw"
+    conn = sqlite3.connect(HA_DB_URL)
+    c = conn.cursor()
+    sql = """
+        SELECT
+            LOWER(key),
+            value
+        FROM Credentials c
+        JOIN Entity e ON
+            e.id = c.entityId
+        WHERE LOWER(e.entity_name) = 'ecodan'
+    """
+    creds = {}
+    try:
+        res = c.execute(sql).fetchall()
+        for r in res:
+            if r[0] == "device_id":
+                creds["device_id"] = r[1]
+            if r[0] == "mitsi_context_key":
+                creds["mitsi_context_key"] = r[1]
+    except Exception as e:
+        raise Exception("Creds not found in DB")
+
+    if "device_id" not in creds:
+        raise Exception("Missing device_id in database")
+
+    if "mitsi_context_key" not in creds:
+        raise Exception("Missing mitsi_context_key in database")
+
+    with requests.post(
+        endpoint_url,
+        headers={
+            "accept": "application/json, text/javascript, */*; q=0.01",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json; charset=UTF-8",
+            "sec-ch-ua": '".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "sec-gpc": "1",
+            "x-mitscontextkey": creds["mitsi_context_key"],
+            "x-requested-with": "XMLHttpRequest",
+            "Referer": "https://app.melcloud.com/",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+        },
+        json={
+            "DeviceID": creds["device_id"],
+            "DeviceType": 1,
+            "ForcedHotWaterMode": "true",
+            "SetTankWaterTemperature": 45, # change if your preferred tank temperature is different!
+            "EffectiveFlags": 87534,
+        },
+    ) as res:
+        if res.status_code == 200:
+            print("Heat now request sent")
+            print(res.content)
+        else:
+            print("Heat now request failed")
+            print(res.status_code)
+            print(res.content)
+
+
 def fetch_usage(start_date=None, end_date=None):
     "Fetches Heat Pump data from Mitsubishi"
     if not start_date:
@@ -136,7 +202,6 @@ def fetch_usage(start_date=None, end_date=None):
                 )
 
             for value in data["hot_water"]:
-
                 sql = f"""
                     INSERT INTO HotWater (
                         datetime,
@@ -161,7 +226,6 @@ def fetch_usage(start_date=None, end_date=None):
             conn.commit()
 
             for value in data["cooling"]:
-
                 sql = f"""
                     INSERT INTO Cooling (
                         datetime,
@@ -186,7 +250,6 @@ def fetch_usage(start_date=None, end_date=None):
             conn.commit()
 
             for value in data["heating"]:
-
                 sql = f"""
                     INSERT INTO Heating (
                         datetime,
@@ -217,4 +280,3 @@ def fetch_usage(start_date=None, end_date=None):
 
 if __name__ == "__main__":
     fetch_usage()
-
