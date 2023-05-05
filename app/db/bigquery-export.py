@@ -291,7 +291,6 @@ def get_solar_data(start_date: str = None, end_date: str = None):
     for s in solar:
         s = dict(s)
         solar_data.append(s)
-    # print(solar_data)
 
     bq_table_id = f"home_analytics.solar"
 
@@ -306,10 +305,14 @@ def get_solar_data(start_date: str = None, end_date: str = None):
         job_config = bigquery.job.LoadJobConfig()
         job_config.source_format = "AVRO"
         job_config.use_avro_logical_types = True
-        job_config.write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
+        job_config.time_partitioning = bigquery.TimePartitioning(
+            field="datetime_start",
+            type_=bigquery.TimePartitioningType.DAY,
+        )
+        job_config.write_disposition = bigquery.WriteDisposition.WRITE_APPEND
 
         job = bq_client.load_table_from_file(source_file, bq_table_id, job_config=job_config)
-        job.result()  # Waits for job to complete
+        job.result()
         print(f"Uploaded {source_file} to {bq_table_id}")
 
     try:
