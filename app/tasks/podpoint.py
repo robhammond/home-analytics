@@ -2,11 +2,10 @@
 
 import requests
 import json
-import re
 import os
 import pytz
 import sqlite3
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 import calendar
 
 HA_DB_URL = os.getenv("HA_DB_URL")
@@ -203,6 +202,7 @@ def get_charge_sessions(start_date=None, end_date=None):
     ) as res:
         if res.status_code == 200:
             json_data = res.json()
+            # print(json.dumps(json_data, indent=4))
 
             conn = sqlite3.connect(HA_DB_URL)
             c = conn.cursor()
@@ -244,7 +244,7 @@ def get_charge_sessions(start_date=None, end_date=None):
                         '{session["datetime_start"]}',
                         '{session["datetime_end"]}',
                         {session["charging_duration"]},
-                        2,
+                        {creds["entity_id"]},
                         'day',
                         {session["kwh_used"]},
                         {session["energy_cost"]}

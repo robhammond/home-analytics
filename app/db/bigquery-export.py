@@ -84,9 +84,9 @@ SOLAR_SCHEMA = {
 
 def get_usage_data(start_date: str = None, end_date: str = None):
 
-    # default to the past week's data
+    # default to yesterday's data
     if not start_date and not end_date:
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     avro_data = []
@@ -262,9 +262,9 @@ def get_rates_data():
 
 
 def get_solar_data(start_date: str = None, end_date: str = None):
-    # default to the past week's data
+    # default to yesterday's data
     if not start_date and not end_date:
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     sql = f"""

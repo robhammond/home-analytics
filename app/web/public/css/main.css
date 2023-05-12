@@ -1,17 +1,33 @@
-@font-face {
-	font-family: 'UKNumberPlate';
-	src: url('/fonts/UKNumberPlate.woff');
-	font-weight: normal;
-	font-style: normal;
+.container-fluid {
+    max-width: 1500px;
+    margin: 0 auto;
 }
 
-#logo, #logo a {
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+
+@font-face {
+    font-family: 'UKNumberPlate';
+    src: url('/fonts/UKNumberPlate.woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+#logo,
+#logo a {
     font-family: "Blinker", sans-serif;
     font-size: 32px;
 }
-.logoA, .logoA a {
-    color: #16793b !important;;
+
+.logoA,
+.logoA a {
+    color: #16793b !important;
+    ;
 }
+
 .bolt {
     color: gold !important;
     font-size: 75%;

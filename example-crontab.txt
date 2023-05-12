@@ -10,6 +10,9 @@
 # 0 5 * * * cd /var/www/home-analytics/app/tasks; python3 melcloud_temperatures.py >> /var/log/cron.log 2>&1
 # 0 5 * * * cd /var/www/home-analytics/app/tasks; python3 carbon_intensity.py >> /var/log/cron.log 2>&1
 
+# Enable if you want to export data to BigQuery
+# 0 10 * * * cd /var/www/home-analytics/app/db; python3 bigquery-export.py >> /var/log/cron.log 2>&1
+
 # Turn off display at night
 0 23 * * * DISPLAY=:0 xrandr --output DSI-1 --off
 # Turn on display
