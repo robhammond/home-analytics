@@ -334,8 +334,8 @@ def main():
             get_solar_data(args.start_date, args.end_date)
 
     else:
-        get_usage_data()
-        get_solar_data()
+        get_usage_data(args.start_date, args.end_date)
+        get_solar_data(args.start_date, args.end_date)
 
 
 if __name__ == "__main__":
