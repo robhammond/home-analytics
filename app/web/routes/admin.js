@@ -299,18 +299,23 @@ router.get("/add-entity", async (req, res) => {
 router.post("/add-entity", async (req, res) => {
     let { entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
 
-    await prisma.entity.create({
-        data: {
-            entity_name: entity_name,
-            entity_type: entity_type,
-            entity_category: entity_category,
-            entity_backend: entity_backend,
-            entity_url: entity_url,
-            entity_image: entity_image,
-            entity_location: entity_location,
-        },
-    });
-    res.redirect("/admin/list-entities");
+    try {
+        await prisma.entity.create({
+            data: {
+                entity_name: entity_name,
+                entity_type: entity_type,
+                entity_category: entity_category,
+                entity_backend: entity_backend,
+                entity_url: entity_url,
+                entity_image: entity_image,
+                entity_location: entity_location,
+            },
+        });
+        res.redirect("/admin/list-entities");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/list-entities", async (req, res) => {
@@ -343,67 +348,91 @@ router.get("/edit-entity", async (req, res) => {
 
 router.post("/edit-entity", async (req, res) => {
     let { id, entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
-
-    await prisma.entity.update({
-        where: {
-            id: Number(id),
-        },
-        data: {
-            entity_name: entity_name,
-            entity_type: entity_type,
-            entity_category: entity_category,
-            entity_backend: entity_backend,
-            entity_url: entity_url,
-            entity_image: entity_image,
-            entity_location: entity_location,
-        },
-    });
-    res.redirect("/admin/list-entities");
+    try {
+        await prisma.entity.update({
+            where: {
+                id: Number(id),
+            },
+            data: {
+                entity_name: entity_name,
+                entity_type: entity_type,
+                entity_category: entity_category,
+                entity_backend: entity_backend,
+                entity_url: entity_url,
+                entity_image: entity_image,
+                entity_location: entity_location,
+            },
+        });
+        res.redirect("/admin/list-entities");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/delete-entity", async (req, res) => {
-    const entity = await prisma.entity.delete({
-        where: {
-            id: Number(req.query.id),
-        },
-    });
-    res.redirect("back");
+    try {
+        const entity = await prisma.entity.delete({
+            where: {
+                id: Number(req.query.id),
+            },
+        });
+        res.redirect("back");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/delete-credentials", async (req, res) => {
-    const creds = await prisma.credentials.delete({
-        where: {
-            id: Number(req.query.id),
-        },
-    });
-    res.redirect("back");
+    try {
+        const creds = await prisma.credentials.delete({
+            where: {
+                id: Number(req.query.id),
+            },
+        });
+        res.redirect("back");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/add-credentials", async (req, res) => {
     const id = Number(req.query.id);
-    const entity = await prisma.entity.findFirst({
-        where: {
-            id: id,
-        },
-    });
-    res.render("admin/add-credentials", { page_title: "Add credentials", entity: entity });
+    try {
+        const entity = await prisma.entity.findFirst({
+            where: {
+                id: id,
+            },
+        });
+        res.render("admin/add-credentials", { page_title: "Add credentials", entity: entity });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.post("/add-credentials", async (req, res) => {
     const { id, key, value } = req.body;
-    const credentials = await prisma.credentials.create({
-        data: {
-            entity: {
-                connect: { id: Number(id) },
+    try {
+        const credentials = await prisma.credentials.create({
+            data: {
+                entity: {
+                    connect: { id: Number(id) },
+                },
+                key: key,
+                value: value,
             },
-            key: key,
-            value: value,
-        },
-        include: {
-            entity: true,
-        },
-    });
-    res.redirect(`/admin/view-entity?id=${id}`);
+            include: {
+                entity: true,
+            },
+        });
+        res.redirect(`/admin/view-entity?id=${id}`);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/edit-credentials", async (req, res) => {
@@ -421,16 +450,21 @@ router.get("/edit-credentials", async (req, res) => {
 
 router.post("/edit-credentials", async (req, res) => {
     const { id, key, value, entity_id } = req.body;
-    const cred = await prisma.credentials.update({
-        where: {
-            id: Number(id),
-        },
-        data: {
-            key: key,
-            value: value,
-        },
-    });
-    res.redirect(`/admin/view-entity?id=${entity_id}`);
+    try {
+        const cred = await prisma.credentials.update({
+            where: {
+                id: Number(id),
+            },
+            data: {
+                key: key,
+                value: value,
+            },
+        });
+        res.redirect(`/admin/view-entity?id=${entity_id}`);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
 });
 
 router.get("/list-vehicles", async (req, res) => {
