@@ -83,7 +83,6 @@ SOLAR_SCHEMA = {
 
 
 def get_usage_data(start_date: str = None, end_date: str = None):
-
     # default to yesterday's data
     if not start_date and not end_date:
         start_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -261,7 +260,7 @@ def get_rates_data():
         raise Exception(f"Error deleting avro file: {e}")
 
 
-def get_solar_data(start_date: str = None, end_date: str = None):
+def get_solar_data(start_date: str = None, end_date: str = None, time_unit: str = "day"):
     # default to yesterday's data
     if not start_date and not end_date:
         start_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -270,8 +269,11 @@ def get_solar_data(start_date: str = None, end_date: str = None):
     sql = f"""
         SELECT
             strftime('%s', datetime_start, 'localtime') * 1000 AS datetime_start,
-            -- strftime('%s', datetime_end, 'localtime') * 1000 AS datetime_end,
-            NULL AS datetime_end,
+            CASE
+                WHEN time_unit = 'day' THEN NULL
+                WHEN time_unit = '5min' THEN strftime('%s', datetime_end, 'localtime') * 1000
+                ELSE NULL
+            END AS datetime_end,
             kwh_produced,
             kwh_consumed,
             kwh_imported,
@@ -283,10 +285,10 @@ def get_solar_data(start_date: str = None, end_date: str = None):
             Solar r
         WHERE
             (date(datetime_start, 'localtime') BETWEEN '{start_date}' AND '{end_date}')
-            AND time_unit = 'day'
+            AND time_unit = :unit
     """
 
-    solar = c.execute(sql).fetchall()
+    solar = c.execute(sql, {"unit": time_unit}).fetchall()
     solar_data = []
     for s in solar:
         s = dict(s)
@@ -332,10 +334,12 @@ def main():
             get_rates_data()
         elif args.table == "solar":
             get_solar_data(args.start_date, args.end_date)
+        elif args.table == "solar_5min":
+            get_solar_data(args.start_date, args.end_date, "5min")
 
     else:
-        get_usage_data()
-        get_solar_data()
+        get_usage_data(args.start_date, args.end_date)
+        get_solar_data(args.start_date, args.end_date)
 
 
 if __name__ == "__main__":

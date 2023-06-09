@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--date", type=str, help="Single date in the format YYYY-MM-DD.")
     parser.add_argument("--start_date", type=str, help="Start date in the format YYYY-MM-DD.")
     parser.add_argument("--end_date", type=str, help="End date in the format YYYY-MM-DD.")
+    parser.add_argument("--unit", type=str, help="Time unit - either mins or day.")
     return parser.parse_args()
 
 
@@ -197,23 +198,21 @@ def get_station_day(request_date):
             print(json.dumps(res_json, indent=4))
 
             if res_json.get("success"):
-                # convert 5min kw data to kwh
-                kwh_calc = 5 / 60
 
                 for row in res_json.get("data"):
                     data = {
-                        "kwh_consumed": (row["consumeEnergy"] / 1000) * kwh_calc,
-                        "kwh_produced": (row["produceEnergy"] / 1000) * kwh_calc,
+                        "kwh_consumed": (row["consumeEnergy"] / 1000),
+                        "kwh_produced": (row["produceEnergy"] / 1000),
                     }
                     battery_power_watts = row["batteryPower"]
                     if battery_power_watts > 0:
-                        data["kwh_battery_charge"] = (battery_power_watts / 1000) * kwh_calc
+                        data["kwh_battery_charge"] = (battery_power_watts / 1000)
                         data["kwh_battery_discharge"] = 0
                     else:
                         data["kwh_battery_charge"] = 0
-                        data["kwh_battery_discharge"] = (battery_power_watts / 1000) * kwh_calc
+                        data["kwh_battery_discharge"] = (battery_power_watts / 1000)
 
-                    energy_kwh = (row["psum"] / 1000) * kwh_calc
+                    energy_kwh = (row["psum"] / 1000)
                     if energy_kwh < 0:
                         data["kwh_imported"] = energy_kwh
                         data["kwh_exported"] = 0
@@ -398,7 +397,10 @@ def main():
     args = parse_args()
 
     if args.date:
-        get_station_day_energy_list(args.date)
+        if args.unit == 'mins':
+            get_station_day(args.date)
+        else:
+            get_station_day_energy_list(args.date)
     elif args.start_date and args.end_date:
         start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
         end_date = datetime.strptime(args.end_date, "%Y-%m-%d")
@@ -406,7 +408,10 @@ def main():
 
         while start_date <= end_date:
             date_str = start_date.strftime("%Y-%m-%d")
-            get_station_day_energy_list(date_str)
+            if args.unit == 'mins':
+                get_station_day(date_str)
+            else:
+                get_station_day_energy_list(date_str)
             start_date += delta
             sleep(10)
     else:
@@ -415,7 +420,10 @@ def main():
         # Format yesterday's date as a string in the "%Y-%m-%d" format
         yesterday_str = yesterday.strftime("%Y-%m-%d")
 
-        get_station_day_energy_list(yesterday_str)
+        if args.unit == 'mins':
+            get_station_day(yesterday_str)
+        else:
+            get_station_day_energy_list(yesterday_str)
 
 
 if __name__ == "__main__":
