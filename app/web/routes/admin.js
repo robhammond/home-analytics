@@ -153,6 +153,26 @@ router.post("/add-tariff", async (req, res) => {
     res.redirect("/admin/list-tariffs");
 });
 
+
+router.get("/delete-tariff", async (req, res) => {
+    try {
+        const rates = await prisma.rates.deleteMany({
+            where: {
+                supplierId: Number(req.query.id),
+            },
+        });
+        const supplier = await prisma.supplier.delete({
+            where: {
+                id: Number(req.query.id),
+            },
+        });
+        res.redirect("back");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Internal Server Error - Please try again.");
+    }
+});
+
 router.get("/list-tariffs", async (req, res) => {
     const tariffs = await prisma.supplier.findMany({
         include: {
