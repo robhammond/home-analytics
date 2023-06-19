@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument("--date", type=str, help="Single date in the format YYYY-MM-DD.")
     parser.add_argument("--start_date", type=str, help="Start date in the format YYYY-MM-DD.")
     parser.add_argument("--end_date", type=str, help="End date in the format YYYY-MM-DD.")
-    parser.add_argument("--unit", type=str, help="Time unit - either mins or day.")
+    parser.add_argument("--unit", type=str, help="Time unit - either mins or days.")
     return parser.parse_args()
 
 
@@ -422,7 +422,11 @@ def main():
 
         if args.unit == 'mins':
             get_station_day(yesterday_str)
+        elif args.unit == 'days':
+            get_station_day_energy_list(yesterday_str)
         else:
+            get_station_day(yesterday_str)
+            sleep(10)
             get_station_day_energy_list(yesterday_str)
 
 

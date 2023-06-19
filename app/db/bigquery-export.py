@@ -336,10 +336,13 @@ def main():
             get_solar_data(args.start_date, args.end_date)
         elif args.table == "solar_5min":
             get_solar_data(args.start_date, args.end_date, "5min")
+        else:
+            print("Invalid table name")
 
     else:
         get_usage_data(args.start_date, args.end_date)
         get_solar_data(args.start_date, args.end_date)
+        get_solar_data(args.start_date, args.end_date, "5min")
 
 
 if __name__ == "__main__":
