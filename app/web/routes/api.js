@@ -793,12 +793,6 @@ router.get("/usage/main", async (req, res) => {
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                 `;
             } else {
-                // ddb.all('SELECT 42 AS fortytwo', function(err, res) {
-                //     if (err) {
-                //       throw err;
-                //     }
-                //     console.log(res[0].fortytwo)
-                //   });
                 usage = await prisma.$queryRaw`
                     WITH rate_list AS (
                         SELECT 
