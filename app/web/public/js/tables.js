@@ -14,7 +14,7 @@ function loadUsageTable(unit, startDate, endDate, filter) {
             let count = 0;
             for (let row of reversed_array) {
                 $('#usageDataTable').append(`<tr><td>${row.dt}</td><td style="text-align:right">${row.kwh}</td>
-                    <td>${row.rate_type}</td><td style="text-align:right">£${row.cost.toFixed(2)}</td></tr>`);
+                    <td style="text-align:right">£${row.cost.toFixed(2)}</td></tr>`);
                 count++;
             }
             let totals = res.totals;
