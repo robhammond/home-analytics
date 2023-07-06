@@ -70,14 +70,18 @@ def refresh_db():
             """
             rates = c.execute(sql).fetchall()
 
+            # Define time zones
+            utc = pytz.timezone("UTC")
+            bst = pytz.timezone("Europe/London")
+
             for rate in rates:
                 if rate["rate_type"] != "fixed":
-                    # clone the actual date we're looking at
-                    dt_start = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S")
-                    dt_end = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S")
-                    bst = pytz.timezone("Europe/London")
-                    dt_start = bst.localize(dt_start)
-                    dt_end = bst.localize(dt_end)
+                    # Get the actual datetime in UTC
+                    actual_dt_utc = datetime.strptime(el["datetime_start"], "%Y-%m-%d %H:%M:%S")
+                    actual_dt_utc = utc.localize(actual_dt_utc)
+
+                    # Convert to local time (BST)
+                    actual_dt = actual_dt_utc.astimezone(bst)
 
                     # extract hour and minute of rate window
                     regex = r"^(\d\d):(\d\d)$"
@@ -88,17 +92,27 @@ def refresh_db():
                     end_hour = int(end.group(1))
                     end_min = int(end.group(2))
 
-                    # fake the start and end of this rate window
-                    dt_start = dt_start.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
-                    dt_end = dt_end.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+                    # build dt_start and dt_end based on actual_dt (in BST)
+                    dt_start = actual_dt.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
+                    dt_end = actual_dt.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
 
-                    dt_end = dt_end + timedelta(days=1)
-                    dt_end = dt_end - timedelta(seconds=1)
+                    # If end time is earlier than start time, it means the range crosses midnight
+                    if dt_end.time() < dt_start.time():
+                        # Shift dt_start to previous day and dt_end to the next day
+                        dt_start = dt_start - timedelta(days=1)
+                        dt_end = dt_end + timedelta(days=1)
+                    else:
+                        # This might be needed for cases where the end time is exactly at midnight
+                        dt_end = dt_end - timedelta(seconds=1)
 
-                    time_range = DateTimeRange(dt_start, dt_end)
+                    # Debug print statements
+                    # print(f"rate: {rate['rate_type']}, start_time: {rate['start_time']}, end_time: {rate['end_time']}")
+                    # print(f"actual_dt: {actual_dt}, dt_start: {dt_start}, dt_end: {dt_end}")
 
-                    if dt in time_range:
-
+                    # Use <= for both ends of the range
+                    if dt_start <= actual_dt <= dt_end:
+                        print(f"Matching rate: {rate['rate_type']}")  # Debug print statement
+                        
                         sql = f"""
                             UPDATE
                                 electricity
@@ -109,7 +123,6 @@ def refresh_db():
                         """
                         c.execute(sql, (rate["id"], el["id"]))
                         conn.commit()
-
                 else:
                     sql = f"""
                         UPDATE
