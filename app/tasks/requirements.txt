@@ -4,7 +4,7 @@ asyncio-mqtt==0.12.1
 dateparser==1.1.1
 fastavro==1.7.1
 google-cloud-bigquery==3.5.0
-hyundai-kia-connect-api==3.3.11
+hyundai-kia-connect-api==3.3.12
 python-crontab==2.6.0
 python-dateutil==2.8.2
 python-dotenv==0.21.0
