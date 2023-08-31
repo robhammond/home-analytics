@@ -152,7 +152,7 @@ pip3 install -r ./requirements.txt
 
 7. Set the DB path as an environment variable:
 ```sh
-echo "export HA_DB_URL=/[PROJECT_PATH]/db/prod.db" >> ~/.profile
+echo "export HA_DB_URL=/[PROJECT_PATH]/app/db/prod.db" >> ~/.profile
 ```
 Then restart your shell session so the env variable is loaded for the next steps.
 
