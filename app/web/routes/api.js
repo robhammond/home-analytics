@@ -1392,31 +1392,28 @@ router.get("/solar/main", async (req, res) => {
     try {
         solar = await prisma.$queryRaw`
             SELECT
-                strftime("%Y-%m-%d %H:%M", s.datetime_start, 'localtime') AS dt,
+                strftime("%Y-%m-%d", s.datetime_start, 'localtime') AS dt,
                 ROUND(SUM(s.kwh_produced),2) AS kwh_produced,
                 ROUND(SUM(s.kwh_consumed),2) AS kwh_consumed
             FROM solar s
             WHERE
                 DATE(s.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
-                and time_unit = 'days'
+                and time_unit = 'day'
             GROUP BY 1
             ORDER BY
                 1
         `;
-        // totals = await prisma.$queryRaw`
-        //     SELECT
-        //         ROUND(SUM(e.kwh),2) AS kwh,
-        //         ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
-        //     FROM electricity e
-        //     JOIN rates r ON
-        //         r.id = e.rateId
-        //     JOIN supplier s ON
-        //         s.id = r.supplierId
-        //     WHERE
-        //         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
-        // `;
+        totals = await prisma.$queryRaw`
+            SELECT
+                ROUND(SUM(s.kwh_produced),2) AS kwh_produced,
+                ROUND(SUM(s.kwh_consumed),2) AS kwh_consumed
+            FROM solar s
+            WHERE
+                DATE(s.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                and time_unit = 'day'
+        `;
 
-        res.json({ data: solar });
+        res.json({ data: solar, totals });
     } catch (e) {
         console.log(e);
         res.json({ error: e });

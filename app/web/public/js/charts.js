@@ -504,19 +504,18 @@ function loadSolarMain(unit, startDate, endDate, filter) {
             start: startDate,
             end: endDate,
             unit: unit,
-            filter: filter,
         },
         dataType: "json",
         success: function(res) {
-            let kwh = [];
-            let cost = [];
+            let kwh_produced = [];
+            let kwh_consumed = [];
             for (let row of res.data) {
-                kwh.push(row.kwh);
-                cost.push(row.cost);
+                kwh_produced.push(row.kwh_produced);
+                kwh_consumed.push(row.kwh_consumed);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "kWh", data: kwh, type: 'column', yAxis: 0});
-            dataSeries.push({name: "Cost", data: cost, type: 'line', yAxis: 1});
+            dataSeries.push({name: "kWh Produced", data: kwh_produced, type: 'line'});
+            dataSeries.push({name: "kWh Consumed", data: kwh_consumed, type: 'line'});
 
             let usageMain = Highcharts.chart({
                 chart: {
@@ -552,23 +551,14 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                     },
                     categories: xAxisCats,
                 },
-                yAxis : [{
+                yAxis : {
                     title: {
                         text: "kWh",
                     },
                     labels: {
                     },
                     gridLineWidth: 0,
-                },{
-                    title: {
-                        text: "Cost",
-                    },
-                    labels: {
-                        format: '£{value}',
-                    },
-                    opposite: true,
-                    gridLineWidth: 0,
-                }],
+                },
                 series: dataSeries
             });
         },
