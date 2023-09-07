@@ -27,7 +27,9 @@
             </td>
             <td>
                 <small>
+                    <% if (tariff.supplier_start) { %>
                     <%= tariff.supplier_start.toISOString().substr(0,10) %> - 
+                    <% } %>
                     <% if (tariff.supplier_end) { %>
                         <%= tariff.supplier_end.toISOString().substr(0,10) %>
                     <% } %>

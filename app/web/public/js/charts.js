@@ -490,3 +490,91 @@ function loadTemperatureChart(unit, startDate, endDate) {
         cache: false
     });    
 }
+
+
+
+function loadSolarMain(unit, startDate, endDate, filter) {
+
+    let dataSeries = [];
+    let xAxisCats = [];
+    $.ajax({
+        url: '/api/solar/main',
+        type: "GET",
+        data : {
+            start: startDate,
+            end: endDate,
+            unit: unit,
+            filter: filter,
+        },
+        dataType: "json",
+        success: function(res) {
+            let kwh = [];
+            let cost = [];
+            for (let row of res.data) {
+                kwh.push(row.kwh);
+                cost.push(row.cost);
+                xAxisCats.push(row.dt);
+            }
+            dataSeries.push({name: "kWh", data: kwh, type: 'column', yAxis: 0});
+            dataSeries.push({name: "Cost", data: cost, type: 'line', yAxis: 1});
+
+            let usageMain = Highcharts.chart({
+                chart: {
+                    // type: 'column',
+                    renderTo: 'usageMain',
+                    zoomType: 'xy',
+                    backgroundColor: 'white',
+                    plotBorderWidth: 0,
+                    plotShadow: false,
+                },
+                credits: false,
+                title: {
+                    text: "",
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.1,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    itemStyle: {
+                        fontWeight: 'normal',
+                        fontSize: '14px',
+                        align: 'right'
+                    }
+                },
+                xAxis : {
+                    title: {
+                        text: "Day",
+                    },
+                    labels: {
+                    },
+                    categories: xAxisCats,
+                },
+                yAxis : [{
+                    title: {
+                        text: "kWh",
+                    },
+                    labels: {
+                    },
+                    gridLineWidth: 0,
+                },{
+                    title: {
+                        text: "Cost",
+                    },
+                    labels: {
+                        format: '£{value}',
+                    },
+                    opposite: true,
+                    gridLineWidth: 0,
+                }],
+                series: dataSeries
+            });
+        },
+        error: function(xhr) {
+            console.log(xhr);
+        },
+        cache: false
+    });
+}

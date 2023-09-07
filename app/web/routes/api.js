@@ -1355,4 +1355,73 @@ router.get("/vehicles/status", async (req, res) => {
     }
 });
 
+
+router.get("/solar/main", async (req, res) => {
+    let start = req.query.start;
+    let end = req.query.end;
+    let unit = req.query.unit || "day";
+
+    let startMinusTime = {};
+    let endMinusTime = {};
+
+    if (unit == "halfhour") {
+        startMinusTime = { days: 1 };
+        endMinusTime = { hours: 1 };
+    } else if (unit == "hour") {
+        startMinusTime = { days: 1 };
+        endMinusTime = { hours: 1 };
+    } else if (unit == "day") {
+        startMinusTime = { days: 30 };
+        endMinusTime = { days: 1 };
+    } else if (unit == "month") {
+        startMinusTime = { months: 24 };
+        endMinusTime = { days: 1 };
+    }
+    if (!start) {
+        start = DateTime.now().minus(startMinusTime).toFormat("yyyy-MM-dd");
+    } else {
+        // TODO: validate it's in yyyy-mm-dd format
+    }
+    if (!end) {
+        end = DateTime.now().minus(endMinusTime).toFormat("yyyy-MM-dd");
+    } else {
+        // TODO: validate it's in yyyy-mm-dd format
+    }
+    let solar = [];
+    let totals = [];
+    try {
+        solar = await prisma.$queryRaw`
+            SELECT
+                strftime("%Y-%m-%d %H:%M", s.datetime_start, 'localtime') AS dt,
+                ROUND(SUM(s.kwh_produced),2) AS kwh_produced,
+                ROUND(SUM(s.kwh_consumed),2) AS kwh_consumed
+            FROM solar s
+            WHERE
+                DATE(s.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                and time_unit = 'days'
+            GROUP BY 1
+            ORDER BY
+                1
+        `;
+        // totals = await prisma.$queryRaw`
+        //     SELECT
+        //         ROUND(SUM(e.kwh),2) AS kwh,
+        //         ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+        //     FROM electricity e
+        //     JOIN rates r ON
+        //         r.id = e.rateId
+        //     JOIN supplier s ON
+        //         s.id = r.supplierId
+        //     WHERE
+        //         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+        // `;
+
+        res.json({ data: solar });
+    } catch (e) {
+        console.log(e);
+        res.json({ error: e });
+    }
+});
+
+
 module.exports = router;
