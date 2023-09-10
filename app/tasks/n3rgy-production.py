@@ -55,37 +55,30 @@ def fetch_production(start_date=None, end_date=None):
         res_json = res.json()
         print(json.dumps(res_json))
 
-        # for value in res_json["values"]:
-        #     ts = value["timestamp"]
+        for value in res_json["values"]:
+            ts = value["timestamp"]
 
             # times are in UTC, it doesn't include TZ
-            # dt = datetime.strptime(ts, "%Y-%m-%d %H:%M")
-            # dt_start = datetime.strptime(ts, "%Y-%m-%d %H:%M") - timedelta(minutes=30)
+            dt = datetime.strptime(ts, "%Y-%m-%d %H:%M")
+            dt_start = datetime.strptime(ts, "%Y-%m-%d %H:%M") - timedelta(minutes=30)
 
             # print(dt)
 
-            # sql = f"""
-            #     INSERT INTO electricity (
-            #         datetime,
-            #         datetime_start,
-            #         kwh,
-            #         granularity,
-            #         source
-            #     ) 
-            #     VALUES (
-            #         '{dt}',
-            #         '{dt_start}',
-            #         {value["value"]},
-            #         '{res_json["granularity"]}',
-            #         'n3rgy'
-            #     );
-            # """
-            # try:
-            #     c.execute(sql)
-            # except Exception as e:
-            #     print(f"Error inserting: {e}")
-            #     pass
-        # conn.commit()
+            sql = f"""
+                UPDATE electricity 
+                    SET kwh_produced = {value["value"]}
+                WHERE
+                    datetime = '{dt}'
+                    AND datetime_start = '{dt_start}'
+                    AND granularity = '{res_json["granularity"]}'
+                    and source = 'n3rgy'
+            """
+            try:
+                c.execute(sql)
+            except Exception as e:
+                print(f"Error inserting: {e}")
+                pass
+        conn.commit()
 
     conn.close()
     refresh_db()

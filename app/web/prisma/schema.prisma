@@ -15,7 +15,8 @@ model Electricity {
     id             Int       @id @default(autoincrement())
     datetime_start DateTime?
     datetime       DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
-    kwh            Float
+    kwh            Float?
+    kwh_produced   Float?
     granularity    String
     rate           Rates?    @relation(fields: [rateId], references: [id])
     rateId         Int?
@@ -25,7 +26,7 @@ model Electricity {
 }
 
 model Solar {
-    id                    Int      @id @default(autoincrement())
+    id                    Int       @id @default(autoincrement())
     datetime_start        DateTime
     datetime_end          DateTime?
     kwh_produced          Float?
@@ -34,7 +35,7 @@ model Solar {
     kwh_imported          Float?
     kwh_battery_discharge Float?
     kwh_battery_charge    Float?
-    time_unit             String? @default("day")
+    time_unit             String?   @default("day")
 
     @@unique([datetime_start, time_unit], name: "sqlite_autoindex_solar")
 }
@@ -184,7 +185,8 @@ model Supplier {
     id              Int       @id @default(autoincrement())
     supplier        String
     tariff_name     String
-    standing_charge Float
+    tariff_type     String  @default("incoming") // incoming / outgoing
+    standing_charge Float?
     supplier_start  DateTime?
     supplier_end    DateTime?
     rates           Rates[]
@@ -194,7 +196,7 @@ model Rates {
     id          Int           @id @default(autoincrement())
     supplier    Supplier      @relation(fields: [supplierId], references: [id])
     supplierId  Int
-    rate_type   String // flat, peak, off-peak
+    rate_type   String // flat, peak, off-peak, outgoing
     start_time  String?
     end_time    String?
     cost        Float

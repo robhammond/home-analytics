@@ -9,32 +9,41 @@
         <div class="form-text">Your electricity provider's name (ie Octopus Energy, EON, etc)</div>
     </div>
     <div class="col-6 mb-3">
-		<label for="tariff_name" class="form-label">Tariff Name</label>
+        <label for="tariff_name" class="form-label">Tariff Name</label>
         <input type="text" name='tariff_name' class="form-control">
         <div class="form-text">Enter the name of your electricity tariff (ie Go, EV, etc)</div>
-	</div>
-	<div class="col-6 mb-3">
-		<label for="standing_charge" class="form-label">Standing Charge</label>
+    </div>
+    <div class="col-6 mb-3">
+        <label for="tariff_type" class="form-label">Tariff Type</label>
+        <select name='tariff_type' class="form-select" id="tariff_type">
+            <option value="incoming">Incoming</option>
+            <option value="outgoing">Outgoing</option>
+        </select>
+        <div class="form-text">Enter the type of your electricity tariff (ie Go, EV, etc)</div>
+    </div>
+    <div class="col-6 mb-3" id="standing_charge_container"> <!-- Added an ID for the container -->
+        <label for="standing_charge" class="form-label">Standing Charge</label>
         <div class="input-group">
             <input type="number" name="standing_charge" class="form-control" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
             <div class="input-group-text">pence / day</div>
         </div>
         <div class="form-text">Enter your tariff's fixed daily standing charge in pence per day</div>
-	</div>
-	<div class="col-6 mb-3">
-		<label for="supplier_start" class="form-label">Tariff Start Date</label>
+    </div>
+    <div class="col-6 mb-3">
+        <label for="supplier_start" class="form-label">Tariff Start Date</label>
         <input type="date" name="supplier_start" class="form-control" placeholder="2020-01-01">
         <div class="form-text">Enter the date your electricity tariff started</div>
-	</div>
-	<div class="col-6 mb-3">
-		<label for="supplier_end" class="form-label">Tariff End Date</label>
+    </div>
+    <div class="col-6 mb-3">
+        <label for="supplier_end" class="form-label">Tariff End Date</label>
         <input type="date" name="supplier_end" class="form-control" placeholder="2020-02-01">
         <div class="form-text">Leave blank for your current tariff</div>
-	</div>
+    </div>
     <hr>
     <h3>Rates</h3>
     <div class="col-8">
-        <p>Add your single fixed rate or a variable rate. If you are on a variable rate, add one rate here, then you can add additional rates on the main Tariffs page.</p>
+        <p>Add your single fixed rate or a variable rate. If you are on a variable rate, add one rate here, then you can
+            add additional rates on the main Tariffs page.</p>
     </div>
     <div class="col-6 mb-3">
         <label for="rate_type" class="form-label">Rate Type</label>
@@ -62,5 +71,22 @@
         <input type="text" name="end_time" class="form-control" placeholder="hh:mm">
         <div class="form-text">Leave blank if you are on a fixed rate</div>
     </div>
-	<input type="submit" value="Add tariff &raquo;" class="btn btn-primary">
+    <input type="submit" value="Add tariff &raquo;" class="btn btn-primary">
 </form>
+
+<script>
+    const tariffTypeSelect = document.getElementById('tariff_type');
+    const standingChargeContainer = document.getElementById('standing_charge_container');
+
+    // Add an event listener to the tariff type select element
+    tariffTypeSelect.addEventListener('change', function () {
+        // Check if the selected value is "outgoing"
+        if (tariffTypeSelect.value === 'outgoing') {
+            // Hide the standing charge input field
+            standingChargeContainer.style.display = 'none';
+        } else {
+            // Show the standing charge input field
+            standingChargeContainer.style.display = 'block';
+        }
+    });
+</script>
