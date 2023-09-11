@@ -14,7 +14,15 @@
         <input type="text" name='tariff_name' class="form-control" value="<%= supplier.tariff_name %>">
         <div class="form-text">Enter the name of your electricity tariff (ie Go, EV, etc)</div>
 	</div>
-	<div class="col-6 mb-3">
+    <div class="col-6 mb-3">
+        <label for="tariff_type" class="form-label">Tariff Type</label>
+        <select name='tariff_type' class="form-select" id="tariff_type">
+            <option value="incoming"<% if (supplier.tariff_type == "incoming") { %> selected <% } %>>Incoming</option>
+            <option value="outgoing"<% if (supplier.tariff_type == "outgoing") { %> selected <% } %>>Outgoing</option>
+        </select>
+        <div class="form-text">Enter the type of your electricity tariff (ie Go, EV, etc)</div>
+    </div>
+	<div class="col-6 mb-3" id="standing_charge_container"<% if (supplier.tariff_type == "outgoing") { %> style="display:none"<% } %>>
 		<label for="standing_charge" class="form-label">Standing Charge</label>
         <div class="input-group">
             <input type="number" name="standing_charge" class="form-control" value="<%= supplier.standing_charge %>" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
@@ -44,12 +52,12 @@
             </select>
         </div>
         <div class="col-6 mb-3">
-            <label for="cost" class="form-label">Cost</label>
+            <label for="cost" class="form-label" class="cost"><% if (supplier.tariff_type == "outgoing") { %>Return<% } else { %>Cost<% } %></label>
             <div class="input-group">
                 <input type="number" name="cost" class="form-control" value="<%= rate.cost %>" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
                 <div class="input-group-text">pence / kWh</div>
             </div>
-            <div class="form-text">Enter the rate cost in pence per kWh</div>
+            <div class="form-text">Enter the rate in pence per kWh</div>
         </div>
         <div class="col-6 mb-3">
             <label for="start_time" class="form-label">Start Time</label>
@@ -65,3 +73,18 @@
     <% } %>
 	<input type="submit" value="Save Tariff &raquo;" class="btn btn-primary">
 </form>
+<script>
+    const costText = document.getElementsByClassName('cost');
+    const tariffTypeSelect = document.getElementById('tariff_type');
+    const standingChargeContainer = document.getElementById('standing_charge_container');
+
+    tariffTypeSelect.addEventListener('change', function () {
+        if (tariffTypeSelect.value === 'outgoing') {
+            standingChargeContainer.style.display = 'none';
+            costText.textContent = 'Return';
+        } else {
+            standingChargeContainer.style.display = 'block';
+            costText.textContent = 'Cost';
+        }
+    });
+</script>

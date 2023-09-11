@@ -21,7 +21,9 @@
                     <% for (let rate of tariff.rates) { %>
                         <li><%= rate["rate_type"][0].toUpperCase() + rate["rate_type"].substring(1) %>: <%= rate.cost %>p / kWh</li>
                     <% } %>
+                    <% if (tariff.tariff_type == "incoming") { %>
                         <li>Standing charge: <%= tariff.standing_charge %>p / day</li>
+                        <% } %>
                     </ul>
                 </small>
             </td>

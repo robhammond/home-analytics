@@ -21,7 +21,7 @@
         </select>
         <div class="form-text">Enter the type of your electricity tariff (ie Go, EV, etc)</div>
     </div>
-    <div class="col-6 mb-3" id="standing_charge_container"> <!-- Added an ID for the container -->
+    <div class="col-6 mb-3" id="standing_charge_container">
         <label for="standing_charge" class="form-label">Standing Charge</label>
         <div class="input-group">
             <input type="number" name="standing_charge" class="form-control" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
@@ -54,12 +54,12 @@
         </select>
     </div>
     <div class="col-6 mb-3">
-        <label for="cost" class="form-label col-lg-3">Cost</label>
+        <label for="cost" class="form-label col-lg-3" id="cost">Cost</label>
         <div class="input-group">
             <input type="number" name="cost" class="form-control" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
             <div class="input-group-text">pence / kWh</div>
         </div>
-        <div class="form-text">Enter the rate cost in pence per kWh</div>
+        <div class="form-text">Enter the rate in pence per kWh</div>
     </div>
     <div class="col-6 mb-3">
         <label for="start_time" class="form-label">Start Time</label>
@@ -75,18 +75,17 @@
 </form>
 
 <script>
+    const costText = document.getElementById('cost');
     const tariffTypeSelect = document.getElementById('tariff_type');
     const standingChargeContainer = document.getElementById('standing_charge_container');
 
-    // Add an event listener to the tariff type select element
     tariffTypeSelect.addEventListener('change', function () {
-        // Check if the selected value is "outgoing"
         if (tariffTypeSelect.value === 'outgoing') {
-            // Hide the standing charge input field
             standingChargeContainer.style.display = 'none';
+            costText.textContent = 'Return';
         } else {
-            // Show the standing charge input field
             standingChargeContainer.style.display = 'block';
+            costText.textContent = 'Cost';
         }
     });
 </script>

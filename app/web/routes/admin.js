@@ -19,7 +19,12 @@ router.get("/", async (req, res) => {
 
 router.get("/add-rate", async (req, res) => {
     const supplier_id = req.query.supplier_id;
-    res.render("admin/add-rate", { page_title: "Admin", supplier_id: supplier_id });
+    let tariff = await prisma.supplier.findFirst({
+        where: {
+            id: Number(supplier_id)
+        }
+    })
+    res.render("admin/add-rate", { page_title: "Admin", supplier_id: supplier_id, tariff });
 });
 
 router.post("/add-rate", async (req, res) => {
@@ -67,7 +72,7 @@ router.get("/edit-tariff", async (req, res) => {
 });
 
 router.post("/edit-tariff", async (req, res) => {
-    let { id, tariff_name, supplier, standing_charge, supplier_start, supplier_end } = req.body;
+    let { id, tariff_name, tariff_type, supplier, standing_charge, supplier_start, supplier_end } = req.body;
 
     if (supplier_start == "") {
         supplier_start = null;
@@ -79,6 +84,11 @@ router.post("/edit-tariff", async (req, res) => {
     } else {
         supplier_end = new Date(supplier_end).toISOString();
     }
+    if (standing_charge == "") {
+        standing_charge = null;
+    } else {
+        standing_charge = parseFloat(standing_charge);
+    }
 
     const supplier_res = await prisma.supplier.update({
         where: {
@@ -86,8 +96,9 @@ router.post("/edit-tariff", async (req, res) => {
         },
         data: {
             tariff_name: tariff_name,
+            tariff_type: tariff_type,
             supplier: supplier,
-            standing_charge: parseFloat(standing_charge),
+            standing_charge: standing_charge,
             supplier_start: supplier_start,
             supplier_end: supplier_end,
         },
@@ -99,6 +110,7 @@ router.post("/edit-tariff", async (req, res) => {
 router.post("/add-tariff", async (req, res) => {
     let {
         tariff_name,
+        tariff_type,
         supplier,
         cost,
         standing_charge,
@@ -120,36 +132,42 @@ router.post("/add-tariff", async (req, res) => {
     } else {
         supplier_end = new Date(supplier_end);
     }
+    if (standing_charge == "") {
+        standing_charge = null;
+    } else {
+        standing_charge = parseFloat(standing_charge);
+    }
 
-    // console.log({
-    //     supplier: supplier,
-    //     tariff_name: tariff_name,
-    //     standing_charge: parseFloat(standing_charge),
-    //     supplier_start: supplier_start,
-    //     supplier_end: supplier_end,
-    // });
+    try {
+        const supplier_res = await prisma.supplier.create({
+            data: {
+                supplier: supplier,
+                tariff_name: tariff_name,
+                tariff_type: tariff_type,
+                standing_charge: standing_charge,
+                supplier_start: supplier_start,
+                supplier_end: supplier_end,
+            },
+        });
+    } catch(e) {
+        console.log(e);
+    }
 
-    const supplier_res = await prisma.supplier.create({
-        data: {
-            supplier: supplier,
-            tariff_name: tariff_name,
-            standing_charge: parseFloat(standing_charge),
-            supplier_start: supplier_start,
-            supplier_end: supplier_end,
-        },
-    });
-
-    const rates_res = await prisma.rates.create({
-        data: {
-            supplierId: supplier_res["id"],
-            rate_type: rate_type,
-            cost: parseFloat(cost),
-            currency: currency,
-            start_time: start_time,
-            end_time: end_time,
-        },
-    });
-
+    try {
+        const rates_res = await prisma.rates.create({
+            data: {
+                supplierId: supplier_res["id"],
+                rate_type: rate_type,
+                cost: parseFloat(cost),
+                currency: currency,
+                start_time: start_time,
+                end_time: end_time,
+            },
+        });
+    } catch(e) {
+        console.log(e);
+    }
+    
     res.redirect("/admin/list-tariffs");
 });
 
