@@ -149,22 +149,21 @@ router.post("/add-tariff", async (req, res) => {
                 supplier_end: supplier_end,
             },
         });
-    } catch(e) {
-        console.log(e);
-    }
-
-    try {
-        const rates_res = await prisma.rates.create({
-            data: {
-                supplierId: supplier_res["id"],
-                rate_type: rate_type,
-                cost: parseFloat(cost),
-                currency: currency,
-                start_time: start_time,
-                end_time: end_time,
-            },
-        });
-    } catch(e) {
+        try {
+            const rates_res = await prisma.rates.create({
+                data: {
+                    supplierId: supplier_res["id"],
+                    rate_type: rate_type,
+                    cost: parseFloat(cost),
+                    currency: currency,
+                    start_time: start_time,
+                    end_time: end_time,
+                },
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    } catch (e) {
         console.log(e);
     }
     
