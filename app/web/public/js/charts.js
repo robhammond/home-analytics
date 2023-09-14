@@ -490,3 +490,99 @@ function loadTemperatureChart(unit, startDate, endDate) {
         cache: false
     });    
 }
+
+
+
+function loadSolarMain(unit, startDate, endDate, filter) {
+
+    let dataSeries = [];
+    let xAxisCats = [];
+    $.ajax({
+        url: '/api/solar/main',
+        type: "GET",
+        data : {
+            start: startDate,
+            end: endDate,
+            unit: unit,
+        },
+        dataType: "json",
+        success: function(res) {
+            let kwh_produced = [];
+            let kwh_consumed = [];
+            for (let row of res.data) {
+                kwh_produced.push(row.kwh_produced);
+                kwh_consumed.push(row.kwh_consumed);
+                xAxisCats.push(row.dt);
+            }
+            dataSeries.push({name: "kWh Produced", data: kwh_produced, type: 'line'});
+            dataSeries.push({name: "kWh Consumed", data: kwh_consumed, type: 'line'});
+
+            let usageMain = Highcharts.chart({
+                chart: {
+                    // type: 'column',
+                    renderTo: 'usageMain',
+                    zoomType: 'xy',
+                    backgroundColor: 'white',
+                    plotBorderWidth: 0,
+                    plotShadow: false,
+                },
+                credits: false,
+                title: {
+                    text: "",
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.1,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    itemStyle: {
+                        fontWeight: 'normal',
+                        fontSize: '14px',
+                        align: 'right'
+                    }
+                },
+                xAxis : {
+                    title: {
+                        text: "Day",
+                    },
+                    labels: {
+                    },
+                    categories: xAxisCats,
+                },
+                yAxis : {
+                    title: {
+                        text: "kWh",
+                    },
+                    labels: {
+                    },
+                    gridLineWidth: 0,
+                },
+                series: dataSeries
+            });
+
+            reversed_array = res.grid.reverse();
+            let count = 0;
+            for (let row of reversed_array) {
+                console.log(row);
+                let export_return = 0;
+                if (row.export_return) {
+                    export_return = row.export_return.toFixed(2);
+                }
+                let net_cost = 0;
+                if (row.net_cost) {
+                    net_cost = row.net_cost.toFixed(2);
+                }
+                $('#solarDataTable').append(`<tr><td>${row.dt}</td><td style="text-align:right">${row.kwh_exported}</td>
+                    <td style="text-align:right">&pound;${export_return}</td>
+                    <td style="text-align:right">&pound;${net_cost}</td></tr>`);
+                count++;
+            }
+        },
+        error: function(xhr) {
+            console.log(xhr);
+        },
+        cache: false
+    });
+}

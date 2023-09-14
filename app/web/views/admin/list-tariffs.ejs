@@ -21,13 +21,17 @@
                     <% for (let rate of tariff.rates) { %>
                         <li><%= rate["rate_type"][0].toUpperCase() + rate["rate_type"].substring(1) %>: <%= rate.cost %>p / kWh</li>
                     <% } %>
+                    <% if (tariff.tariff_type == "import") { %>
                         <li>Standing charge: <%= tariff.standing_charge %>p / day</li>
+                        <% } %>
                     </ul>
                 </small>
             </td>
             <td>
                 <small>
+                    <% if (tariff.supplier_start) { %>
                     <%= tariff.supplier_start.toISOString().substr(0,10) %> - 
+                    <% } %>
                     <% if (tariff.supplier_end) { %>
                         <%= tariff.supplier_end.toISOString().substr(0,10) %>
                     <% } %>

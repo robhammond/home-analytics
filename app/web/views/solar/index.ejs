@@ -1,0 +1,72 @@
+<h3>Solar</h3>
+<div class="row">
+    <div class="col-md-3"><div id="totalkWh"></div></div>
+    <div class="col-md-3"><div id="avgkWh"></div></div>
+    <div class="col-md-3"><div id="totalCost"></div></div>
+    <div class="col-md-3"><div id="avgCost"></div></div>
+</div>
+<h4>Inverter stats:</h4>
+<div id="usageMain"></div>
+<h4>Supplier stats:</h4>
+<div class="row">
+    <div class="col-md-6">
+        <h4>History</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>kWh Exported</th>
+                    <th>Earned</th>
+                    <th>Net Cost</th>
+                </tr>
+            </thead>
+            <tbody id="solarDataTable"></tbody>
+        </table>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+
+        let start = moment("<%= start %>");
+        let end = moment("<%= end %>");
+        $(function() {
+            $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+
+            $('#reportrange').daterangepicker({
+                startDate: start,
+                endDate: end,
+                "showDropdowns": true,
+                "locale": {
+                    "format": "DD/MM/YYYY",
+                    "separator": " - ",
+                    "applyLabel": "Apply",
+                    "cancelLabel": "Cancel",
+                    "fromLabel": "From",
+                    "toLabel": "To",
+                    // "customRangeLabel": "Custom",
+                },
+                "alwaysShowCalendars": true,
+                "opens": "left",
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Last 12 Months': [moment().subtract(12, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                }
+            }, function(start, end, label) {
+                $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
+            });
+            $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+                window.location = "?start=" + picker.startDate.format("YYYY-MM-DD") 
+                    + "&end=" + picker.endDate.format("YYYY-MM-DD")
+                    + "&unit=<%= unit %>"
+                    + "&filter=<%= filter %>";
+            });
+        });
+        
+        loadSolarMain("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+    });
+</script>

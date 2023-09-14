@@ -6,14 +6,15 @@ Requires Consumer API endpoint to be enabled at https://data.n3rgy.com/consumer/
 import requests
 import sqlite3
 import os
+import json
 from datetime import datetime, timedelta
-from update_rates import update_import
+from update_rates import update_export
 
 HA_DB_URL = os.getenv('HA_DB_URL')
 
 
-def fetch_usage(start_date=None, end_date=None):
-    "fetches electricity usage from n3rgy endpoint"
+def fetch_production(start_date=None, end_date=None):
+    "fetches electricity production from n3rgy endpoint"
     if not start_date:
         today = datetime.now()
         last_week = today - timedelta(days=7)
@@ -24,7 +25,7 @@ def fetch_usage(start_date=None, end_date=None):
         tomorrow = today + timedelta(days=1)
         end_date = tomorrow.strftime("%Y%m%d")
 
-    endpoint_url = "https://consumer-api.data.n3rgy.com/electricity/consumption/1"
+    endpoint_url = "https://consumer-api.data.n3rgy.com/electricity/production/1"
     params = {
         "start": start_date,
         "end": end_date,
@@ -52,6 +53,7 @@ def fetch_usage(start_date=None, end_date=None):
 
     with requests.get(endpoint_url, params=params, headers={"Authorization": auth_header}) as res:
         res_json = res.json()
+        print(json.dumps(res_json))
 
         for value in res_json["values"]:
             ts = value["timestamp"]
@@ -63,20 +65,13 @@ def fetch_usage(start_date=None, end_date=None):
             # print(dt)
 
             sql = f"""
-                INSERT INTO electricity (
-                    datetime,
-                    datetime_start,
-                    kwh,
-                    granularity,
-                    source
-                ) 
-                VALUES (
-                    '{dt}',
-                    '{dt_start}',
-                    {value["value"]},
-                    '{res_json["granularity"]}',
-                    'n3rgy'
-                );
+                UPDATE electricity 
+                    SET kwh_exported = {value["value"]}
+                WHERE
+                    datetime = '{dt}'
+                    AND datetime_start = '{dt_start}'
+                    AND granularity = '{res_json["granularity"]}'
+                    and source = 'n3rgy'
             """
             try:
                 c.execute(sql)
@@ -86,8 +81,8 @@ def fetch_usage(start_date=None, end_date=None):
         conn.commit()
 
     conn.close()
-    update_import()
+    update_export()
 
 
 if __name__ == "__main__":
-    fetch_usage()
+    fetch_production()
