@@ -561,6 +561,24 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                 },
                 series: dataSeries
             });
+
+            reversed_array = res.grid.reverse();
+            let count = 0;
+            for (let row of reversed_array) {
+                console.log(row);
+                let export_return = 0;
+                if (row.export_return) {
+                    export_return = row.export_return.toFixed(2);
+                }
+                let net_cost = 0;
+                if (row.net_cost) {
+                    net_cost = row.net_cost.toFixed(2);
+                }
+                $('#solarDataTable').append(`<tr><td>${row.dt}</td><td style="text-align:right">${row.kwh_exported}</td>
+                    <td style="text-align:right">&pound;${export_return}</td>
+                    <td style="text-align:right">&pound;${net_cost}</td></tr>`);
+                count++;
+            }
         },
         error: function(xhr) {
             console.log(xhr);

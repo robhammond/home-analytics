@@ -16,10 +16,12 @@ model Electricity {
     datetime_start DateTime?
     datetime       DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
     kwh            Float?
-    kwh_produced   Float?
+    kwh_exported   Float?
     granularity    String
-    rate           Rates?    @relation(fields: [rateId], references: [id])
+    rate           Rates?    @relation("importRate", fields: [rateId], references: [id])
     rateId         Int?
+    exportRate     Rates?    @relation("exportRate", fields: [exportRateId], references: [id])
+    exportRateId   Int?
     source         String?
 
     @@unique([datetime, granularity], name: "sqlite_autoindex_electricity")
@@ -38,6 +40,29 @@ model Solar {
     time_unit             String?   @default("day")
 
     @@unique([datetime_start, time_unit], name: "sqlite_autoindex_solar")
+}
+
+model SolcastForecast {
+    id Int @id @default(autoincrement())
+    pv_estimate Float
+    pv_estimate10 Float
+    pv_estimate90 Float
+    period_end DateTime
+    period String
+    update_timestamp Int // in order to keep track of when a forecast was last updated, YYYYMMDDHHMM *UTC
+
+    @@unique([period_end, period, update_timestamp])
+    @@map("solcast_forecasts")
+}
+
+model SolcastEstimatedActual {
+    id Int @id @default(autoincrement())
+    pv_estimate Float
+    period_end DateTime
+    period String
+
+    @@unique([period_end, period])
+    @@map("solcast_estimated_actuals")
 }
 
 model Heating {
@@ -185,7 +210,7 @@ model Supplier {
     id              Int       @id @default(autoincrement())
     supplier        String
     tariff_name     String
-    tariff_type     String  @default("incoming") // incoming / outgoing
+    tariff_type     String    @default("import") // import / export
     standing_charge Float?
     supplier_start  DateTime?
     supplier_end    DateTime?
@@ -193,15 +218,16 @@ model Supplier {
 }
 
 model Rates {
-    id          Int           @id @default(autoincrement())
-    supplier    Supplier      @relation(fields: [supplierId], references: [id])
-    supplierId  Int
-    rate_type   String // flat, peak, off-peak, outgoing
-    start_time  String?
-    end_time    String?
-    cost        Float
-    currency    String        @default("gbp")
-    electricity Electricity[]
+    id         Int           @id @default(autoincrement())
+    supplier   Supplier      @relation(fields: [supplierId], references: [id])
+    supplierId Int
+    rate_type  String // fixed, peak, off-peak, export
+    start_time String?
+    end_time   String?
+    cost       Float
+    currency   String        @default("gbp")
+    importRate Electricity[] @relation("importRate")
+    exportRate Electricity[] @relation("exportRate")
 }
 
 model CarbonIntensity {

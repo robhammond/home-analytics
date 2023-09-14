@@ -1388,6 +1388,7 @@ router.get("/solar/main", async (req, res) => {
         // TODO: validate it's in yyyy-mm-dd format
     }
     let solar = [];
+    let grid = [];
     let totals = [];
     try {
         solar = await prisma.$queryRaw`
@@ -1403,6 +1404,30 @@ router.get("/solar/main", async (req, res) => {
             ORDER BY
                 1
         `;
+
+        grid = await prisma.$queryRaw`
+            SELECT
+                DATE(e.datetime_start, 'localtime') AS dt,
+                ROUND(SUM(e.kwh),2) AS kwh,
+                ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                ROUND(SUM(r.cost/100 * e.kwh),2) AS cost,
+                ROUND(SUM(r2.cost/100 * e.kwh_exported),2) AS export_return,
+                ROUND(SUM(r.cost/100 * e.kwh) - SUM(r2.cost/100 * e.kwh_exported), 2) AS net_cost
+            FROM electricity e
+            JOIN rates r ON
+                r.id = e.rateId
+            left JOIN rates r2 ON
+                r2.id = e.exportRateId
+            JOIN supplier s ON
+                s.id = r.supplierId
+            WHERE
+                DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+            GROUP BY
+                1
+            ORDER BY
+                1
+        `;
+
         totals = await prisma.$queryRaw`
             SELECT
                 ROUND(SUM(s.kwh_produced),2) AS kwh_produced,
@@ -1413,7 +1438,7 @@ router.get("/solar/main", async (req, res) => {
                 and time_unit = 'day'
         `;
 
-        res.json({ data: solar, totals });
+        res.json({ data: solar, totals, grid });
     } catch (e) {
         console.log(e);
         res.json({ error: e });

@@ -16,8 +16,8 @@
     <div class="col-6 mb-3">
         <label for="tariff_type" class="form-label">Tariff Type</label>
         <select name='tariff_type' class="form-select" id="tariff_type">
-            <option value="incoming">Incoming</option>
-            <option value="outgoing">Outgoing</option>
+            <option value="import">Import</option>
+            <option value="export">Export</option>
         </select>
         <div class="form-text">Enter the type of your electricity tariff (ie Go, EV, etc)</div>
     </div>
@@ -80,7 +80,7 @@
     const standingChargeContainer = document.getElementById('standing_charge_container');
 
     tariffTypeSelect.addEventListener('change', function () {
-        if (tariffTypeSelect.value === 'outgoing') {
+        if (tariffTypeSelect.value === 'export') {
             standingChargeContainer.style.display = 'none';
             costText.textContent = 'Return';
         } else {

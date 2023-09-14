@@ -8,7 +8,7 @@ import sqlite3
 import os
 import json
 from datetime import datetime, timedelta
-from update_rates import refresh_db
+from update_rates import update_export
 
 HA_DB_URL = os.getenv('HA_DB_URL')
 
@@ -66,7 +66,7 @@ def fetch_production(start_date=None, end_date=None):
 
             sql = f"""
                 UPDATE electricity 
-                    SET kwh_produced = {value["value"]}
+                    SET kwh_exported = {value["value"]}
                 WHERE
                     datetime = '{dt}'
                     AND datetime_start = '{dt_start}'
@@ -81,7 +81,7 @@ def fetch_production(start_date=None, end_date=None):
         conn.commit()
 
     conn.close()
-    refresh_db()
+    update_export()
 
 
 if __name__ == "__main__":

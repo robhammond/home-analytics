@@ -7,7 +7,7 @@ import requests
 import sqlite3
 import os
 from datetime import datetime, timedelta
-from update_rates import refresh_db
+from update_rates import update_import
 
 HA_DB_URL = os.getenv('HA_DB_URL')
 
@@ -86,7 +86,7 @@ def fetch_usage(start_date=None, end_date=None):
         conn.commit()
 
     conn.close()
-    refresh_db()
+    update_import()
 
 
 if __name__ == "__main__":

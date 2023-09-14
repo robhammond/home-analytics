@@ -5,7 +5,7 @@ import pytz
 import sqlite3
 import os
 
-from update_rates import refresh_db
+from update_rates import update_import
 
 HA_DB_URL = os.getenv("HA_DB_URL")
 API_ROOT = "https://api.octopus.energy"
@@ -105,7 +105,7 @@ def fetch_usage(start_date=None, end_date=None):
                     pass
 
             conn.close()
-            refresh_db()
+            update_import()
         else:
             print(f"Error fetching: {res.status_code} HTTP response")
             print(request_url)
