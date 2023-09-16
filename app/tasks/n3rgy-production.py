@@ -7,10 +7,19 @@ import requests
 import sqlite3
 import os
 import json
+import argparse
 from datetime import datetime, timedelta
 from update_rates import update_export
 
-HA_DB_URL = os.getenv('HA_DB_URL')
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Pull solar production data from n3rgy")
+    parser.add_argument("--start_date", type=str, help="Start date in the format YYYYMMDD.")
+    parser.add_argument("--end_date", type=str, help="End date in the format YYYYMMDD.")
+    return parser.parse_args()
+
+
+HA_DB_URL = os.getenv("HA_DB_URL")
 
 
 def fetch_production(start_date=None, end_date=None):
@@ -48,7 +57,7 @@ def fetch_production(start_date=None, end_date=None):
     except Exception as e:
         raise Exception("Authorization header not found in DB")
 
-    if auth_header == '12345':
+    if auth_header == "12345":
         raise Exception("Please define the n3rgy Authorization header - see README.md for more information")
 
     with requests.get(endpoint_url, params=params, headers={"Authorization": auth_header}) as res:
@@ -84,5 +93,10 @@ def fetch_production(start_date=None, end_date=None):
     update_export()
 
 
+def main():
+    args = parse_args()
+    fetch_production(args.start_date, args.end_date)
+
+
 if __name__ == "__main__":
-    fetch_production()
+    main()
