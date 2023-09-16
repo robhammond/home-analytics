@@ -25,7 +25,7 @@
             },
             success: async function(res) {
                 let kwh = Number(res["totals"]["kwh"].toFixed(0));
-                let cost = Number(res["totals"]["cost"].toFixed(0));
+                let cost = Number(res["totals"]["net_cost"].toFixed(0));
                 let estCost = Number(((cost / res["days"].length) * <%= dates["thisMonthNumDays"] %>).toFixed(0));
 
                 let lastMonth = await loadEstSums('<%= dates["minus1mStart"] %>', '<%= dates["minus1mEnd"] %>');

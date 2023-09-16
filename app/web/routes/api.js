@@ -40,10 +40,15 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
             SELECT
                 DATE(datetime_start, 'localtime') AS date,
                 ROUND(SUM(e.kwh),2) AS kwh,
-                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
+                ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
+                ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
             FROM electricity e
             JOIN rates r ON
                 r.id = e.rateId
+            LEFT JOIN rates r2 ON
+                r2.id = e.exportRateId
             JOIN supplier s ON
                 s.id = r.supplierId
             WHERE
@@ -68,10 +73,15 @@ async function dbUsageTotals(start, end, tryCount = 1) {
         const usageTotals = await prisma.$queryRaw`
             SELECT
                 ROUND(SUM(e.kwh),2) AS kwh,
-                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost
+                ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
+                ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
             FROM  electricity e
             JOIN rates r ON
                 r.id = e.rateId
+            LEFT JOIN rates r2 ON
+                r2.id = e.exportRateId
             JOIN supplier s ON
                 s.id = r.supplierId
             WHERE
@@ -768,10 +778,15 @@ router.get("/usage/main", async (req, res) => {
                         strftime("%Y-%m-%d %H:%M", e.datetime_start, 'localtime') AS dt,
                         r.rate_type,
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -783,10 +798,15 @@ router.get("/usage/main", async (req, res) => {
                 totals = await prisma.$queryRaw`
                     SELECT
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -848,11 +868,16 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         strftime("%Y-%m-%d %H", e.datetime_start, 'localtime') AS dt,
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM
                         Electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN Supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -865,11 +890,16 @@ router.get("/usage/main", async (req, res) => {
                 totals = await prisma.$queryRaw`
                     SELECT
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM
                         electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -932,10 +962,15 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         DATE(e.datetime_start, 'localtime') AS dt,
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -948,10 +983,15 @@ router.get("/usage/main", async (req, res) => {
                 totals = await prisma.$queryRaw`
                     SELECT
                         ROUND(SUM(e.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                        ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
                     FROM electricity e
                     JOIN rates r ON
                         r.id = e.rateId
+                    LEFT JOIN rates r2 ON
+                        r2.id = e.exportRateId
                     JOIN supplier s ON
                         s.id = r.supplierId
                     WHERE
@@ -1411,8 +1451,8 @@ router.get("/solar/main", async (req, res) => {
                 ROUND(SUM(e.kwh),2) AS kwh,
                 ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
                 ROUND(SUM(r.cost/100 * e.kwh),2) AS cost,
-                ROUND(SUM(r2.cost/100 * e.kwh_exported),2) AS export_return,
-                ROUND(SUM(r.cost/100 * e.kwh) - SUM(r2.cost/100 * e.kwh_exported), 2) AS net_cost
+                ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
             FROM electricity e
             JOIN rates r ON
                 r.id = e.rateId

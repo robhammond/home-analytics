@@ -14,7 +14,8 @@ function loadUsageTable(unit, startDate, endDate, filter) {
             let count = 0;
             for (let row of reversed_array) {
                 $('#usageDataTable').append(`<tr><td>${row.dt}</td><td style="text-align:right">${row.kwh}</td>
-                    <td style="text-align:right">£${row.cost.toFixed(2)}</td></tr>`);
+                    <td style="text-align:right">${row.kwh_exported}</td>
+                    <td style="text-align:right">£${row.net_cost.toFixed(2)}</td></tr>`);
                 count++;
             }
             let totals = res.totals;
@@ -25,11 +26,15 @@ function loadUsageTable(unit, startDate, endDate, filter) {
                     <h5 class="card-title" style="text-align:right;">${Number(totals["kwh"].toFixed(2)).toLocaleString()}</h5>
                 </div>
             </div>`);
+            let net_cost = "";
+            if (totals["net_cost"] != totals["cost"]) {
+                net_cost = ` <span style="color:grey;">(&pound;${totals["net_cost"].toFixed(2)} net)</span>`;
+            }
             $('#totalCost').html(`
             <div class="card border-info mb-3" style="max-width: 18rem;">
                 <div class="card-header">Total Cost</div>
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">&pound;${Number(totals["cost"].toFixed(2)).toLocaleString()}</h5>
+                    <h5 class="card-title" style="text-align:right;">&pound;${Number(totals["cost"].toFixed(2)).toLocaleString()}${net_cost}</h5>
                 </div>
             </div>`);
             $('#avgkWh').html(`

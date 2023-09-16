@@ -29,7 +29,7 @@
                 let cost = 0;
                 try {
                     kwh = Number(res["totals"]["kwh"].toFixed(0));
-                    cost = Number(res["totals"]["cost"].toFixed(0));
+                    cost = Number(res["totals"]["net_cost"].toFixed(0));
                 } catch (e) {
                     console.log(e);
                 }
