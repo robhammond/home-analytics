@@ -151,12 +151,12 @@ def update_export():
         FROM Electricity 
         WHERE 
             exportRateId IS NULL
-            AND 
+            /*AND 
             datetime_start >= DATE(
                 strftime('%s', 'now', '-7 days'),
                 'unixepoch',
                 'localtime'
-            )
+            )*/
     """
 
     usage = c.execute(sql).fetchall()
