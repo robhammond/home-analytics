@@ -1,10 +1,10 @@
 Highcharts.setOptions({
     colors: [
-        '#43D158', 
-        '#F6453A', 
-        '#F99F0D', 
-        '#64D2FF', 
-        '#BF5AF3', 
+        '#43D158',
+        '#F6453A',
+        '#F99F0D',
+        '#64D2FF',
+        '#BF5AF3',
         '#058DC7',
         '#64DF',
         '#DDDF00',
@@ -58,7 +58,7 @@ function loadUsagePie(startDate, endDate) {
             }
         }
     });
-    
+
     $.ajax({
         url: '/api/usage/breakdown',
         type: "GET",
@@ -67,14 +67,14 @@ function loadUsagePie(startDate, endDate) {
             end: endDate,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let row_data = [];
             for (let row of res.data) {
-                row_data.push({name: row.name, y: row.kwh});
+                row_data.push({ name: row.name, y: row.kwh });
             }
-            usagePie.addSeries({name: "kWh", data: row_data, innerSize: "50%"});
+            usagePie.addSeries({ name: "kWh", data: row_data, innerSize: "50%" });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
@@ -88,23 +88,23 @@ function loadUsageMain(unit, startDate, endDate, filter) {
     $.ajax({
         url: '/api/usage/main',
         type: "GET",
-        data : {
+        data: {
             start: startDate,
             end: endDate,
             unit: unit,
             filter: filter,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let kwh = [];
             let cost = [];
             for (let row of res.data) {
                 kwh.push(row.kwh);
-                cost.push(row.cost);
+                cost.push(row.net_cost);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "kWh", data: kwh, type: 'column', yAxis: 0});
-            dataSeries.push({name: "Cost", data: cost, type: 'line', yAxis: 1});
+            dataSeries.push({ name: "kWh", data: kwh, type: 'column', yAxis: 0 });
+            dataSeries.push({ name: "Cost", data: cost, type: 'line', yAxis: 1 });
 
             let usageMain = Highcharts.chart({
                 chart: {
@@ -132,7 +132,7 @@ function loadUsageMain(unit, startDate, endDate, filter) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     title: {
                         text: "Day",
                     },
@@ -140,14 +140,14 @@ function loadUsageMain(unit, startDate, endDate, filter) {
                     },
                     categories: xAxisCats,
                 },
-                yAxis : [{
+                yAxis: [{
                     title: {
-                        text: "kWh",
+                        text: "kWh Imported",
                     },
                     labels: {
                     },
                     gridLineWidth: 0,
-                },{
+                }, {
                     title: {
                         text: "Cost",
                     },
@@ -156,11 +156,17 @@ function loadUsageMain(unit, startDate, endDate, filter) {
                     },
                     opposite: true,
                     gridLineWidth: 0,
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#aaa',
+                        zIndex: 10
+                    }],
                 }],
                 series: dataSeries
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
@@ -173,13 +179,13 @@ function loadTodayUsage(date1, date2) {
     $.ajax({
         url: '/api/usage/hourly/compare',
         type: "GET",
-        data : {
+        data: {
             date1: date1,
             date2: date2,
             unit: 'halfhour',
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let d1 = [];
             let d2 = [];
             for (let row of res.data) {
@@ -187,8 +193,8 @@ function loadTodayUsage(date1, date2) {
                 d2.push(row.kwh_td);
                 xAxisCats.push(row.hour);
             }
-            dataSeries.push({name: "Yesterday", data: d1});
-            dataSeries.push({name: "Today", data: d2});
+            dataSeries.push({ name: "Yesterday", data: d1 });
+            dataSeries.push({ name: "Today", data: d2 });
 
             let hourlyUsage = Highcharts.chart({
                 chart: {
@@ -216,7 +222,7 @@ function loadTodayUsage(date1, date2) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     title: {
                         text: "Hour",
                         style: {
@@ -230,7 +236,7 @@ function loadTodayUsage(date1, date2) {
                     },
                     categories: xAxisCats,
                 },
-                yAxis : {
+                yAxis: {
                     title: {
                         text: "kWh",
                         style: {
@@ -247,7 +253,7 @@ function loadTodayUsage(date1, date2) {
                 series: dataSeries,
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
@@ -262,13 +268,13 @@ function loadCarCharging(unit, start, end) {
     $.ajax({
         url: '/api/usage/vehicles',
         type: "GET",
-        data : {
+        data: {
             start: start,
             end: end,
             unit: unit,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let kwh = [];
             let cost = [];
             for (let row of res.data) {
@@ -276,8 +282,8 @@ function loadCarCharging(unit, start, end) {
                 cost.push(row.cost);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "kWh", data: kwh, type: 'column', yAxis: 0});
-            dataSeries.push({name: "Cost", data: cost, type: 'column', yAxis: 1});
+            dataSeries.push({ name: "kWh", data: kwh, type: 'column', yAxis: 0 });
+            dataSeries.push({ name: "Cost", data: cost, type: 'column', yAxis: 1 });
 
             let carCharging = Highcharts.chart({
                 chart: {
@@ -304,20 +310,20 @@ function loadCarCharging(unit, start, end) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     title: {
                         text: ""
                     },
                     categories: xAxisCats
                 },
-                yAxis : [{
+                yAxis: [{
                     title: {
                         text: "kWh",
                     },
                     labels: {
                     },
                     gridLineWidth: 0,
-                },{
+                }, {
                     title: {
                         text: "Cost",
                     },
@@ -330,7 +336,7 @@ function loadCarCharging(unit, start, end) {
                 series: dataSeries
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
@@ -344,13 +350,13 @@ function loadHeatingChart(unit, startDate, endDate) {
     $.ajax({
         url: '/api/usage/heating',
         type: "GET",
-        data : {
+        data: {
             start: startDate,
             end: endDate,
             unit: unit,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let heating = [];
             let hotWater = [];
             for (let row of res.data) {
@@ -358,8 +364,8 @@ function loadHeatingChart(unit, startDate, endDate) {
                 hotWater.push(row.hot_water_kwh);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "Heating kWh", data: heating, type: 'column', yAxis: 0});
-            dataSeries.push({name: "Hot Water kWh", data: hotWater, type: 'column', yAxis: 1});
+            dataSeries.push({ name: "Heating kWh", data: heating, type: 'column', yAxis: 0 });
+            dataSeries.push({ name: "Hot Water kWh", data: hotWater, type: 'column', yAxis: 1 });
 
             let heatingUsage = Highcharts.chart({
                 chart: {
@@ -387,17 +393,17 @@ function loadHeatingChart(unit, startDate, endDate) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     categories: xAxisCats,
                 },
-                yAxis : [{
+                yAxis: [{
                     title: {
                         text: "Heating kWh",
                     },
                     labels: {
                     },
                     gridLineWidth: 0,
-                },{
+                }, {
                     title: {
                         text: "Hot Water kWh",
                     },
@@ -407,11 +413,11 @@ function loadHeatingChart(unit, startDate, endDate) {
                 series: dataSeries
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
-    });    
+    });
 }
 
 function loadTemperatureChart(unit, startDate, endDate) {
@@ -421,13 +427,13 @@ function loadTemperatureChart(unit, startDate, endDate) {
     $.ajax({
         url: '/api/usage/heating/temperatures',
         type: "GET",
-        data : {
+        data: {
             start: startDate,
             end: endDate,
             unit: unit,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let setTemperature = [];
             let outsideTemperature = [];
             let insideTemperature = [];
@@ -439,10 +445,10 @@ function loadTemperatureChart(unit, startDate, endDate) {
                 tankTemperature.push(row.tankTemperature);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "Set Temperature", data: setTemperature, type: 'spline'});
-            dataSeries.push({name: "Inside Temperature", data: insideTemperature, type: 'spline'});
-            dataSeries.push({name: "Outside Temperature", data: outsideTemperature, type: 'spline'});
-            dataSeries.push({name: "Tank Temperature", data: tankTemperature, type: 'spline'});
+            dataSeries.push({ name: "Set Temperature", data: setTemperature, type: 'spline' });
+            dataSeries.push({ name: "Inside Temperature", data: insideTemperature, type: 'spline' });
+            dataSeries.push({ name: "Outside Temperature", data: outsideTemperature, type: 'spline' });
+            dataSeries.push({ name: "Tank Temperature", data: tankTemperature, type: 'spline' });
 
             let heatingTemperatures = Highcharts.chart({
                 chart: {
@@ -470,10 +476,10 @@ function loadTemperatureChart(unit, startDate, endDate) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     categories: xAxisCats,
                 },
-                yAxis : [{
+                yAxis: [{
                     title: {
                         text: "C",
                     },
@@ -484,11 +490,11 @@ function loadTemperatureChart(unit, startDate, endDate) {
                 series: dataSeries
             });
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
-    });    
+    });
 }
 
 
@@ -500,13 +506,13 @@ function loadSolarMain(unit, startDate, endDate, filter) {
     $.ajax({
         url: '/api/solar/main',
         type: "GET",
-        data : {
+        data: {
             start: startDate,
             end: endDate,
             unit: unit,
         },
         dataType: "json",
-        success: function(res) {
+        success: function (res) {
             let kwh_produced = [];
             let kwh_consumed = [];
             for (let row of res.data) {
@@ -514,8 +520,8 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                 kwh_consumed.push(row.kwh_consumed);
                 xAxisCats.push(row.dt);
             }
-            dataSeries.push({name: "kWh Produced", data: kwh_produced, type: 'line'});
-            dataSeries.push({name: "kWh Consumed", data: kwh_consumed, type: 'line'});
+            dataSeries.push({ name: "kWh Produced", data: kwh_produced, type: 'line' });
+            dataSeries.push({ name: "kWh Consumed", data: kwh_consumed, type: 'line' });
 
             let usageMain = Highcharts.chart({
                 chart: {
@@ -543,7 +549,7 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                         align: 'right'
                     }
                 },
-                xAxis : {
+                xAxis: {
                     title: {
                         text: "Day",
                     },
@@ -551,7 +557,7 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                     },
                     categories: xAxisCats,
                 },
-                yAxis : {
+                yAxis: {
                     title: {
                         text: "kWh",
                     },
@@ -580,7 +586,7 @@ function loadSolarMain(unit, startDate, endDate, filter) {
                 count++;
             }
         },
-        error: function(xhr) {
+        error: function (xhr) {
             console.log(xhr);
         },
         cache: false
