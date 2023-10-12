@@ -1,4 +1,6 @@
-<h3>Energy Stats</h3>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Energy Stats</h1>
+</div>
 <div class="row">
     <div class="col-md-3">
         <form id="filter" class="form-horizontal">
@@ -7,13 +9,16 @@
             <input type="hidden" name="unit" value="<%= unit %>">
             <label for="filter" class="form-label sr-only">Filter</label>
             <select class="form-select form-select-sm" name="filter" id="filter">
-                <option <% if (filter == 'all') { %>selected <% } %>value="all">All</option>
-                <option <% if (filter == 'central-heating') { %>selected <% } %>value="central-heating">Central Heating</option>
-                <option <% if (filter == 'hot_water') { %>selected <% } %>value="hot_water">Hot Water</option>
-                <option <% if (filter == 'car_charges') { %>selected <% } %>value="car_charges">Car Charges</option>
+                <option <% if (filter=='all' ) { %>selected <% } %>value="all">All</option>
+                <option <% if (filter=='central-heating' ) { %>selected <% } %>value="central-heating">Central Heating
+                </option>
+                <option <% if (filter=='hot_water' ) { %>selected <% } %>value="hot_water">Hot Water</option>
+                <option <% if (filter=='car_charges' ) { %>selected <% } %>value="car_charges">Car Charges</option>
                 <% for (let eT of entityTypes) { %>
-                    <option <% if (filter == eT["entity_type"]) { %>selected <% } %>value="<%= eT["entity_type"] %>"><%= eT["entity_type"] %></option>
-                <% } %>
+                    <option <% if (filter==eT["entity_type"]) { %>selected <% } %>value="<%= eT["entity_type"] %>"><%=
+                                    eT["entity_type"] %>
+                    </option>
+                    <% } %>
             </select>
         </form>
     </div>
@@ -24,10 +29,10 @@
             <input type="hidden" name="filter" value="<%= filter %>">
             <label for="unit" class="form-label sr-only">Unit</label>
             <select class="form-select form-select-sm" name="unit">
-                <option <% if (unit == 'halfhour') { %>selected <% } %>value="halfhour">Half Hour</option>
-                <option <% if (unit == 'hour') { %>selected <% } %>value="hour">Hour</option>
-                <option <% if (unit == 'day') { %>selected <% } %>value="day">Day</option>
-                <option <% if (unit == 'month') { %>selected <% } %>value="month">Month</option>
+                <option <% if (unit=='halfhour' ) { %>selected <% } %>value="halfhour">Half Hour</option>
+                <option <% if (unit=='hour' ) { %>selected <% } %>value="hour">Hour</option>
+                <option <% if (unit=='day' ) { %>selected <% } %>value="day">Day</option>
+                <option <% if (unit=='month' ) { %>selected <% } %>value="month">Month</option>
             </select>
         </form>
     </div>
@@ -41,49 +46,73 @@
 </div>
 <hr>
 <div class="row">
-    <div class="col-md-3"><div id="totalkWh"></div></div>
-    <div class="col-md-3"><div id="avgkWh"></div></div>
-    <div class="col-md-3"><div id="totalCost"></div></div>
-    <div class="col-md-3"><div id="avgCost"></div></div>
+    <div id="totalkWh" class="col-xl-3 col-md-6 mb-4"></div>
+    <div id="avgkWh" class="col-xl-3 col-md-6 mb-4"></div>
+    <div id="totalCost" class="col-xl-3 col-md-6 mb-4"></div>
+    <div id="avgCost" class="col-xl-3 col-md-6 mb-4"></div>
 </div>
 
-<div id="usageMain"></div>
 <div class="row">
-    <div class="col-md-6">
-        <h4>History</h4>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>kWh Imported</th>
-                    <th>kWh Exported</th>
-                    <th>Net Usage Cost</th>
-                </tr>
-            </thead>
-            <tbody id="usageDataTable"></tbody>
-        </table>
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Usage / Cost</h6>
+            </div>
+            <div class="card-body">
+                <div id="usageMain"></div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h4>Breakdown</h4>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Device</th>
-                    <th>Type</th>
-                    <th>kWh</th>
-                </tr>
-            </thead>
-            <tbody id="usageBreakdown"></tbody>
-        </table>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">History</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>kWh Imported</th>
+                            <th>kWh Exported</th>
+                            <th>Net Usage Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageDataTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Device</th>
+                            <th>Type</th>
+                            <th>kWh</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageBreakdown"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
 
         let start = moment("<%= start %>");
         let end = moment("<%= end %>");
-        $(function() {
+        $(function () {
             $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
 
             $('#reportrange').daterangepicker({
@@ -110,21 +139,21 @@
                     'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
                     'Last 12 Months': [moment().subtract(12, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
                 }
-            }, function(start, end, label) {
+            }, function (start, end, label) {
                 $('#reportrange span').html(start.format('D MMM YYYY') + ' - ' + end.format('D MMM YYYY'));
             });
-            $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
-                window.location = "?start=" + picker.startDate.format("YYYY-MM-DD") 
+            $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
+                window.location = "?start=" + picker.startDate.format("YYYY-MM-DD")
                     + "&end=" + picker.endDate.format("YYYY-MM-DD")
                     + "&unit=<%= unit %>"
                     + "&filter=<%= filter %>";
             });
         });
-        
+
         loadUsageMain("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
         loadUsageTable("<%= unit %>", start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"), "<%= filter %>");
         loadUsageBreakdown(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
-        $('select[name="unit"]').change(function(){ $('form#granularity').submit(); })
-        $('select[name="filter"]').change(function(){ $('form#filter').submit(); })
+        $('select[name="unit"]').change(function () { $('form#granularity').submit(); })
+        $('select[name="filter"]').change(function () { $('form#filter').submit(); })
     });
 </script>

@@ -1,80 +1,77 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { VehicleManager } = require('hyundai_kia_connect_api'); // Replace with actual npm package if available
+const BlueLinky = require('bluelinky');
+
 
 const updateVehicleDetails = async () => {
-  try {
-    const creds = await prisma.credential.findMany({
-      where: {
-        entity: {
-          entity_name: {
-            equals: 'kia',
-            mode: 'insensitive',
-          },
-        },
-      },
-      select: {
-        key: true,
-        value: true,
-      },
-    });
+    try {
+        const creds = await prisma.credential.findMany({
+            where: {
+                entity: {
+                    entity_name: {
+                        equals: 'kia',
+                        mode: 'insensitive',
+                    },
+                },
+            },
+            select: {
+                key: true,
+                value: true,
+            },
+        });
 
-    const credentials = creds.reduce((acc, cur) => {
-      acc[cur.key] = cur.value;
-      return acc;
-    }, {});
+        const credentials = creds.reduce((acc, cur) => {
+            acc[cur.key] = cur.value;
+            return acc;
+        }, {});
 
-    const cars = await prisma.car.findMany({
-      where: {
-        make: {
-          equals: 'kia',
-          mode: 'insensitive',
-        },
-      },
-      select: {
-        id: true,
-        vin: true,
-        model: true,
-      },
-    });
+        const cars = await prisma.car.findMany({
+            where: {
+                make: {
+                    equals: 'kia',
+                    mode: 'insensitive',
+                },
+            },
+            select: {
+                id: true,
+                vin: true,
+                model: true,
+            },
+        });
 
-    credentials.cars = cars;
+        credentials.cars = cars;
 
-    const vm = new VehicleManager({
-      region: 1,
-      brand: 1,
-      username: credentials.username,
-      password: credentials.password,
-      pin: '',
-    });
+        const vm = new VehicleManager({
+            region: 1,
+            brand: 1,
+            username: credentials.username,
+            password: credentials.password,
+            pin: '',
+        });
 
-    await vm.checkAndRefreshToken();
-    await vm.updateAllVehiclesWithCachedState();
+        const client = new BlueLinky({
+            username: credentials.username,
+            password: credentials.password,
+            brand: credentials.brand || 'kia',
+            region: credentials.region || 'EU',
+            pin: credentials.pin || ''
+        });
 
-    for (const vehicleId of Object.keys(vm.vehicles)) {
-      const vehicleDetails = vm.getVehicle(vehicleId);
+        client.on('ready', async () => {
+            const vehicle = client.getVehicle('5NMS55555555555555');
+            try {
+                const response = await vehicle.odometer();
+                console.log(response);
+            } catch (err) {
+                // log the error from the command invocation 
+            }
+        });
 
-      const matchedCar = credentials.cars.find(
-        car => car.model.toLowerCase() === vehicleDetails.model.toLowerCase()
-      );
-
-      if (!matchedCar) continue;
-
-      const data = {
-        //...populate data
-      };
-
-      await prisma.carStatus.create({
-        data: {
-          // ...data,
-        },
-      });
+    } catch (e) {
+        console.error('Error:', e);
+    } finally {
+        await prisma.$disconnect();
     }
-  } catch (e) {
-    console.error('Error:', e);
-  } finally {
-    await prisma.$disconnect();
-  }
 };
 
 updateVehicleDetails();

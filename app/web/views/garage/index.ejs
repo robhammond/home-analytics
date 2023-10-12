@@ -1,16 +1,26 @@
-<h3>Garage</h3>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Garage</h1>
+</div>
 
 <div class="row">
 <% for (let car of cars) { %>
-    <div class="col-md-6">
-        <div class="card" style="width:18rem;">
-            <img src="<%= car.imageUrl %>" class="card-image-top">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><%= car.make %> <%= car.model %></h6>
+            </div>
             <div class="card-body">
-                <h5 class="card-title"><%= car.make %> <%= car.model %></h5>
-                <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
-                <p><span class="material-icons">battery_full</span> <%= car.batteryPercent %>%</p>
-                <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
-                <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary stretched-link">View</a>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <img src="<%= car.imageUrl %>" class="card-image-top" style="max-width:200px;">
+                    </div>
+                    <div class="col-lg-6">
+                        <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
+                        <p><span class="material-icons">battery_full</span> <%= car.batteryPercent %>%</p>
+                        <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
+                        <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary stretched-link">View</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -57,22 +67,37 @@ $(document).ready(function() {
     function loadChart() {
         let dataSeries = [];
         
-        dataSeries.push(
-            <% for ( let car of carEfficiency) { 
-                let carMiles = 0;
-            %>
-                {
-                    name: '<%= car[0]["carName"] %>',
-                    type: 'column',
-                    stacking: "normal",
-                    data: [ <% for (let dt of car) { sumMiles += dt["distance_travelled"]; carMiles += dt["distance_travelled"]; %>[Date.UTC(<%= dt["jsYear"] %>, <%= dt["jsMonth"] %>, <%= dt["jsDay"] %>), <%= dt["distance_travelled"] %>],<% } %> ]
-                },
-                <% carSplit[car[0]["carName"]] = {"miles": carMiles};
+dataSeries.push(
+    <% if (carEfficiency && carEfficiency.length > 0) { 
+        console.log(carEfficiency); %>
+        <% for (const car of carEfficiency) { 
+            let carMiles = 0;
+            let dataPoints = [];
+            if (car.length > 0 ) {
+        %>
+            <% for (const dt of car) { 
+                sumMiles += dt["distance_travelled"]; 
+                carMiles += dt["distance_travelled"]; 
+                dataPoints.push(`[Date.UTC(${dt["jsYear"]}, ${dt["jsMonth"]}, ${dt["jsDay"]}), ${dt["distance_travelled"]}]`);
             } %>
-        );
+            {
+                name: '<%= car[0]["carName"] %>',
+                type: 'column',
+                stacking: 'normal',
+                data: [ <%= dataPoints.join(", ") %> ]
+            },
+        <% carSplit[car[0]["carName"]] = {"miles": carMiles};
+            }
+        } %>
+    <% } else { %>
+        // Handle empty carEfficiency array here if needed
+    <% } %>
+);
+
         dataSeries.push(
             <% for ( let car of carEfficiency) {
                 let carKwh = 0;
+                if (car.length > 0) {
             %>
                 {
                     name: '<%= car[0]["carName"] %>',
@@ -81,6 +106,7 @@ $(document).ready(function() {
                     data: [ <% for (let dt of car) { sumKwh += dt["kwh_used"]; carKwh += dt["kwh_used"] %>[Date.UTC(<%= dt["jsYear"] %>, <%= dt["jsMonth"] %>, <%= dt["jsDay"] %>), <%= dt["mpkwh"] %>],<% } %> ]
                 },
                 <% carSplit[car[0]["carName"]]["kwh"] = carKwh;
+            }
             } %>
         );
 

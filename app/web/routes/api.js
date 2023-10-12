@@ -9,18 +9,23 @@ const prisma = new PrismaClient();
 async function dbQueryRateInfo(start, end, tryCount = 1) {
     try {
         const by_rate = await prisma.$queryRaw`
-          SELECT 
-              rate_type,
-              ROUND(SUM(e.kwh),2) AS total_kwh,
-              ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_cost
-          FROM  electricity e
-          JOIN rates r ON
-              r.id = e.rateId
-          JOIN supplier s ON
-              s.id = r.supplierId
-              WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
-          GROUP BY 1
-          ORDER BY 1
+            SELECT
+                r.rate_type,
+                ROUND(SUM(e.kwh),2) AS total_kwh,
+                ROUND(SUM(e.kwh_exported),2) AS kwh_exported,
+                ROUND((SUM((r.cost/100) * e.kwh)),2) AS total_cost,
+                ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
+                ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
+            FROM  electricity e
+            JOIN rates r ON
+                r.id = e.rateId
+            LEFT JOIN rates r2 ON
+                r2.id = e.exportRateId
+            JOIN supplier s ON
+                s.id = r.supplierId
+                WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
+            GROUP BY 1
+            ORDER BY 1
       `;
         return by_rate;
     } catch (e) {
@@ -315,10 +320,13 @@ router.get("/usage/by-rate", async (req, res) => {
         return;
     }
 
-    let totals = { kwh: 0, cost: 0 };
+    let totals = { kwh: 0, cost: 0, kwh_exported: 0, export_return: 0, net_cost: 0 };
     for (let rate of by_rate) {
         totals["kwh"] += rate["total_kwh"];
+        totals["kwh_exported"] += rate["kwh_exported"];
         totals["cost"] += rate["total_cost"];
+        totals["export_return"] += rate["export_return"];
+        totals["net_cost"] += rate["net_cost"];
     }
     res.json({ rates: by_rate, totals: totals });
 });

@@ -19,20 +19,20 @@ services:
     volumes:
       - ./app/web:/app
       - ./app/db:/app/db
-  ha_tasks_dev:
-    build:
-      context: ./app
-      dockerfile: ./tasks.dockerfile
-      args:
-        - HA_DB_URL=${HA_DB_URL}
-    container_name: ha_tasks_dev
-    restart: unless-stopped
-    depends_on:
-      - ha_web_dev
-    network_mode: bridge
-    environment:
-      - APP_ENV=development
-      - HA_DB_URL=${HA_DB_URL}
-    volumes:
-      - ./app/tasks:/app
-      - ./app/db:/app/db
+  # ha_tasks_dev:
+  #   build:
+  #     context: ./app
+  #     dockerfile: ./tasks.dockerfile
+  #     args:
+  #       - HA_DB_URL=${HA_DB_URL}
+  #   container_name: ha_tasks_dev
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - ha_web_dev
+  #   network_mode: bridge
+  #   environment:
+  #     - APP_ENV=development
+  #     - HA_DB_URL=${HA_DB_URL}
+    # volumes:
+    #   - ./app/tasks:/app
+    #   - ./app/db:/app/db

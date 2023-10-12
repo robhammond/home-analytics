@@ -5,3 +5,4 @@ __pycache__
 app/tasks/.env
 app/db/bigquery-creds.json
 app/db/prod.db-journal
+app/db/export.log

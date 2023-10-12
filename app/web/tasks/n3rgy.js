@@ -3,8 +3,9 @@ const axios = require('axios');
 const { DateTime } = require('luxon');
 require('dotenv').config();
 
+const { updateImport, updateExport } = require('./update-rates');
+
 const prisma = new PrismaClient();
-const HA_DB_URL = process.env.HA_DB_URL;
 
 const fetchUsage = async (startDate, endDate) => {
     if (!startDate) {
@@ -27,17 +28,14 @@ const fetchUsage = async (startDate, endDate) => {
         const res = await prisma.credentials.findFirst({
             where: {
                 key: 'auth_header',
-                Entity: {
+                entity: {
                     entity_name: 'n3rgy',
                 },
-            },
-            select: {
-                value: true,
             },
         });
         authHeader = res.value;
     } catch (error) {
-        throw new Error('Authorization header not found in DB');
+        throw new Error(`Authorization header not found in DB: ${error}`);
     }
 
     if (authHeader === '12345') {
@@ -53,12 +51,12 @@ const fetchUsage = async (startDate, endDate) => {
         });
 
         for (const value of data.values) {
-            const ts = value.timestamp;
-            const dt = DateTime.fromISO(ts).toJSDate();
-            const dtStart = DateTime.fromISO(ts).minus({ minutes: 30 }).toJSDate();
+            const ts = value.timestamp + 'Z';
+            const dt = DateTime.fromSQL(ts).toJSDate();
+            const dtStart = DateTime.fromSQL(ts).minus({ minutes: 30 }).toJSDate();
 
             try {
-                await prisma.electricity.create({
+                let insertedData = await prisma.electricity.create({
                     data: {
                         datetime: dt,
                         datetime_start: dtStart,
@@ -77,9 +75,8 @@ const fetchUsage = async (startDate, endDate) => {
         await prisma.$disconnect();
     }
 
-    // Call to update_import() equivalent function if needed
+    updateImport();
 };
-
 
 
 const fetchProduction = async (startDate, endDate) => {
@@ -103,17 +100,14 @@ const fetchProduction = async (startDate, endDate) => {
         const res = await prisma.credentials.findFirst({
             where: {
                 key: 'auth_header',
-                Entity: {
+                entity: {
                     entity_name: 'n3rgy',
                 },
-            },
-            select: {
-                value: true,
             },
         });
         authHeader = res.value;
     } catch (error) {
-        throw new Error('Authorization header not found in DB');
+        throw new Error(`Authorization header not found in DB: ${error}`);
     }
 
     if (authHeader === '12345') {
@@ -129,22 +123,33 @@ const fetchProduction = async (startDate, endDate) => {
         });
 
         for (const value of data.values) {
-            const ts = value.timestamp;
-            const dt = DateTime.fromISO(ts).toJSDate();
-            const dtStart = DateTime.fromISO(ts).minus({ minutes: 30 }).toJSDate();
-
+            const ts = value.timestamp + 'Z';
+            const dt = DateTime.fromSQL(ts).toJSDate();
+            const dtStart = DateTime.fromSQL(ts).minus({ minutes: 30 }).toJSDate();
+            let rowId;
             try {
-                await prisma.electricity.updateMany({
+                rowId = await prisma.electricity.findFirst({
                     where: {
                         datetime: dt,
-                        datetime_start: dtStart,
                         granularity: data.granularity,
-                        source: 'n3rgy',
+                    },
+                    select: {
+                        id: true,
+                    }
+                });
+            } catch (e) {
+                console.error(`Error finding: ${e}`);
+            }
+            try {
+                let updatedRow = await prisma.electricity.update({
+                    where: {
+                        id: rowId.id
                     },
                     data: {
                         kwh_exported: value.value,
                     },
                 });
+                console.log(updatedRow);
             } catch (error) {
                 console.error(`Error updating: ${error}`);
             }
@@ -152,14 +157,11 @@ const fetchProduction = async (startDate, endDate) => {
     } catch (error) {
         console.error(error);
     } finally {
-        await prisma.$disconnect();
+        // await prisma.$disconnect();
     }
 
-    // Call to update_export() equivalent function if needed
+    updateExport();
 };
-
-
-
 
 
 fetchUsage();

@@ -1,10 +1,51 @@
 const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
 const { DateTime } = require('luxon');
 require('dotenv').config();
 
 const prisma = new PrismaClient();
 const HA_DB_URL = process.env.HA_DB_URL;
+
+// find the relevant supplier ID based on the date
+async function findSupplierId(dateLocal, tariffType) {
+    try {
+        const supplier = await prisma.supplier.findFirst({
+            where: {
+                OR: [
+                    {
+                        AND: [
+                            {
+                                supplier_start: {
+                                    lte: dateLocal,
+                                },
+                                supplier_end: {
+                                    gte: dateLocal,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        AND: [
+                            {
+                                supplier_start: {
+                                    lte: dateLocal,
+                                },
+                                supplier_end: null,
+                            },
+                        ],
+                    },
+                ],
+                tariff_type: tariffType,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        return supplier.id;
+    } catch (error) {
+        console.error('Error finding supplier:', error);
+    }
+}
 
 const updateImport = async () => {
     try {
@@ -16,32 +57,42 @@ const updateImport = async () => {
         });
 
         for (const record of usageRecords) {
-            // Your logic for updating the rateId
-            // For example, if you compute rateId based on datetime, you can do:
-            const rateId = computeRateId(record.datetime); // Implement this function
+            const rateId = await computeRateId(record.datetime_start, 'import');
 
-            await prisma.electricity.update({
-                where: {
-                    id: record.id,
-                },
-                data: {
-                    rateId: rateId,
-                },
-            });
+            try {
+                let updatedRow = await prisma.electricity.update({
+                    where: {
+                        id: record.id,
+                    },
+                    data: {
+                        rateId: rateId,
+                    },
+                });
+            } catch (e) {
+                console.log(e);
+            }
         }
     } catch (error) {
-        console.error(`Error updating rates: ${error}`);
+        console.error(`Error updating import rates: ${error}`);
     } finally {
         await prisma.$disconnect();
     }
 };
 
-const computeRateId = (datetime, supplierId) => {
-    const dt = DateTime.fromJSDate(datetime);
-    const time = dt.toFormat('HH:mm');
+const computeRateId = async (datetime_start, tariffType) => {
+    const local_tz = 'Europe/London';
+    let startDtUtc = DateTime.fromJSDate(datetime_start, { zone: 'utc' });
+    let startDtLocal = startDtUtc.setZone(local_tz);
 
-    // Filter rates by supplierId
-    const supplierRates = rates.filter(rate => rate.supplierId === supplierId);
+    const supplierId = await findSupplierId(startDtLocal, tariffType);
+    const supplierRates = await prisma.rates.findMany({
+        where: {
+            supplier: {
+                id: supplierId
+            },
+        }
+    });
+    console.log(supplierRates);
 
     for (const rate of supplierRates) {
         if (rate.rate_type === 'fixed') {
@@ -49,47 +100,68 @@ const computeRateId = (datetime, supplierId) => {
         }
 
         if (rate.rate_type === 'off-peak' || rate.rate_type === 'peak') {
-            const startTime = DateTime.fromFormat(rate.start_time, 'HH:mm');
-            const endTime = DateTime.fromFormat(rate.end_time, 'HH:mm');
-            const currentTime = DateTime.fromFormat(time, 'HH:mm');
+            let start_str = String(rate.start_time);
+            let end_str = String(rate.end_time);
+            const start = /^(\d\d):(\d\d)$/.exec(start_str);
+            const end = /^(\d\d):(\d\d)$/.exec(end_str);
 
-            // Check if the current time is within the rate time range
-            if (currentTime >= startTime && currentTime < endTime) {
+            let dtStart = startDtLocal.set({ hour: start[1], minute: start[2], second: 0, millisecond: 0 });
+            let dtEnd = startDtLocal.set({ hour: end[1], minute: end[2], second: 0, millisecond: 0 });
+
+            if (dtEnd < dtStart) {
+                dtStart = dtStart.minus({ days: 1 });
+                dtEnd = dtEnd.plus({ days: 1 });
+            } else {
+                dtEnd = dtEnd.minus({ seconds: 1 });
+            }
+
+            if (startDtLocal >= dtStart && startDtLocal <= dtEnd) {
+                console.log(`Matching to rate: ${rate.rate_type}`);
                 return rate.id;
             }
         }
     }
 
-    return null; // Return null if no rateId is found
+    return null;
 };
 
 
 const updateExport = async () => {
     try {
-        // Fetch records where rateId for export might be null or needs updating
+        // Fetch records where exportRateId for export is be null
         const exportRecords = await prisma.electricity.findMany({
             where: {
-                rateId: null,  // Replace this condition based on your specific needs
+                exportRateId: null,
+                kwh_exported: { not: null },
             },
         });
 
         for (const record of exportRecords) {
-            // Your logic for updating the rateId for export
-            // For example, if you compute rateId based on datetime, you can do:
-            const rateId = computeRateId(record.datetime); // Implement this function
-
-            await prisma.electricity.update({
-                where: {
-                    id: record.id,
-                },
-                data: {
-                    rateId: rateId,  // Update rateId or any other field as needed
-                },
-            });
+            const exportRateId = await computeRateId(record.datetime_start, 'export');
+            try {
+                let updatedRow = await prisma.electricity.update({
+                    where: {
+                        id: record.id,
+                    },
+                    data: {
+                        exportRateId: exportRateId,
+                    },
+                });
+            } catch (e) {
+                console.log(e);
+            }
         }
     } catch (error) {
         console.error(`Error updating export rates: ${error}`);
     } finally {
         await prisma.$disconnect();
     }
+};
+
+// updateImport();
+// updateExport();
+
+module.exports = {
+    updateImport,
+    updateExport,
 };

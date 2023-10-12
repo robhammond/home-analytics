@@ -1,76 +1,104 @@
+<h1 class="h3 mb-0 text-gray-800">Energy Overview</h1>
+
 <div class="row">
-    <div class="col-md-6">
-        <h3>Energy Overview</h3>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Today so far</h6>
+            </div>
+            <div class="card-body">
+                <table class="table usage-table table-sm table-bordered" id="today-usage">
+                    <thead>
+                        <tr>
+                            <th>Cost</th>
+                            <th style="text-align:right" class="cost-total"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="cost"></tbody>
+                    <thead>
+                        <tr>
+                            <th>kWh</th>
+                            <th style="text-align:right" class="kwh-total"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="kwh"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <h4>Today so far</h4>
-        <table class="table usage-table table-sm table-bordered" id="today-usage">
-            <thead>
-                <tr>
-                    <th>Cost</th>
-                    <th style="text-align:right" class="cost-total"></th>
-                </tr>
-            </thead>
-            <tbody class="cost"></tbody>
-            <thead>
-                <tr>
-                    <th>kWh</th>
-                    <th style="text-align:right" class="kwh-total"></th>
-                </tr>
-            </thead>
-            <tbody class="kwh"></tbody>
-        </table>
-    </div>
-    <div class="col-md-6">
-        <h4>Yesterday</h4>
-        <table class="table table-sm table-bordered usage-table" id="yday-usage">
-            <thead>
-                <tr>
-                    <th>Cost</th>
-                    <th style="text-align:right" class="cost-total"></th>
-                </tr>
-            </thead>
-            <tbody class="cost"></tbody>
-            <thead>
-                <tr>
-                    <th>kWh</th>
-                    <th style="text-align:right" class="kwh-total"></th>
-                </tr>
-            </thead>
-            <tbody class="kwh"></tbody>
-        </table>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Yesterday</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered usage-table" id="yday-usage">
+                    <thead>
+                        <tr>
+                            <th>Cost</th>
+                            <th style="text-align:right" class="cost-total"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="cost"></tbody>
+                    <thead>
+                        <tr>
+                            <th>kWh</th>
+                            <th style="text-align:right" class="kwh-total"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="kwh"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-12">
-        <div id="hourlyUsage"></div>
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Last 48 Hours</h6>
+            </div>
+            <div class="card-body">
+                <div id="hourlyUsage"></div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        <h4>Last 7 Days</h4>
-        <div id="usagePie"></div>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Last 7 Days</h6>
+            </div>
+            <div class="card-body">
+                <div id="usagePie"></div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h3>&nbsp;</h3>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>kWh</th>
-                    <th>Usage Cost</th>
-                </tr>
-            </thead>
-            <tbody id="usageDataTable"></tbody>
-        </table>
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">7 Day Usage</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>kWh</th>
+                            <th>Usage Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageDataTable"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         loadTodayUsage('<%= dates["yday"] %>', "<%= dates['today'] %>");
         loadUsagePie("<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
         loadUsageByRateTable("<%= dates['today'] %>", "<%= dates['today'] %>", "table#today-usage");

@@ -20,37 +20,71 @@ function loadUsageTable(unit, startDate, endDate, filter) {
             }
             let totals = res.totals;
             $('#totalkWh').html(`
-                <div class="card border-info mb-3" style="max-width: 18rem;">
-                <div class="card-header">Total kWh</div>
-                <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">${Number(totals["kwh"].toFixed(2)).toLocaleString()}</h5>
-                </div>
-            </div>`);
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">kWh</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><i class="fas fa-down-long"></i> ${Number(totals["kwh"].toFixed(0)).toLocaleString()} / <i class="fas fa-up-long"></i> ${Number(totals["kwh_exported"].toFixed(0)).toLocaleString()}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-bolt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>`);
             let net_cost = "";
             if (totals["net_cost"] != totals["cost"]) {
                 net_cost = ` <span style="color:grey;">(&pound;${totals["net_cost"].toFixed(2)} net)</span>`;
             }
             $('#totalCost').html(`
-            <div class="card border-info mb-3" style="max-width: 18rem;">
-                <div class="card-header">Total Cost</div>
+            <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">&pound;${Number(totals["cost"].toFixed(2)).toLocaleString()}${net_cost}</h5>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                total cost</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">&pound;${Number(totals["cost"].toFixed(2)).toLocaleString()}${net_cost}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bolt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
-            </div>`);
+            </div>
+        `);
             $('#avgkWh').html(`
-                <div class="card border-info mb-3" style="max-width: 18rem;">
-                <div class="card-header">Average kWh</div>
-                <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">${Number((totals["kwh"] / count).toFixed(2)).toLocaleString()}</h5>
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    average kWh</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">${Number((totals["kwh"] / count).toFixed(2)).toLocaleString()}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-bolt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>`);
+            `);
             $('#avgCost').html(`
-            <div class="card border-info mb-3" style="max-width: 18rem;">
-                <div class="card-header">Average Cost</div>
+            <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
-                    <h5 class="card-title" style="text-align:right;">&pound;${Number((totals["cost"] / count).toFixed(2)).toLocaleString()}</h5>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                average cost</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">&pound;${Number((totals["net_cost"] / count).toFixed(2)).toLocaleString()}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bolt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
-            </div>`);
+            </div>
+        `);
         },
         error: function (xhr) {
             console.log(xhr);
