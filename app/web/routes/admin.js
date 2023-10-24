@@ -1,8 +1,10 @@
 const express = require("express");
+
 const router = express.Router();
 const { DateTime } = require("luxon");
 
 const { PrismaClient } = require("@prisma/client");
+
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
@@ -11,34 +13,36 @@ router.get("/", async (req, res) => {
     const envDate = new Date();
     res.render("admin", {
         page_title: "Admin",
-        appEnv: appEnv,
-        envDb: envDb,
-        envDate: envDate,
+        appEnv,
+        envDb,
+        envDate,
     });
 });
 
 router.get("/add-rate", async (req, res) => {
-    const supplier_id = req.query.supplier_id;
-    let tariff = await prisma.supplier.findFirst({
+    const { supplier_id } = req.query;
+    const tariff = await prisma.supplier.findFirst({
         where: {
-            id: Number(supplier_id)
-        }
-    })
-    res.render("admin/add-rate", { page_title: "Admin", supplier_id: supplier_id, tariff });
+            id: Number(supplier_id),
+        },
+    });
+    res.render("admin/add-rate", { page_title: "Admin", supplier_id, tariff });
 });
 
 router.post("/add-rate", async (req, res) => {
-    const { supplier_id, rate_type, cost, start_time, end_time } = req.body;
+    const {
+        supplier_id, rate_type, cost, start_time, end_time,
+    } = req.body;
     const rates_res = await prisma.rates.create({
         data: {
             supplier: {
                 connect: { id: Number(supplier_id) },
             },
-            rate_type: rate_type,
+            rate_type,
             cost: parseFloat(cost),
             currency: "gbp",
-            start_time: start_time,
-            end_time: end_time,
+            start_time,
+            end_time,
         },
         include: {
             supplier: true,
@@ -52,7 +56,7 @@ router.get("/add-tariff", async (req, res) => {
 });
 
 router.get("/edit-tariff", async (req, res) => {
-    let supplier = await prisma.supplier.findFirst({
+    const supplier = await prisma.supplier.findFirst({
         where: {
             id: Number(req.query.id),
         },
@@ -61,18 +65,20 @@ router.get("/edit-tariff", async (req, res) => {
         },
     });
 
-    if (supplier["supplier_start"]) {
-        supplier["supplier_start"] = supplier["supplier_start"].toISOString().substring(0, 10);
+    if (supplier.supplier_start) {
+        supplier.supplier_start = supplier.supplier_start.toISOString().substring(0, 10);
     }
-    if (supplier["supplier_end"]) {
-        supplier["supplier_end"] = supplier["supplier_end"].toISOString().substring(0, 10);
+    if (supplier.supplier_end) {
+        supplier.supplier_end = supplier.supplier_end.toISOString().substring(0, 10);
     }
 
-    res.render("admin/edit-tariff", { page_title: "Admin", supplier: supplier });
+    res.render("admin/edit-tariff", { page_title: "Admin", supplier });
 });
 
 router.post("/edit-tariff", async (req, res) => {
-    let { id, tariff_name, tariff_type, supplier, standing_charge, supplier_start, supplier_end } = req.body;
+    let {
+        id, tariff_name, tariff_type, supplier, standing_charge, supplier_start, supplier_end,
+    } = req.body;
 
     if (supplier_start == "") {
         supplier_start = null;
@@ -95,12 +101,12 @@ router.post("/edit-tariff", async (req, res) => {
             id: Number(id),
         },
         data: {
-            tariff_name: tariff_name,
-            tariff_type: tariff_type,
-            supplier: supplier,
-            standing_charge: standing_charge,
-            supplier_start: supplier_start,
-            supplier_end: supplier_end,
+            tariff_name,
+            tariff_type,
+            supplier,
+            standing_charge,
+            supplier_start,
+            supplier_end,
         },
     });
 
@@ -141,23 +147,23 @@ router.post("/add-tariff", async (req, res) => {
     try {
         const supplier_res = await prisma.supplier.create({
             data: {
-                supplier: supplier,
-                tariff_name: tariff_name,
-                tariff_type: tariff_type,
-                standing_charge: standing_charge,
-                supplier_start: supplier_start,
-                supplier_end: supplier_end,
+                supplier,
+                tariff_name,
+                tariff_type,
+                standing_charge,
+                supplier_start,
+                supplier_end,
             },
         });
         try {
             const rates_res = await prisma.rates.create({
                 data: {
-                    supplierId: supplier_res["id"],
-                    rate_type: rate_type,
+                    supplier_id: supplier_res.id,
+                    rate_type,
                     cost: parseFloat(cost),
-                    currency: currency,
-                    start_time: start_time,
-                    end_time: end_time,
+                    currency,
+                    start_time,
+                    end_time,
                 },
             });
         } catch (e) {
@@ -166,16 +172,15 @@ router.post("/add-tariff", async (req, res) => {
     } catch (e) {
         console.log(e);
     }
-    
+
     res.redirect("/admin/list-tariffs");
 });
-
 
 router.get("/delete-tariff", async (req, res) => {
     try {
         const rates = await prisma.rates.deleteMany({
             where: {
-                supplierId: Number(req.query.id),
+                supplier_id: Number(req.query.id),
             },
         });
         const supplier = await prisma.supplier.delete({
@@ -201,7 +206,7 @@ router.get("/list-tariffs", async (req, res) => {
             },
         ],
     });
-    res.render("admin/list-tariffs", { page_title: "List Tariffs", tariffs: tariffs });
+    res.render("admin/list-tariffs", { page_title: "List Tariffs", tariffs });
 });
 
 router.get("/add-vehicle", async (req, res) => {
@@ -213,59 +218,59 @@ router.post("/add-vehicle", async (req, res) => {
         make,
         model,
         variant,
-        batterySize,
-        registrationNumber,
-        imageUrl,
+        battery_size,
+        registration_number,
+        image_url,
         vin,
-        purchasePrice,
-        purchaseOdometer,
-        motDate,
-        taxDate,
-        serviceDate,
-        dateAcquired,
+        purchase_price,
+        purchase_odometer,
+        mot_date,
+        tax_date,
+        service_date,
+        date_purchased,
     } = req.body;
 
-    if (motDate == "") {
-        motDate = null;
+    if (mot_date == "") {
+        mot_date = null;
     }
-    if (serviceDate == "") {
-        serviceDate = null;
+    if (service_date == "") {
+        service_date = null;
     }
-    if (dateAcquired == "") {
-        dateAcquired = null;
+    if (date_purchased == "") {
+        date_purchased = null;
     }
-    if (taxDate == "") {
-        taxDate = null;
+    if (tax_date == "") {
+        tax_date = null;
     }
 
     const car_res = await prisma.car.create({
         data: {
-            make: make,
-            model: model,
-            variant: variant,
-            batterySize: Number(batterySize),
-            registrationNumber: registrationNumber,
-            imageUrl: imageUrl,
-            vin: vin,
-            purchasePrice: Number(purchasePrice),
-            purchaseOdometer: Number(purchaseOdometer),
-            motDate: motDate,
-            serviceDate: serviceDate,
-            taxDate: taxDate,
-            dateAcquired: dateAcquired,
+            make,
+            model,
+            variant,
+            battery_size: Number(battery_size),
+            registration_number,
+            image_url,
+            vin,
+            purchase_price: Number(purchase_price),
+            purchase_odometer: Number(purchase_odometer),
+            mot_date,
+            service_date,
+            tax_date,
+            date_purchased,
         },
     });
     res.redirect("/admin/list-vehicles");
 });
 
 router.get("/edit-vehicle", async (req, res) => {
-    const id = req.query.id;
+    const { id } = req.query;
     const vehicle = await prisma.car.findFirst({
         where: {
             id: Number(id),
         },
     });
-    res.render("admin/edit-vehicle", { page_title: "Edit vehicle", vehicle: vehicle });
+    res.render("admin/edit-vehicle", { page_title: "Edit vehicle", vehicle });
 });
 
 router.post("/edit-vehicle", async (req, res) => {
@@ -274,53 +279,53 @@ router.post("/edit-vehicle", async (req, res) => {
         make,
         model,
         variant,
-        batterySize,
-        registrationNumber,
-        imageUrl,
+        battery_size,
+        registration_number,
+        image_url,
         vin,
-        purchasePrice,
-        purchaseOdometer,
-        motDate,
-        taxDate,
-        serviceDate,
-        dateAcquired,
+        purchase_price,
+        purchase_odometer,
+        mot_date,
+        tax_date,
+        service_date,
+        date_purchased,
     } = req.body;
 
-    if (motDate == "") {
-        motDate = null;
+    if (mot_date == "") {
+        mot_date = null;
     } else {
-        motDate = motDate;
+        mot_date = mot_date;
     }
-    if (taxDate == "") {
-        taxDate = null;
+    if (tax_date == "") {
+        tax_date = null;
     } else {
-        taxDate = taxDate;
+        tax_date = tax_date;
     }
-    if (serviceDate == "") {
-        serviceDate = null;
+    if (service_date == "") {
+        service_date = null;
     } else {
-        serviceDate = serviceDate;
+        service_date = service_date;
     }
-    if (dateAcquired == "") {
-        dateAcquired = null;
+    if (date_purchased == "") {
+        date_purchased = null;
     } else {
-        dateAcquired = dateAcquired;
+        date_purchased = date_purchased;
     }
     const car_res = await prisma.car.update({
         data: {
-            make: make,
-            model: model,
-            variant: variant,
-            batterySize: Number(batterySize),
-            registrationNumber: registrationNumber,
-            imageUrl: imageUrl,
-            vin: vin,
-            purchasePrice: Number(purchasePrice),
-            purchaseOdometer: Number(purchaseOdometer),
-            motDate: motDate,
-            taxDate: taxDate,
-            serviceDate: serviceDate,
-            dateAcquired: dateAcquired,
+            make,
+            model,
+            variant,
+            battery_size: Number(battery_size),
+            registration_number,
+            image_url,
+            vin,
+            purchase_price: Number(purchase_price),
+            purchase_odometer: Number(purchase_odometer),
+            mot_date,
+            tax_date,
+            service_date,
+            date_purchased,
         },
         where: {
             id: Number(id),
@@ -334,18 +339,20 @@ router.get("/add-entity", async (req, res) => {
 });
 
 router.post("/add-entity", async (req, res) => {
-    let { entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
+    const {
+        entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location,
+    } = req.body;
 
     try {
         await prisma.entity.create({
             data: {
-                entity_name: entity_name,
-                entity_type: entity_type,
-                entity_category: entity_category,
-                entity_backend: entity_backend,
-                entity_url: entity_url,
-                entity_image: entity_image,
-                entity_location: entity_location,
+                entity_name,
+                entity_type,
+                entity_category,
+                entity_backend,
+                entity_url,
+                entity_image,
+                entity_location,
             },
         });
         res.redirect("/admin/list-entities");
@@ -357,7 +364,7 @@ router.post("/add-entity", async (req, res) => {
 
 router.get("/list-entities", async (req, res) => {
     const entities = await prisma.entity.findMany();
-    res.render("admin/list-entities", { page_title: "List Entities", entities: entities });
+    res.render("admin/list-entities", { page_title: "List Entities", entities });
 });
 
 router.get("/view-entity", async (req, res) => {
@@ -371,7 +378,7 @@ router.get("/view-entity", async (req, res) => {
             entityId: Number(req.query.id),
         },
     });
-    res.render("admin/view-entity", { page_title: "View Entity", entity: entity, creds: creds });
+    res.render("admin/view-entity", { page_title: "View Entity", entity, creds });
 });
 
 router.get("/edit-entity", async (req, res) => {
@@ -380,24 +387,26 @@ router.get("/edit-entity", async (req, res) => {
             id: Number(req.query.id),
         },
     });
-    res.render("admin/edit-entity", { page_title: "Edit Entity", entity: entity });
+    res.render("admin/edit-entity", { page_title: "Edit Entity", entity });
 });
 
 router.post("/edit-entity", async (req, res) => {
-    let { id, entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location } = req.body;
+    const {
+        id, entity_name, entity_type, entity_category, entity_backend, entity_url, entity_image, entity_location,
+    } = req.body;
     try {
         await prisma.entity.update({
             where: {
                 id: Number(id),
             },
             data: {
-                entity_name: entity_name,
-                entity_type: entity_type,
-                entity_category: entity_category,
-                entity_backend: entity_backend,
-                entity_url: entity_url,
-                entity_image: entity_image,
-                entity_location: entity_location,
+                entity_name,
+                entity_type,
+                entity_category,
+                entity_backend,
+                entity_url,
+                entity_image,
+                entity_location,
             },
         });
         res.redirect("/admin/list-entities");
@@ -440,10 +449,10 @@ router.get("/add-credentials", async (req, res) => {
     try {
         const entity = await prisma.entity.findFirst({
             where: {
-                id: id,
+                id,
             },
         });
-        res.render("admin/add-credentials", { page_title: "Add credentials", entity: entity });
+        res.render("admin/add-credentials", { page_title: "Add credentials", entity });
     } catch (e) {
         console.log(e);
         res.status(500).send("Internal Server Error - Please try again.");
@@ -458,8 +467,8 @@ router.post("/add-credentials", async (req, res) => {
                 entity: {
                     connect: { id: Number(id) },
                 },
-                key: key,
-                value: value,
+                key,
+                value,
             },
             include: {
                 entity: true,
@@ -476,25 +485,27 @@ router.get("/edit-credentials", async (req, res) => {
     const id = Number(req.query.id);
     const cred = await prisma.credentials.findFirst({
         where: {
-            id: id,
+            id,
         },
         include: {
             entity: true,
         },
     });
-    res.render("admin/edit-credentials", { page_title: "Edit credentials", cred: cred });
+    res.render("admin/edit-credentials", { page_title: "Edit credentials", cred });
 });
 
 router.post("/edit-credentials", async (req, res) => {
-    const { id, key, value, entity_id } = req.body;
+    const {
+        id, key, value, entity_id,
+    } = req.body;
     try {
         const cred = await prisma.credentials.update({
             where: {
                 id: Number(id),
             },
             data: {
-                key: key,
-                value: value,
+                key,
+                value,
             },
         });
         res.redirect(`/admin/view-entity?id=${entity_id}`);
@@ -506,7 +517,7 @@ router.post("/edit-credentials", async (req, res) => {
 
 router.get("/list-vehicles", async (req, res) => {
     const vehicles = await prisma.car.findMany();
-    res.render("admin/list-vehicles", { page_title: "List vehicles", vehicles: vehicles });
+    res.render("admin/list-vehicles", { page_title: "List vehicles", vehicles });
 });
 
 module.exports = router;

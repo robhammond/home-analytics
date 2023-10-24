@@ -1,25 +1,24 @@
-const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
-const moment = require('moment');
-const rrule = require('rrule').RRule;
+const { PrismaClient } = require("@prisma/client");
+const axios = require("axios");
+const moment = require("moment");
+const rrule = require("rrule").RRule;
 
 const prisma = new PrismaClient();
-const HA_DB_URL = process.env.HA_DB_URL;
 
 const getHours = (startDate) => {
     const start = moment(startDate).toDate();
     return rrule.rrule({
         freq: rrule.HOURLY,
         count: 24,
-        dtstart: start
-    }).all().map(dt => moment(dt).utc().format());
+        dtstart: start,
+    }).all().map((dt) => moment(dt).utc().format());
 };
 
 const fetchUsage = async (numDays = 1) => {
-    const d1start = moment().subtract(numDays, 'days');
-    const d1end = moment().subtract(numDays - 1, 'days');
-    const start_date = d1start.format('YYYY-MM-DDT00:00:00');
-    const end_date = d1end.format('YYYY-MM-DDT00:00:00');
+    const d1start = moment().subtract(numDays, "days");
+    const d1end = moment().subtract(numDays - 1, "days");
+    const start_date = d1start.format("YYYY-MM-DDT00:00:00");
+    const end_date = d1end.format("YYYY-MM-DDT00:00:00");
 
     const endpoint_url = "https://app.melcloud.com/Mitsubishi.Wifi.Client/Report/GetTemperatureLog2";
 
@@ -27,19 +26,19 @@ const fetchUsage = async (numDays = 1) => {
         where: {
             entity: {
                 entityName: {
-                    equals: 'ecodan',
-                    mode: 'insensitive'
-                }
-            }
+                    equals: "ecodan",
+                    mode: "insensitive",
+                },
+            },
         },
         select: {
             key: true,
-            value: true
-        }
+            value: true,
+        },
     });
 
     const credentials = {};
-    creds.forEach(cred => {
+    creds.forEach((cred) => {
         credentials[cred.key.toLowerCase()] = cred.value;
     });
 
@@ -52,7 +51,7 @@ const fetchUsage = async (numDays = 1) => {
         Duration: 1,
         Location: credentials.location,
         FromDate: start_date,
-        ToDate: end_date
+        ToDate: end_date,
     };
 
     const headers = {
@@ -71,7 +70,7 @@ const fetchUsage = async (numDays = 1) => {
                 setTemperature: data_rows[0][i],
                 insideTemperature: data_rows[1][i],
                 outsideTemperature: data_rows[2][i],
-                tankTemperature: data_rows[3][i]
+                tankTemperature: data_rows[3][i],
             };
 
             await prisma.temperature.create({
@@ -80,8 +79,8 @@ const fetchUsage = async (numDays = 1) => {
                     setTemperature: row.setTemperature,
                     insideTemperature: row.insideTemperature,
                     outsideTemperature: row.outsideTemperature,
-                    tankTemperature: row.tankTemperature
-                }
+                    tankTemperature: row.tankTemperature,
+                },
             });
         }
     } else {

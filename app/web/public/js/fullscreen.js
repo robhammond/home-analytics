@@ -124,10 +124,10 @@ function loadCarStatus() {
                         <div class="row">
                             <div class="col-md-6">
                                 <h1>${car['make']} ${car['model']}</h1>
-                                <img src="${car['imageUrl']}" style="max-width:350px;max-height:400px;" />
+                                <img src="${car['image_url']}" style="max-width:350px;max-height:400px;" />
                                 <div class="row justify-content-md-center" style="margin-top:20px">
                                     <div class="col-md-10">
-                                        <span class="reg-plate">${car['registrationNumber']}</span>
+                                        <span class="reg-plate">${car['registration_number']}</span>
                                     </div>
                                 </div>
                                 <div style="margin-top:20px;margin-left:25px;">

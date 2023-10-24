@@ -1,11 +1,10 @@
-const axios = require('axios');
-const sqlite = require('sqlite');
-const crypto = require('crypto');
-const program = require('commander');
+const axios = require("axios");
+const sqlite = require("sqlite");
+const crypto = require("crypto");
+const program = require("commander");
 
-const API_BASE = 'https://www.soliscloud.com:13333';
-const VERB = 'POST';
-const HA_DB_URL = process.env.HA_DB_URL;
+const API_BASE = "https://www.soliscloud.com:13333";
+const VERB = "POST";
 
 async function getCreds() {
     const db = await sqlite.open(HA_DB_URL);
@@ -22,22 +21,22 @@ async function getCreds() {
             creds[row.key] = row.value;
         }
     } catch (err) {
-        throw new Error('Authorization details not found in DB');
+        throw new Error("Authorization details not found in DB");
     }
     await db.close();
     return creds;
 }
 
 function prepareHeader(creds, body, canonicalizedResource) {
-    const contentMD5 = crypto.createHash('md5').update(JSON.stringify(body)).digest('base64');
-    const contentType = 'application/json';
+    const contentMD5 = crypto.createHash("md5").update(JSON.stringify(body)).digest("base64");
+    const contentType = "application/json";
     const date = new Date().toUTCString();
     const encryptStr = `${VERB}\n${contentMD5}\n${contentType}\n${date}\n${canonicalizedResource}`;
-    const hmac = crypto.createHmac('sha1', creds.key_secret).update(encryptStr).digest('base64');
+    const hmac = crypto.createHmac("sha1", creds.key_secret).update(encryptStr).digest("base64");
     const authorization = `API ${creds.key_id}:${hmac}`;
     return {
-        'Content-MD5': contentMD5,
-        'Content-Type': contentType,
+        "Content-MD5": contentMD5,
+        "Content-Type": contentType,
         Date: date,
         Authorization: authorization,
     };
@@ -60,13 +59,13 @@ async function getStationList() {
 }
 
 program
-    .option('--date <date>', 'Single date in the format YYYY-MM-DD')
-    .option('--start_date <start_date>', 'Start date in the format YYYY-MM-DD')
-    .option('--end_date <end_date>', 'End date in the format YYYY-MM-DD')
-    .option('--unit <unit>', 'Time unit - either mins or days')
+    .option("--date <date>", "Single date in the format YYYY-MM-DD")
+    .option("--start_date <start_date>", "Start date in the format YYYY-MM-DD")
+    .option("--end_date <end_date>", "End date in the format YYYY-MM-DD")
+    .option("--unit <unit>", "Time unit - either mins or days")
     .action(async (options) => {
         if (options.date) {
-            if (options.unit === 'mins') {
+            if (options.unit === "mins") {
                 await getStationDay(options.date);
             } else {
                 await getStationDayEnergyList(options.date);
@@ -75,8 +74,8 @@ program
             // Loop through dates and call functions.
             // Sleep between calls as needed.
         } else {
-            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-            if (options.unit === 'mins') {
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+            if (options.unit === "mins") {
                 await getStationDay(yesterday);
             } else {
                 await getStationDayEnergyList(yesterday);

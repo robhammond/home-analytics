@@ -1,40 +1,36 @@
+const { PrismaClient } = require("@prisma/client");
+const fetch = require("node-fetch");
 
-
-const { PrismaClient } = require('@prisma/client')
-const fetch = require('node-fetch');
-
-const prisma = new PrismaClient()
-
-
+const prisma = new PrismaClient();
 
 async function main() {
-    let resource_details = await prisma.entity.findFirst({
+    const resource_details = await prisma.entity.findFirst({
         where: {
-            entity_name: "Solcast"
+            entity_name: "Solcast",
         },
         include: {
-            credentials: true
-        }
+            credentials: true,
+        },
     });
-    let resource_id = '';
+    let resource_id = "";
 
     for (const [key, value] of resource_details.credentials) {
-        if (key === 'resource_id') {
-            resource_id = value
+        if (key === "resource_id") {
+            resource_id = value;
         }
     }
 
     if (!resource_id) {
-        throw 'missing resource id';
+        throw "missing resource id";
     }
 
     const apiUrl = `https://api.solcast.com.au/rooftop_sites/${resource_id}/forecasts?format=json`;
 
-    // Fetch latest solar forecast data 
-    const res = await fetch('https://api.solcast.com.au/forecasts', {
+    // Fetch latest solar forecast data
+    const res = await fetch("https://api.solcast.com.au/forecasts", {
         headers: {
-            'Authorization': 'Bearer <your_api_key>'
-        }
+            Authorization: "Bearer <your_api_key>",
+        },
     });
 
     const forecasts = await res.json();
@@ -49,13 +45,12 @@ async function main() {
     //         }
     //     })
     // }
-
 }
 
 main()
-    .catch(e => {
-        throw e
+    .catch((e) => {
+        throw e;
     })
     .finally(async () => {
-        await prisma.$disconnect()
-    })
+        await prisma.$disconnect();
+    });

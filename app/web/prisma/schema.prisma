@@ -11,20 +11,40 @@ datasource db {
     url      = env("DB_URL_WITH_PROTOCOL")
 }
 
+model Api {
+    id          Int              @id @default(autoincrement())
+    name        String
+    type        String
+    credentials ApiCredentials[]
+
+    @@map("apis")
+}
+
+model ApiCredentials {
+    id     Int    @id @default(autoincrement())
+    api    Api    @relation(fields: [api_id], references: [id])
+    api_id Int
+    key    String
+    value  String
+
+    @@map("api_credentials")
+}
+
 model Electricity {
-    id             Int       @id @default(autoincrement())
-    datetime_start DateTime?
-    datetime       DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
+    id             Int         @id @default(autoincrement())
+    datetime_start DateTime
+    datetime_end   DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
     kwh            Float?
     kwh_exported   Float?
     granularity    String
-    rate           Rates?    @relation("importRate", fields: [rateId], references: [id])
-    rateId         Int?
-    exportRate     Rates?    @relation("exportRate", fields: [exportRateId], references: [id])
-    exportRateId   Int?
+    rate           EnergyRate? @relation("import_rate", fields: [rate_id], references: [id])
+    rate_id        Int?
+    export_rate    EnergyRate? @relation("export_rate", fields: [export_rate_id], references: [id])
+    export_rate_id Int?
     source         String?
 
-    @@unique([datetime, granularity], name: "sqlite_autoindex_electricity")
+    @@unique([datetime_start, granularity], name: "sqlite_autoindex_electricity")
+    @@map("electricity")
 }
 
 model Solar {
@@ -40,15 +60,32 @@ model Solar {
     time_unit             String?   @default("day")
 
     @@unique([datetime_start, time_unit], name: "sqlite_autoindex_solar")
+    @@map("solar")
+}
+
+model SolarSnapshot {
+    id                   Int       @id @default(autoincrement())
+    datetime_start       DateTime
+    datetime_end         DateTime?
+    kw_produced          Float?
+    kw_consumed          Float?
+    kw_exported          Float?
+    kw_imported          Float?
+    kw_battery_discharge Float?
+    kw_battery_charge    Float?
+    time_unit            String?
+
+    @@unique([datetime_start, time_unit], name: "sqlite_autoindex_solar")
+    @@map("solar_snapshots")
 }
 
 model SolcastForecast {
-    id Int @id @default(autoincrement())
-    pv_estimate Float
-    pv_estimate10 Float
-    pv_estimate90 Float
-    period_end DateTime
-    period String
+    id               Int      @id @default(autoincrement())
+    pv_estimate      Float
+    pv_estimate10    Float
+    pv_estimate90    Float
+    period_end       DateTime
+    period           String
     update_timestamp Int // in order to keep track of when a forecast was last updated, YYYYMMDDHHMM *UTC
 
     @@unique([period_end, period, update_timestamp])
@@ -56,10 +93,10 @@ model SolcastForecast {
 }
 
 model SolcastEstimatedActual {
-    id Int @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     pv_estimate Float
-    period_end DateTime
-    period String
+    period_end  DateTime
+    period      String
 
     @@unique([period_end, period])
     @@map("solcast_estimated_actuals")
@@ -74,6 +111,7 @@ model Heating {
     granularity  String   @default("daily")
 
     @@unique([datetime, granularity], name: "sqlite_autoindex_heating")
+    @@map("heating")
 }
 
 model Cooling {
@@ -85,6 +123,7 @@ model Cooling {
     granularity  String   @default("daily")
 
     @@unique([datetime, granularity], name: "sqlite_autoindex_cooling")
+    @@map("cooling")
 }
 
 model HotWater {
@@ -96,99 +135,103 @@ model HotWater {
     granularity   String   @default("daily")
 
     @@unique([datetime, granularity], name: "sqlite_autoindex_hotwater")
+    @@map("hot_water")
 }
 
 model Temperature {
-    id                 Int      @id @default(autoincrement())
-    datetime           DateTime
-    setTemperature     Float?
-    outsideTemperature Float?
-    insideTemperature  Float?
-    tankTemperature    Float?
-    unit               String   @default("hour")
+    id                  Int      @id @default(autoincrement())
+    datetime            DateTime
+    set_temperature     Float?
+    outside_temperature Float?
+    inside_temperature  Float?
+    tank_temperature    Float?
+    unit                String   @default("hour")
 
     @@unique([datetime, unit], name: "sqlite_autoindex_temperature")
+    @@map("temperatures")
 }
 
 model Car {
-    id                 Int         @id @default(autoincrement())
-    make               String
-    model              String
-    variant            String?
-    batterySize        Int?
-    registrationNumber String?
-    vin                String?
-    purchasePrice      Float?
-    purchaseOdometer   Int?
-    salePrice          Float?
-    motDate            String?
-    serviceDate        String?
-    taxDate            String?
-    imageUrl           String?
-    dateAcquired       String?
-    dateSold           String?
-    carUsage           CarUsage[]
-    carStatus          CarStatus[]
-    insurance          Insurance[]
+    id                  Int         @id @default(autoincrement())
+    make                String
+    model               String
+    variant             String?
+    battery_size        Int?
+    registration_number String?
+    vin                 String?
+    purchase_price      Float?
+    purchase_odometer   Int?
+    sale_price          Float?
+    mot_date            String?
+    service_date        String?
+    tax_date            String?
+    image_url           String?
+    date_purchased      String?
+    date_sold           String?
+    car_usage           CarUsage[]
+    car_status          CarStatus[]
+
+    @@map("cars")
 }
 
 model CarUsage {
-    id                Int      @id @default(autoincrement())
-    car               Car      @relation(fields: [carId], references: [id])
-    carId             Int
-    datetime          DateTime
-    granularity       String
-    distanceTravelled Float?
-    distanceUnit      Float?
-    kwhUsed           Float?
+    id                 Int      @id @default(autoincrement())
+    car                Car      @relation(fields: [car_id], references: [id])
+    car_id             Int
+    datetime           DateTime
+    granularity        String
+    distance_travelled Float?
+    distance_unit      Float?
+    kwh_used           Float?
+
+    @@map("car_usage")
 }
 
 model CarStatus {
-    id                    Int      @id @default(autoincrement())
-    car                   Car      @relation(fields: [carId], references: [id])
-    carId                 Int
-    datetime              DateTime
-    odometer              Float?
-    odometerUnit          String?
-    batteryPercent        Int?
-    batteryTemp           Int?
-    batteryTempUnit       String?
-    estimatedRange        Float?
-    rangeUnit             String?
-    chargingStatus        Int?
-    chargingRemainingTime Int?
-    chargingTargetPercent Int?
-    isLocked              Int?
-    locationLatLon        String?
+    id                      Int      @id @default(autoincrement())
+    car                     Car      @relation(fields: [car_id], references: [id])
+    car_id                  Int
+    datetime                DateTime
+    odometer                Float?
+    odometer_unit           String?
+    battery_percent         Int?
+    battery_temp            Int?
+    battery_temp_unit       String?
+    estimated_range         Float?
+    range_unit              String?
+    charging_status         Int?
+    charging_remaining_time Int?
+    charging_target_percent Int?
+    is_locked               Int?
+    location_lat_lon        String?
 
-    @@unique([carId, datetime], name: "sqlite_autoindex_carstatus")
-}
-
-model Insurance {
-    id         Int     @id @default(autoincrement())
-    provider   String
-    type       String
-    dateStart  String
-    dateEnd    String
-    annualCost Float
-    entity     Entity? @relation(fields: [entityId], references: [id])
-    entityId   Int?
-    car        Car?    @relation(fields: [carId], references: [id])
-    carId      Int?
+    @@unique([car_id, datetime], name: "sqlite_autoindex_carstatus")
+    @@map("car_status")
 }
 
 model Entity {
-    id              Int           @id @default(autoincrement())
-    entity_name     String
-    entity_type     String
-    entity_category String?
-    entity_backend  String?
-    entity_url      String?
-    entity_image    String?
-    entity_location String?
-    entity_usage    EntityUsage[]
-    insurance       Insurance[]
-    credentials     Credentials[]
+    id                Int                @id @default(autoincrement())
+    name              String
+    type              String
+    category          String?
+    backend           String?
+    url               String?
+    image             String?
+    location          String?
+    entity_usage      EntityUsage[]
+    entity_attributes EntityAttributes[]
+
+    @@map("entities")
+}
+
+model EntityAttributes {
+    id        Int    @id @default(autoincrement())
+    entity    Entity @relation(fields: [entity_id], references: [id])
+    entity_id Int
+    key       String
+    value     String
+
+    @@map("entity_attributes")
 }
 
 model EntityUsage {
@@ -197,63 +240,202 @@ model EntityUsage {
     datetime_end     DateTime
     duration_seconds Int?
     duration_minutes Int?
-    entity           Entity   @relation(fields: [entityId], references: [id])
-    entityId         Int
+    entity           Entity   @relation(fields: [entity_id], references: [id])
+    entity_id        Int
     granularity      String
     kwh_used         Float
     energy_cost      Float?
 
-    @@unique([entityId, datetime_start, datetime_end, granularity], name: "sqlite_autoindex_entityusage")
+    @@unique([entity_id, datetime_start, datetime_end, granularity], name: "sqlite_autoindex_entityusage")
+    @@map("entity_usage")
 }
 
-model Supplier {
-    id              Int       @id @default(autoincrement())
-    supplier        String
+model EnergySupplier {
+    id              Int          @id @default(autoincrement())
+    name            String
     tariff_name     String
-    tariff_type     String    @default("import") // import / export
+    tariff_type     String       @default("import") // import / export
     standing_charge Float?
     supplier_start  DateTime?
     supplier_end    DateTime?
-    rates           Rates[]
+    rate            EnergyRate[]
+
+    @@map("energy_suppliers")
 }
 
-model Rates {
-    id         Int           @id @default(autoincrement())
-    supplier   Supplier      @relation(fields: [supplierId], references: [id])
-    supplierId Int
-    rate_type  String // fixed, peak, off-peak, export
-    start_time String?
-    end_time   String?
-    cost       Float
-    currency   String        @default("gbp")
-    importRate Electricity[] @relation("importRate")
-    exportRate Electricity[] @relation("exportRate")
+model EnergyRate {
+    id          Int            @id @default(autoincrement())
+    supplier    EnergySupplier @relation(fields: [supplier_id], references: [id])
+    supplier_id Int
+    rate_type   String // fixed, peak, off-peak, export
+    start_time  String?
+    end_time    String?
+    cost        Float
+    currency    String         @default("gbp")
+    import_rate Electricity[]  @relation("import_rate")
+    export_rate Electricity[]  @relation("export_rate")
+
+    @@map("energy_rates")
 }
 
 model CarbonIntensity {
-    id                Int      @id @default(autoincrement())
-    datetime_start    DateTime
-    datetime_end      DateTime
-    postcode          String
-    intensityForecast Int
-    intensityIndex    String
-    biomass           Float
-    coal              Float
-    gas               Float
-    hydro             Float
-    imports           Float
-    nuclear           Float
-    other             Float
-    solar             Float
-    wind              Float
+    id                 Int      @id @default(autoincrement())
+    datetime_start     DateTime
+    datetime_end       DateTime
+    postcode           String
+    intensity_forecast Int
+    intensity_index    String
+    biomass            Float
+    coal               Float
+    gas                Float
+    hydro              Float
+    imports            Float
+    nuclear            Float
+    other              Float
+    solar              Float
+    wind               Float
 
     @@unique([datetime_start, datetime_end, postcode], name: "sqlite_autoindex_carbonintensity")
+    @@map("carbon_intensity")
 }
 
-model Credentials {
-    id       Int    @id @default(autoincrement())
-    entity   Entity @relation(fields: [entityId], references: [id])
-    entityId Int
-    key      String
-    value    String
+
+// finance section
+
+model Transaction {
+    id                       Int               @id @default(autoincrement())
+    uid                      String            @unique
+    date                     DateTime
+    counter_party            String
+    counter_party_sub_entity String?
+    reference                String?
+    amount                   Float
+    balance                  Float?
+    direction                String?
+    status                   String?
+    spending_category        String?
+    notes                    String?
+    source                   String? // ie mastercard
+    source_sub_type          String? // ie contactless
+    one_off_cost             Boolean           @default(false)
+    ignore_cost              Boolean           @default(false)
+    regular_cost             Boolean           @default(false)
+    essential_cost           Boolean           @default(false)
+    recur_type               String?
+    flex_rating              Int               @default(3) // 1-5 score of how important a cost is; default is 3 - 1 is essential
+    data_source              String            @default("starling")
+    agent                    Agent?            @relation(fields: [agent_id], references: [id])
+    agent_id                 Int?
+    loan                     Loan?             @relation("LoanTransactions", fields: [loan_id], references: [id])
+    loan_id                  Int?
+    insurance                Insurance?        @relation("InsuranceTransactions", fields: [insurance_id], references: [id])
+    insurance_id             Int?
+    transaction_tags         TransactionTags[]
+    finance_rule             FinanceRule[]
+
+    @@map("finance_transactions")
+}
+
+model Agent {
+    id           Int           @id @default(autoincrement())
+    name         String        @unique
+    type         String?
+    tag          String?
+    agent_uid    String?
+    one_off      Boolean       @default(false)
+    ignore       Boolean       @default(false)
+    essential    Boolean       @default(false)
+    flex_rating  Int           @default(3) // 1-5 score of how important a cost is; default is 3 - 1 is essential
+    transactions Transaction[]
+    aliases      Agent[]       @relation("AgentAliases")
+    parent       Agent?        @relation("AgentAliases", fields: [parent_id], references: [id])
+    parent_id    Int?
+    Rule         FinanceRule[]
+    Loan         Loan[]
+    Insurance    Insurance[]
+
+    @@map("finance_agents")
+}
+
+model FinanceTag {
+    id               Int               @id @default(autoincrement())
+    name             String            @unique
+    finance_tag_map  FinanceTagMap[]
+    transaction_tags TransactionTags[]
+    finance_rule     FinanceRule[]
+
+    @@map("finance_tags")
+}
+
+// this is to map spending_category names to tags
+model FinanceTagMap {
+    id               Int        @id @default(autoincrement())
+    tag              FinanceTag @relation(fields: [tag_id], references: [id])
+    tag_id           Int
+    alternative_name String     @unique
+
+    @@map("finance_tag_map")
+}
+
+// this is where we map the transactions to tags
+model TransactionTags {
+    id             Int         @id @default(autoincrement())
+    tag            FinanceTag  @relation(fields: [tag_id], references: [id])
+    tag_id         Int
+    transaction    Transaction @relation(fields: [transaction_id], references: [id])
+    transaction_id Int
+
+    @@unique([tag_id, transaction_id])
+    @@map("finance_transaction_tags")
+}
+
+model FinanceRule {
+    id             Int          @id @default(autoincrement())
+    reference      String?
+    transaction_id Int?
+    Transaction    Transaction? @relation(fields: [transaction_id], references: [id])
+    Agent          Agent        @relation(fields: [agent_id], references: [id])
+    Tag            FinanceTag   @relation(fields: [tag_id], references: [id])
+    agent_id       Int
+    tag_id         Int
+
+    @@map("finance_rules")
+}
+
+model Loan {
+    id               Int           @id @default(autoincrement())
+    name             String
+    type             String? // e.g., "personal", "auto", "mortgage"
+    policy_no        String? // e.g., "health", "auto", "life"
+    opening_amount   Float?
+    amount_remaining Float?
+    monthly_amount   Float?
+    interest_rate    Float?
+    start_date       DateTime
+    end_date         DateTime?
+    dom_due          Int?
+    agent            Agent?        @relation(fields: [agent_id], references: [id])
+    agent_id         Int?
+    transactions     Transaction[] @relation("LoanTransactions")
+    status           String? // e.g., "active", "closed"
+
+    @@map("finance_loans")
+}
+
+model Insurance {
+    id              Int           @id @default(autoincrement())
+    name            String
+    type            String? // e.g., "health", "auto", "life"
+    policy_no       String? // e.g., "health", "auto", "life"
+    monthly_payment Float?
+    total_cost      Float?
+    start_date      DateTime
+    end_date        DateTime?
+    dom_due         Int?
+    agent           Agent?        @relation(fields: [agent_id], references: [id])
+    agent_id        Int?
+    transactions    Transaction[] @relation("InsuranceTransactions")
+    status          String? // e.g., "active", "expired"
+
+    @@map("finance_insurance")
 }

@@ -1,23 +1,23 @@
-const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
-const moment = require('moment-timezone');
+const { PrismaClient } = require("@prisma/client");
+const axios = require("axios");
+const moment = require("moment-timezone");
 
 const prisma = new PrismaClient();
-const HA_DB_URL = process.env.HA_DB_URL;
+const { HA_DB_URL } = process.env;
 
 const fetchRenaultData = async () => {
     const creds = await prisma.credentials.findMany({
-        where: { entity: { entityName: { equals: 'renault', mode: 'insensitive' } } },
+        where: { entity: { entityName: { equals: "renault", mode: "insensitive" } } },
         select: { key: true, value: true },
     });
 
     const credentials = {};
-    creds.forEach(cred => {
+    creds.forEach((cred) => {
         credentials[cred.key] = cred.value;
     });
 
     const cars = await prisma.car.findMany({
-        where: { make: { equals: 'renault', mode: 'insensitive' } },
+        where: { make: { equals: "renault", mode: "insensitive" } },
         select: { id: true, vin: true },
     });
 
@@ -34,14 +34,14 @@ const fetchRenaultData = async () => {
         // ...
 
         const dt_checked = moment(data.timestamp).utc();
-        const last_updated = dt_checked.format('YYYY-MM-DDTHH:mm:ss[Z]');
+        const last_updated = dt_checked.format("YYYY-MM-DDTHH:mm:ss[Z]");
 
         data.datetime = last_updated;
 
         try {
             await prisma.carStatus.create({
                 data: {
-                    carId: car.id,
+                    car_id: car.id,
                     datetime: new Date(data.datetime),
                     odometer: data.odometer,
                     odometerUnit: data.odometerUnit,

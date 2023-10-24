@@ -1,38 +1,102 @@
-<div class="row">
-    <div class="col-md-6">
-        <h3>Setup</h3>
-    </div>
-</div>
-<hr>
-<% if (params["tariff"] == 'false') { %>
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Set electricity costs</h4>
-            <p><b><a href="/admin/add-tariff">Add a current Electricity Tariff </a></b></p>
-            <p>In order to calculate your costs, you need to add details about your tariff first.</p>
-            <p>You can also add historical tariffs for date ranges where you have consumption data.</p>
-        </div>
-        <div class="col-md-6">
-            <img src="/img/tariff-setup.png">
-        </div>
-    </div>
-    <hr>
-<% } %>
-<% if (params["consumption"] == 'false') { %>
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Set usage data source</h4>
-            <p>You can choose one of two options:</p>
-            <h5>Option 1: n3rgy</h5>
-            <p>n3rgy is slightly harder to set up, but does give you in-day energy usage statistics with a delay of only a few hours.</p>
-            <p>Follow the instructions to <a href="https://github.com/Electric-Sheep-Energy/home-analytics#setting-up-n3rgy">find your n3rgy API key</a>, then update the <a href="/admin/view-entity?id=1">dummy credential here</a>.</p>
-            <h5>Option 2: Octopus Energy</h5>
-            <p>Octopus is easier to set up but only offers data up to midnight the previous day.</p>
-            <p>You will need your MPAN, Serial Number and API key, which can be found <a href="https://octopus.energy/login/?next=/dashboard/developer/" target="_blank">in your Octopus dashboard</a>, then update the <a href="/admin/view-entity?id=2">dummy credentials here</a>.</p>
-        </div>
-        <div class="col-md-6">
-            <img src="/img/n3rgy-setup.png">
-        </div>
-    </div>
-<% } %>
+<h1 class="h3 mb-3 text-gray-800">Setup</h1>
 
+<% if (params["energy_usage"]=='false' ) { %>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Set usage data source</h6>
+                </div>
+                <div class="card-body">
+                    <p>You can choose one of two options:</p>
+                    <div class="accordion" id="sourceAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#octopusCollapse" aria-expanded="false"
+                                    aria-controls="octopusCollapse">Option 1: Octopus Energy (Recommended)
+                                </button>
+                            </h2>
+                            <div id="octopusCollapse" class="accordion-collapse collapse"
+                                data-bs-parent="#sourceAccordion">
+                                <div class="accordion-body">
+                                    <p>Octopus is easier to set up but only offers data up to midnight the previous day.
+                                    </p>
+                                    <p>You will need your MPAN, Serial Number and API key, which can be found <a
+                                            href="https://octopus.energy/login/?next=/dashboard/developer/"
+                                            target="_blank">in your
+                                            Octopus dashboard</a>.</p>
+                                    <p>Then update the credentials here:</p>
+                                    <form action="/admin/api/init">
+                                        <input type="hidden" name="api_id" value="2">
+                                        <div class="col-6 mb-3">
+                                            <label for='mpan' class='form-label'>MPAN</label>
+                                            <input type="text" name="mpan" class="form-control" placeholder="12345">
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label for="serial_number" class="form-label">Serial Number</label>
+                                            <input type="text" name="serial_number" class="form-control"
+                                                placeholder="12345">
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label for="api_key" class="form-label">API Key</label>
+                                            <input type="text" name="api_key" class="form-control" placeholder="12345">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#n3rgyCollapse" aria-expanded="false" aria-controls="n3rgyCollapse">
+                                    Option 2: n3rgy
+                                </button>
+                            </h2>
+                            <div id="n3rgyCollapse" class="accordion-collapse collapse"
+                                data-bs-parent="#sourceAccordion">
+                                <div class="accordion-body">
+                                    <p>n3rgy is slightly harder to set up, but does give you in-day energy usage
+                                        statistics with a delay
+                                        of only a few hours.</p>
+                                    <p>Follow the instructions to <a
+                                            href="https://github.com/robhammond/home-analytics#setting-up-n3rgy">find
+                                            your n3rgy API
+                                            key</a>.</p>
+                                    <p>Then update the API Key here:</p>
+                                    <form action="/admin/api/init">
+                                        <input type="hidden" name="api_id" value="1">
+                                        <div class="col-6 mb-3">
+                                            <label for="api_key" class="form-label">API Key</label>
+                                            <input type="text" name="api_key" class="form-control" placeholder="12345">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } %>
+<% if (params["tariff"]=='false' ) { %>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Set electricity costs</h6>
+                </div>
+                <div class="card-body">
+                    <p><b><a href="/admin/add-tariff">Add a current Electricity Tariff </a></b></p>
+                    <p>In order to calculate your costs, you need to add details about your tariff
+                        first.</p>
+                    <p>You can also add historical tariffs for date ranges where you have
+                        consumption data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } %>

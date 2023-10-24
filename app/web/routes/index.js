@@ -1,53 +1,78 @@
 const express = require("express");
-const router = express.Router();
-
 const { PrismaClient } = require("@prisma/client");
+
+const router = express.Router();
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
     try {
-        let setupStatus = { tariff: false, consumption: false, vehicle: false };
-        const supplierSetup = await prisma.supplier.findFirst();
-        const ratesSetup = await prisma.rates.findFirst();
-        const dataSourceSetup = await prisma.$queryRaw`
-            SELECT
-                LOWER(entity_name) AS entity_name,
-                entity_type,
-                key,
-                value
-            FROM Credentials c
-            JOIN Entity e ON
-                e.id = c.entityId
-            WHERE 
-                entity_type = "Consumption Data Source"
-                OR
-                entity_name IN ("n3rgy", "Octopus Energy")
-        `;
-        let octopus = true;
-        let octopusCreds = [];
+        const setupStatus = { tariff: false, energy_usage: false, vehicle: false };
+        const supplierSetup = await prisma.energySupplier.findFirst();
+        const ratesSetup = await prisma.energyRate.findFirst();
+        const octopus_setup = await prisma.apiCredentials.findMany({
+            select: {
+                api: {
+                    select: {
+                        name: true,
+                        type: true,
+                    },
+                },
+                key: true,
+                value: true,
+            },
+            where: {
+                api: {
+                    type: "energy_usage",
+                    name: "Octopus Energy",
+                },
+            },
+        });
+
+        const n3rgy_setup = await prisma.apiCredentials.findFirst({
+            select: {
+                api: {
+                    select: {
+                        name: true,
+                        type: true,
+                    },
+                },
+                key: true,
+                value: true,
+            },
+            where: {
+                api: {
+                    type: "energy_usage",
+                    name: "n3rgy",
+                },
+            },
+        });
+
+        console.log(n3rgy_setup);
+        console.log(octopus_setup);
+
         let n3rgy = true;
-        for (let row of dataSourceSetup) {
-            if (row["entity_name"] == 'n3rgy' && row["value"] == "12345") {
-                n3rgy = false;
-            }
-            if (row["entity_name"] == 'octopus energy') {
-                octopusCreds.push(row["value"]);
+        let octopus = true;
+
+        if (n3rgy_setup.value === "12345") {
+            n3rgy = false;
+        }
+        for (const row of octopus_setup) {
+            if (row.value === "12345") {
+                octopus = false;
             }
         }
-        if (octopusCreds.includes("12345")) {
-            octopus = false;
-        }
+
         if (n3rgy || octopus) {
-            setupStatus["consumption"] = true;
+            setupStatus.energy_usage = true;
         }
         if (supplierSetup && ratesSetup) {
-            setupStatus["tariff"] = true;
+            setupStatus.tariff = true;
         }
-        if (!setupStatus["tariff"] || !setupStatus["consumption"]) {
-            res.redirect(`/onboarding?tariff=${setupStatus["tariff"]}&consumption=${setupStatus["consumption"]}`);
+        if (!setupStatus.tariff || !setupStatus.energy_usage) {
+            res.redirect(`/onboarding?tariff=${setupStatus.tariff}&energy_usage=${setupStatus.energy_usage}`);
         }
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 
     res.render("index", {

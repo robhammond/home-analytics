@@ -1,8 +1,10 @@
 const express = require("express");
+
 const router = express.Router();
 const { DateTime } = require("luxon");
-const axios = require('axios');
+const axios = require("axios");
 const { PrismaClient } = require("@prisma/client");
+
 const prisma = new PrismaClient();
 
 // DB queries - avoid db locks
@@ -22,7 +24,7 @@ async function dbQueryRateInfo(start, end, tryCount = 1) {
             LEFT JOIN rates r2 ON
                 r2.id = e.exportRateId
             JOIN supplier s ON
-                s.id = r.supplierId
+                s.id = r.supplier_id
                 WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
             GROUP BY 1
             ORDER BY 1
@@ -33,9 +35,8 @@ async function dbQueryRateInfo(start, end, tryCount = 1) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbQueryRateInfo(start, end, tryCount + 1); // Retry the query
-        } else {
-            throw e;
         }
+        throw e;
     }
 }
 
@@ -55,7 +56,7 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
             LEFT JOIN rates r2 ON
                 r2.id = e.exportRateId
             JOIN supplier s ON
-                s.id = r.supplierId
+                s.id = r.supplier_id
             WHERE
                 date(datetime_start, 'localtime') BETWEEN
                 DATE(${start}) AND DATE(${end})
@@ -67,9 +68,8 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbUsageSumInfo(start, end, tryCount + 1); // Retry the query
-        } else {
-            throw e;
         }
+        throw e;
     }
 }
 
@@ -88,7 +88,7 @@ async function dbUsageTotals(start, end, tryCount = 1) {
             LEFT JOIN rates r2 ON
                 r2.id = e.exportRateId
             JOIN supplier s ON
-                s.id = r.supplierId
+                s.id = r.supplier_id
             WHERE
                 date(datetime_start, 'localtime') BETWEEN
                 DATE(${start}) AND DATE(${end})
@@ -99,9 +99,8 @@ async function dbUsageTotals(start, end, tryCount = 1) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbUsageTotals(start, end, tryCount + 1); // Retry the query
-        } else {
-            throw e;
         }
+        throw e;
     }
 }
 
@@ -136,7 +135,7 @@ async function dbDaysUsage(num_days, tryCount = 1) {
             JOIN rates r ON
                 r.id = e.rateId
             JOIN supplier s ON
-                s.id = r.supplierId
+                s.id = r.supplier_id
             GROUP BY 1,2
             ORDER BY 1
         `;
@@ -146,9 +145,8 @@ async function dbDaysUsage(num_days, tryCount = 1) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbDaysUsage(num_days, tryCount + 1); // Retry the query
-        } else {
-            throw e;
         }
+        throw e;
     }
 }
 
@@ -160,9 +158,8 @@ router.get("/suppliers", async (req, res) => {
 });
 
 router.get("/solar/realtime", async (req, res) => {
-
     try {
-        let logger_meta = await prisma.$queryRaw`
+        const logger_meta = await prisma.$queryRaw`
             SELECT
                 key, 
                 value
@@ -172,25 +169,25 @@ router.get("/solar/realtime", async (req, res) => {
             WHERE 
                 LOWER(e.entity_name) = 's3-wifi-st'
         `;
-        let creds = {};
-        for (let row of logger_meta) {
+        const creds = {};
+        for (const row of logger_meta) {
             creds[row.key] = row.value;
         }
         let now_data = {};
-        let today_rate = await prisma.$queryRaw`
+        const today_rate = await prisma.$queryRaw`
             SELECT
                 cost
             FROM supplier s
             JOIN rates r ON
-                r.supplierId = s.id
+                r.supplier_id = s.id
             WHERE supplier_end IS NULL
             AND rate_type IN ('peak', 'fixed')
         `;
-    
-        axios.get(`http://${creds.ip_addr}/inverter.cgi`, { auth: {username: creds.user, password: creds.password}}).then(async function (response) {
-            let logger_content = response.data;
+
+        axios.get(`http://${creds.ip_addr}/inverter.cgi`, { auth: { username: creds.user, password: creds.password } }).then(async (response) => {
+            const logger_content = response.data;
             const split_content = logger_content.split(";");
-    
+
             now_data = {
                 firmware_version: split_content[1],
                 inverter_model: split_content[2],
@@ -202,13 +199,13 @@ router.get("/solar/realtime", async (req, res) => {
                 cost: Number(today_rate[0].cost) / 100,
             };
             console.log(now_data);
-            
+
             res.json(now_data);
-        }).catch(function (error) {
+        }).catch((error) => {
             // handle error
             console.log("error", `API Error: ${error}`);
             res.status(500).send("Internal Server Error");
-        }).finally(function () {
+        }).finally(() => {
             // always executed
         });
     } catch (e) {
@@ -228,8 +225,8 @@ router.get("/cars", async (req, res) => {
 });
 
 router.get("/usage/sum", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
     let unit = req.query.unit || "day";
 
     if (!start) {
@@ -270,7 +267,7 @@ router.get("/usage/days", async (req, res) => {
         res.status(500).json({ error: "Database is locked, try again later." });
         return;
     }
-    
+
     res.json({ data: days_usage });
 });
 
@@ -299,8 +296,8 @@ router.get("/usage/entities/days", async (req, res) => {
 });
 
 router.get("/usage/by-rate", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
 
     if (!start) {
         start = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
@@ -320,20 +317,22 @@ router.get("/usage/by-rate", async (req, res) => {
         return;
     }
 
-    let totals = { kwh: 0, cost: 0, kwh_exported: 0, export_return: 0, net_cost: 0 };
-    for (let rate of by_rate) {
-        totals["kwh"] += rate["total_kwh"];
-        totals["kwh_exported"] += rate["kwh_exported"];
-        totals["cost"] += rate["total_cost"];
-        totals["export_return"] += rate["export_return"];
-        totals["net_cost"] += rate["net_cost"];
+    const totals = {
+        kwh: 0, cost: 0, kwh_exported: 0, export_return: 0, net_cost: 0,
+    };
+    for (const rate of by_rate) {
+        totals.kwh += rate.total_kwh;
+        totals.kwh_exported += rate.kwh_exported;
+        totals.cost += rate.total_cost;
+        totals.export_return += rate.export_return;
+        totals.net_cost += rate.net_cost;
     }
-    res.json({ rates: by_rate, totals: totals });
+    res.json({ rates: by_rate, totals });
 });
 
 router.get("/usage/breakdown", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
 
     if (!start) {
         start = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
@@ -368,7 +367,7 @@ router.get("/usage/breakdown", async (req, res) => {
             GROUP BY 1
             ORDER BY 2 desc
         `;
-    
+
         const centralHeating = await prisma.$queryRaw`
             SELECT
                 ROUND(SUM(kwh_consumed),2) AS kwh
@@ -377,7 +376,7 @@ router.get("/usage/breakdown", async (req, res) => {
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
-    
+
         const hw = await prisma.$queryRaw`
             SELECT 
                 ROUND(SUM(kwh_consumed),2) AS kwh
@@ -386,31 +385,31 @@ router.get("/usage/breakdown", async (req, res) => {
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
-    
-        let pieData = [];
+
+        const pieData = [];
         let heatSum = 0;
         if (centralHeating[0]) {
-            let kwh = centralHeating[0].kwh || 0;
-            pieData.push({ name: "Central Heating", kwh: kwh });
+            const kwh = centralHeating[0].kwh || 0;
+            pieData.push({ name: "Central Heating", kwh });
             heatSum += centralHeating[0].kwh;
         }
         if (hw[0]) {
-            let kwh = hw[0].kwh || 0;
-            pieData.push({ name: "Hot Water", kwh: kwh });
+            const kwh = hw[0].kwh || 0;
+            pieData.push({ name: "Hot Water", kwh });
             heatSum += hw[0].kwh;
         }
         let eSum = 0;
-        for (let e of entities) {
+        for (const e of entities) {
             pieData.push({ name: e.entity_type, kwh: e.kwh });
             eSum += e.kwh;
         }
         let pieOthers = 0;
-        for (let y of overall_consumption) {
+        for (const y of overall_consumption) {
             pieOthers += y.total_kwh;
         }
-        pieOthers = pieOthers - (heatSum + eSum);
+        pieOthers -= (heatSum + eSum);
         pieData.push({ name: "Other", kwh: Number(pieOthers.toFixed(2)) });
-    
+
         res.json({ data: pieData });
     } catch (e) {
         console.log(e);
@@ -419,8 +418,8 @@ router.get("/usage/breakdown", async (req, res) => {
 });
 
 router.get("/usage/breakdown/by-device", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
 
     if (!start) {
         start = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
@@ -456,7 +455,7 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
                     DATE(${start}) AND DATE(${end})
             GROUP BY 1,2
         `;
-    
+
         const centralHeating = await prisma.$queryRaw`
             SELECT
                 ROUND(SUM(kwh_consumed),2) AS kwh
@@ -465,7 +464,7 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
-    
+
         const hw = await prisma.$queryRaw`
             SELECT 
                 ROUND(SUM(kwh_consumed),2) AS kwh
@@ -474,31 +473,31 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
-    
-        let pieData = [];
+
+        const pieData = [];
         let heatSum = 0;
         if (centralHeating[0]) {
-            let kwh = centralHeating[0].kwh || 0;
-            pieData.push({ name: "Central Heating", kwh: kwh });
+            const kwh = centralHeating[0].kwh || 0;
+            pieData.push({ name: "Central Heating", kwh });
             heatSum += centralHeating[0].kwh;
         }
         if (hw[0]) {
-            let kwh = hw[0].kwh || 0;
-            pieData.push({ name: "Hot Water", kwh: kwh });
+            const kwh = hw[0].kwh || 0;
+            pieData.push({ name: "Hot Water", kwh });
             heatSum += hw[0].kwh;
         }
         let eSum = 0;
-        for (let e of entities) {
+        for (const e of entities) {
             pieData.push({ name: e.entity_type, kwh: e.kwh, device: e.entity_name });
             eSum += e.kwh;
         }
         let pieOthers = 0;
-        for (let y of overall_consumption) {
+        for (const y of overall_consumption) {
             pieOthers += y.total_kwh;
         }
-        pieOthers = pieOthers - (heatSum + eSum);
+        pieOthers -= (heatSum + eSum);
         pieData.push({ name: "Other", kwh: Number(pieOthers.toFixed(2)) });
-    
+
         res.json({ data: pieData });
     } catch (e) {
         console.log(e);
@@ -507,8 +506,8 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
 });
 
 router.get("/usage/hourly/compare", async (req, res) => {
-    const date1 = req.query.date1;
-    const date2 = req.query.date2;
+    const { date1 } = req.query;
+    const { date2 } = req.query;
     const unit = req.query.unit || "hour";
     let xAxis = "%H";
     if (unit == "halfhour") {
@@ -522,7 +521,7 @@ router.get("/usage/hourly/compare", async (req, res) => {
                     ROUND(SUM(e.kwh), 2) AS total_kwh
                 FROM electricity e
                     JOIN rates r ON r.id = e.rateId
-                    JOIN supplier s ON s.id = r.supplierId
+                    JOIN supplier s ON s.id = r.supplier_id
                 WHERE date(datetime_start, 'localtime') = date(${date1}, 'localtime')
                 GROUP BY 1
                 ORDER BY 1
@@ -533,7 +532,7 @@ router.get("/usage/hourly/compare", async (req, res) => {
                     ROUND(SUM(e.kwh), 2) AS total_kwh
                 FROM electricity e
                     JOIN rates r ON r.id = e.rateId
-                    JOIN supplier s ON s.id = r.supplierId
+                    JOIN supplier s ON s.id = r.supplier_id
                 WHERE date(datetime_start, 'localtime') = date(${date2}, 'localtime')
                 GROUP BY 1
                 ORDER BY 1
@@ -554,9 +553,9 @@ router.get("/usage/hourly/compare", async (req, res) => {
 });
 
 router.get("/usage/heating", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
-    let unit = req.query.unit || "day";
+    let { start } = req.query;
+    let { end } = req.query;
+    const unit = req.query.unit || "day";
     if (!start) {
         if (unit == "day") {
             start = DateTime.now().minus({ days: 31 }).toFormat("yyyy-MM-dd");
@@ -621,9 +620,9 @@ router.get("/usage/heating", async (req, res) => {
 });
 
 router.get("/usage/heating/temperatures", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
-    let unit = req.query.unit || "hour";
+    let { start } = req.query;
+    let { end } = req.query;
+    const unit = req.query.unit || "hour";
     if (!start) {
         if (unit == "day") {
             start = DateTime.now().minus({ days: 31 }).toFormat("yyyy-MM-dd");
@@ -677,9 +676,9 @@ router.get("/usage/heating/temperatures", async (req, res) => {
 });
 
 router.get("/usage/vehicles", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
-    let unit = req.query.unit || "day";
+    let { start } = req.query;
+    let { end } = req.query;
+    const unit = req.query.unit || "day";
     if (!start) {
         start = DateTime.now().minus({ days: 31 }).toFormat("yyyy-MM-dd");
     } else {
@@ -730,14 +729,14 @@ router.get("/usage/vehicles", async (req, res) => {
                     1
             `;
         }
-        let totals = { kwh: 0, cost: 0 };
-        for (let rate of usage) {
-            totals["kwh"] += rate["kwh"];
-            totals["cost"] += rate["cost"];
+        const totals = { kwh: 0, cost: 0 };
+        for (const rate of usage) {
+            totals.kwh += rate.kwh;
+            totals.cost += rate.cost;
         }
-        totals["kwh"] = Number(totals["kwh"].toFixed(2));
-        totals["cost"] = Number(totals["cost"].toFixed(2));
-        res.json({ data: usage, totals: totals });
+        totals.kwh = Number(totals.kwh.toFixed(2));
+        totals.cost = Number(totals.cost.toFixed(2));
+        res.json({ data: usage, totals });
     } catch (e) {
         console.log(e);
         res.status(500).send("Internal Server Error");
@@ -745,10 +744,10 @@ router.get("/usage/vehicles", async (req, res) => {
 });
 
 router.get("/usage/main", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
-    let unit = req.query.unit || "day";
-    let filter = req.query.filter || "all";
+    let { start } = req.query;
+    let { end } = req.query;
+    const unit = req.query.unit || "day";
+    const filter = req.query.filter || "all";
 
     let startMinusTime = {};
     let endMinusTime = {};
@@ -796,7 +795,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY 1, 2
@@ -816,7 +815,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                 `;
@@ -887,7 +886,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN Supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
@@ -909,7 +908,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                 `;
@@ -980,7 +979,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
@@ -1001,7 +1000,7 @@ router.get("/usage/main", async (req, res) => {
                     LEFT JOIN rates r2 ON
                         r2.id = e.exportRateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                 `;
@@ -1137,7 +1136,7 @@ router.get("/usage/main", async (req, res) => {
                     JOIN rates r ON
                         r.id = e.rateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
@@ -1153,7 +1152,7 @@ router.get("/usage/main", async (req, res) => {
                     JOIN rates r ON
                         r.id = e.rateId
                     JOIN supplier s ON
-                        s.id = r.supplierId
+                        s.id = r.supplier_id
                     WHERE
                         DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
                 `;
@@ -1286,8 +1285,8 @@ router.get("/usage/main", async (req, res) => {
 });
 
 router.get("/carbon/breakdown", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
 
     if (!start) {
         start = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
@@ -1317,7 +1316,7 @@ router.get("/carbon/breakdown", async (req, res) => {
                 DATE(datetime_start, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
-    
+
         res.json({ data: carbon[0] });
     } catch (e) {
         console.log(e);
@@ -1326,8 +1325,8 @@ router.get("/carbon/breakdown", async (req, res) => {
 });
 
 router.get("/carbon/main", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
+    let { start } = req.query;
+    let { end } = req.query;
     let label_format = req.query.label_format || "ymdhm";
     if (label_format == "ymdhm") {
         label_format = "%Y-%m-%d %H:%M";
@@ -1347,7 +1346,7 @@ router.get("/carbon/main", async (req, res) => {
         // validate it's in yyyy-mm-dd format
     }
     try {
-        let carbon = await prisma.$queryRaw`
+        const carbon = await prisma.$queryRaw`
             SELECT
                 strftime(${label_format}, e.datetime_start, 'localtime') AS dt,
                 ROUND(SUM(e.intensityForecast),2) AS forecast
@@ -1359,7 +1358,7 @@ router.get("/carbon/main", async (req, res) => {
             ORDER BY
                 1
         `;
-    
+
         res.json({ data: carbon });
     } catch (e) {
         console.log(e);
@@ -1371,7 +1370,7 @@ router.get("/vehicles/status", async (req, res) => {
     try {
         const carStatus = await prisma.$queryRaw`
             SELECT
-                cs.carId,
+                cs.car_id,
                 cs.datetime,
                 CASE
                     WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
@@ -1387,15 +1386,15 @@ router.get("/vehicles/status", async (req, res) => {
                 isLocked,
                 c.*
             FROM CarStatus cs, 
-            (SELECT carId, MAX(datetime) AS datetime
+            (SELECT car_id, MAX(datetime) AS datetime
                 FROM CarStatus GROUP BY 1) max_date 
             JOIN Car c ON
-                cs.carId = c.id
+                cs.car_id = c.id
             WHERE
-            cs.carId = max_date.carId 
+            cs.car_id = max_date.car_id 
             AND cs.datetime = max_date.datetime
         `;
-    
+
         res.json({ data: carStatus });
     } catch (e) {
         console.log(e);
@@ -1403,11 +1402,10 @@ router.get("/vehicles/status", async (req, res) => {
     }
 });
 
-
 router.get("/solar/main", async (req, res) => {
-    let start = req.query.start;
-    let end = req.query.end;
-    let unit = req.query.unit || "day";
+    let { start } = req.query;
+    let { end } = req.query;
+    const unit = req.query.unit || "day";
 
     let startMinusTime = {};
     let endMinusTime = {};
@@ -1467,7 +1465,7 @@ router.get("/solar/main", async (req, res) => {
             left JOIN rates r2 ON
                 r2.id = e.exportRateId
             JOIN supplier s ON
-                s.id = r.supplierId
+                s.id = r.supplier_id
             WHERE
                 DATE(e.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
             GROUP BY
@@ -1492,6 +1490,5 @@ router.get("/solar/main", async (req, res) => {
         res.json({ error: e });
     }
 });
-
 
 module.exports = router;

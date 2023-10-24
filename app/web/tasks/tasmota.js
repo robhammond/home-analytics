@@ -1,19 +1,18 @@
-const { PrismaClient } = require('@prisma/client');
-const dotenv = require('dotenv');
-const mqtt = require('mqtt');
-const { DateTime } = require('luxon');
+const { PrismaClient } = require("@prisma/client");
+const dotenv = require("dotenv");
+const mqtt = require("mqtt");
+const { DateTime } = require("luxon");
 
 dotenv.config();
 
-const HA_DB_URL = process.env.HA_DB_URL;
-const MQTT_BROKER = process.env.MQTT_BROKER;
+const { MQTT_BROKER } = process.env;
 const prisma = new PrismaClient();
 
 async function getTopics() {
     try {
         const entities = await prisma.entity.findMany({
             where: {
-                entity_backend: 'tasmota_mqtt',
+                entity_backend: "tasmota_mqtt",
             },
             include: {
                 credentials: true,
@@ -22,7 +21,7 @@ async function getTopics() {
 
         const topics = {};
         entities.forEach((entity) => {
-            const topic = entity.credentials.find((c) => c.key === 'topic');
+            const topic = entity.credentials.find((c) => c.key === "topic");
             if (topic) {
                 topics[topic.value] = entity.id;
             }
@@ -30,14 +29,14 @@ async function getTopics() {
 
         return topics;
     } catch (error) {
-        throw new Error('MQTT connection details not found in DB');
+        throw new Error("MQTT connection details not found in DB");
     }
 }
 
 async function insertMessage(topic, message) {
     const topics = await getTopics();
     if (!topics[topic]) {
-        console.log('Skipping topic');
+        console.log("Skipping topic");
         return;
     }
 
@@ -52,26 +51,26 @@ async function insertMessage(topic, message) {
                     entityId: topics[topic],
                     datetime_start: dt_start.toISO(),
                     datetime_end: dt_end.toISO(),
-                    granularity: '5mins',
+                    granularity: "5mins",
                     kwh_used,
                 },
             });
         }
     } catch (error) {
-        console.log('Invalid JSON message - skipping');
+        console.log("Invalid JSON message - skipping");
     }
 }
 
 async function main() {
     const client = mqtt.connect(MQTT_BROKER);
 
-    client.on('connect', () => {
-        client.subscribe('tele/#');
+    client.on("connect", () => {
+        client.subscribe("tele/#");
     });
 
-    client.on('message', (topic, message) => {
+    client.on("message", (topic, message) => {
         insertMessage(topic, message.toString()).catch((err) => {
-            console.error('Error inserting:', err);
+            console.error("Error inserting:", err);
         });
     });
 }

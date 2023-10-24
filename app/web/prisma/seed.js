@@ -1,41 +1,40 @@
 const { PrismaClient } = require("@prisma/client");
+
 const prisma = new PrismaClient();
 
 async function main() {
-    const n3rgy = await prisma.entity.create({
+    const n3rgy = await prisma.Api.create({
         data: {
-            entity_name: "n3rgy",
-            entity_type: "Consumption Data Source",
-            entity_backend: "api",
+            name: "n3rgy",
+            type: "energy_usage",
         },
     });
-    
-    const n3rgyCred = await prisma.credentials.create({
+
+    const n3rgyCred = await prisma.ApiCredentials.create({
         data: {
-            entityId: n3rgy.id,
+            api_id: n3rgy.id,
             key: "auth_header",
             value: "12345",
         },
     });
-    
-    const octopus = await prisma.entity.create({
+
+    const octopus = await prisma.Api.create({
         data: {
-            entity_name: "Octopus Energy",
-            entity_type: "Consumption Data Source",
-            entity_backend: "api",
+            name: "Octopus Energy",
+            type: "energy_usage",
         },
     });
-    
-    const octopusMpan = await prisma.credentials.create({
-        data: { entityId: octopus.id, key: "mpan", value: "12345" },
+
+    const octopusMpan = await prisma.ApiCredentials.create({
+        data: { api_id: octopus.id, key: "mpan", value: "12345" },
     });
 
-    const octopusSerial = await prisma.credentials.create({
-        data: { entityId: octopus.id, key: "serial_number", value: "12345" },
+    const octopusSerial = await prisma.ApiCredentials.create({
+        data: { api_id: octopus.id, key: "serial_number", value: "12345" },
     });
-    
-    const octopusKey = await prisma.credentials.create({
-        data: { entityId: octopus.id, key: "api_key", value: "12345" },
+
+    const octopusKey = await prisma.ApiCredentials.create({
+        data: { api_id: octopus.id, key: "api_key", value: "12345" },
     });
 }
 

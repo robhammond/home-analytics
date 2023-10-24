@@ -1,17 +1,16 @@
-const { PrismaClient } = require('@prisma/client');
-const axios = require('axios');
-const moment = require('moment');
+const { PrismaClient } = require("@prisma/client");
+const axios = require("axios");
+const moment = require("moment");
 
 const prisma = new PrismaClient();
-const HA_DB_URL = process.env.HA_DB_URL;
 
 const daterange = (start, end) => {
     const startDate = moment(start);
     const endDate = moment(end);
     const dates = [];
     while (startDate.isBefore(endDate)) {
-        dates.push(startDate.format('YYYY-MM-DD'));
-        startDate.add(1, 'day');
+        dates.push(startDate.format("YYYY-MM-DD"));
+        startDate.add(1, "day");
     }
     return dates;
 };
@@ -23,19 +22,19 @@ const heatNow = async () => {
         where: {
             entity: {
                 entityName: {
-                    equals: 'ecodan',
-                    mode: 'insensitive'
-                }
-            }
+                    equals: "ecodan",
+                    mode: "insensitive",
+                },
+            },
         },
         select: {
             key: true,
-            value: true
-        }
+            value: true,
+        },
     });
 
     const credentials = {};
-    creds.forEach(cred => {
+    creds.forEach((cred) => {
         credentials[cred.key.toLowerCase()] = cred.value;
     });
 
@@ -52,7 +51,7 @@ const heatNow = async () => {
         DeviceType: 1,
         ForcedHotWaterMode: "true",
         SetTankWaterTemperature: 45,
-        EffectiveFlags: 87534
+        EffectiveFlags: 87534,
     };
 
     const res = await axios.post(endpoint_url, json_payload, { headers });

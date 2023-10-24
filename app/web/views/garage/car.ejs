@@ -5,23 +5,23 @@
         <p><span class="material-icons">speed</span> <%= carStatus.odometer.toLocaleString() %> miles</p>
         <p><span class="material-icons">battery_full</span> <%= carStatus.batteryPercent %>%</p>
         <p><span class="material-icons">route</span> <%= carStatus.estimatedRange %> miles</p>
-        <% if (car.purchaseOdometer) { %>
-            <p><span class="material-icons">analytics</span> <b>Miles since purchase:</b> <%= (carStatus.odometer - car.purchaseOdometer).toLocaleString() %> miles</p>
-            <p><span class="material-icons">analytics</span> <b>Avg miles per month:</b> <%= ((carStatus.odometer - car.purchaseOdometer) / monthsOwned["months"]).toFixed(2).toLocaleString() %> miles</p>
+        <% if (car.purchase_odometer) { %>
+            <p><span class="material-icons">analytics</span> <b>Miles since purchase:</b> <%= (carStatus.odometer - car.purchase_odometer).toLocaleString() %> miles</p>
+            <p><span class="material-icons">analytics</span> <b>Avg miles per month:</b> <%= ((carStatus.odometer - car.purchase_odometer) / monthsOwned["months"]).toFixed(2).toLocaleString() %> miles</p>
         <% } %> 
-        <% if (car.serviceDate) { %>
-            <p><span class="material-icons">event</span> <b>Next Service:</b> <%= car.serviceDate %></p>
+        <% if (car.service_date) { %>
+            <p><span class="material-icons">event</span> <b>Next Service:</b> <%= car.service_date %></p>
         <% } %>
-        <% if (car.motDate) { %>
-            <p><span class="material-icons">event</span> <b>Next MOT:</b> <%= car.motDate %></p>
+        <% if (car.mot_date) { %>
+            <p><span class="material-icons">event</span> <b>Next MOT:</b> <%= car.mot_date %></p>
         <% } %>
-        <% if (car.taxDate) { %>
-            <p><span class="material-icons">event</span> <b>Next Tax:</b> <%= car.taxDate %></p>
+        <% if (car.tax_date) { %>
+            <p><span class="material-icons">event</span> <b>Next Tax:</b> <%= car.tax_date %></p>
         <% } %>
     </div>
     <div class="col-md-6">
-        <img src="<%= car.imageUrl %>" style="max-width:500px;">
-        <div><span class="reg-plate"><%= car.registrationNumber %></span></div>
+        <img src="<%= car.image_url %>" style="max-width:500px;">
+        <div><span class="reg-plate"><%= car.registration_number %></span></div>
     </div>
 </div>
 <div class="row">
@@ -45,7 +45,7 @@
         </table>
     </div>
     <div class="col-md-6">
-        <% if (car.batterySize > 0) { %>
+        <% if (car.battery_size > 0) { %>
             <h3>Estimated Efficiency</h3>
             <table class="table table-bordered table-striped table-sm">
                 <thead>

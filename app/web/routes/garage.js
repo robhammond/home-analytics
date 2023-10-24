@@ -1,14 +1,16 @@
 const express = require("express");
+
 const router = express.Router();
 const { DateTime } = require("luxon");
 const { PrismaClient } = require("@prisma/client");
+
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
     const dates = res.locals.dateShortcuts;
     const cars = await prisma.$queryRaw`
         SELECT
-            cs.carId,
+            cs.car_id,
             cs.datetime,
             CASE
                 WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
@@ -24,18 +26,18 @@ router.get("/", async (req, res) => {
             isLocked,
             c.*
         FROM CarStatus cs, 
-	    (SELECT carId, MAX(datetime) AS datetime
+	    (SELECT car_id, MAX(datetime) AS datetime
             FROM CarStatus GROUP BY 1) max_date 
         JOIN Car c ON
-            cs.carId = c.id
+            cs.car_id = c.id
         WHERE
-            cs.carId = max_date.carId 
+            cs.car_id = max_date.car_id 
             AND cs.datetime = max_date.datetime
     `;
-    let carEfficiency = [];
-    for (let car of cars) {
-        let car_id = car["carId"];
-        let efficiency = await prisma.$queryRaw`
+    const carEfficiency = [];
+    for (const car of cars) {
+        const { car_id } = car;
+        const efficiency = await prisma.$queryRaw`
             WITH batt AS (
                 SELECT
                     strftime("%Y-%m-%d", cs.datetime, 'localtime') AS datetime,
@@ -43,7 +45,7 @@ router.get("/", async (req, res) => {
                     CAST(strftime("%m", cs.datetime, 'localtime') AS INT) - 1 AS jsMonth,
                     CAST(strftime("%d", cs.datetime, 'localtime') AS INT) AS jsDay,
                     c.id AS car_id,
-                    c.batterySize,
+                    c.battery_size,
                     cs.batteryPercent,
                     ROUND(CASE
                         WHEN odometerUnit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
@@ -52,10 +54,10 @@ router.get("/", async (req, res) => {
                     ROUND( (batteryPercent  - LAG(batteryPercent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
                 FROM CarStatus cs
                 JOIN Car c ON
-                    c.id = cs.carId
+                    c.id = cs.car_id
                 WHERE
                     c.id = ${car_id}
-                    AND DATE(cs.datetime, 'localtime') BETWEEN ${dates["minus1mStart"]} AND ${dates["minus1mEnd"]}
+                    AND DATE(cs.datetime, 'localtime') BETWEEN ${dates.minus1mStart} AND ${dates.minus1mEnd}
                 GROUP BY 1,2,3,4,5,6,7
                 ORDER BY cs.datetime DESC
             )
@@ -66,8 +68,8 @@ router.get("/", async (req, res) => {
                 b.jsDay,
                 c.make || ' ' || c.model AS carName,
                 SUM(b.distance_travelled) AS distance_travelled,
-                b.batterySize * (SUM(battery_percent_used)/100) AS kwh_used,
-                ROUND(SUM(b.distance_travelled) / (b.batterySize * (SUM(battery_percent_used)/100)), 2) AS mpkwh
+                b.battery_size * (SUM(battery_percent_used)/100) AS kwh_used,
+                ROUND(SUM(b.distance_travelled) / (b.battery_size * (SUM(battery_percent_used)/100)), 2) AS mpkwh
             FROM batt b
             LEFT JOIN Car c ON 
                 c.id = b.car_id
@@ -79,11 +81,13 @@ router.get("/", async (req, res) => {
         carEfficiency.push(efficiency);
     }
 
-    res.render("garage", { page_title: "Garage", cars: cars, carEfficiency: carEfficiency, dates: dates, });
+    res.render("garage", {
+        page_title: "Garage", cars, carEfficiency, dates,
+    });
 });
 
 router.get("/car", async (req, res) => {
-    const id = req.query.id;
+    const { id } = req.query;
     const car = await prisma.car.findFirst({
         where: {
             id: Number(id),
@@ -92,7 +96,7 @@ router.get("/car", async (req, res) => {
 
     const carStatus = await prisma.$queryRaw`
         SELECT
-            cs.carId,
+            cs.car_id,
             cs.datetime,
             CASE
                 WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
@@ -109,14 +113,14 @@ router.get("/car", async (req, res) => {
         FROM CarStatus cs, 
 	        (
                 SELECT 
-                    carId,
+                    car_id,
                     MAX(datetime) AS datetime
                 FROM CarStatus 
-                WHERE carId = ${Number(id)}
+                WHERE car_id = ${Number(id)}
                 GROUP BY 1 
             ) max_date 
         WHERE
-            cs.carId = ${Number(id)}
+            cs.car_id = ${Number(id)}
             AND cs.datetime = max_date.datetime
     `;
 
@@ -133,23 +137,23 @@ router.get("/car", async (req, res) => {
             END, 0) AS distance_travelled
         FROM CarStatus cs
         WHERE
-            cs.carId = ${Number(id)}
+            cs.car_id = ${Number(id)}
         GROUP BY 1
         ORDER BY cs.datetime DESC
     `;
 
     let monthsOwned = {};
-    if (car.dateAcquired) {
-        var end = DateTime.now();
-        var start = DateTime.fromISO(car.dateAcquired);
+    if (car.date_purchased) {
+        const end = DateTime.now();
+        const start = DateTime.fromISO(car.date_purchased);
         monthsOwned = end.diff(start, ["months", "days"]).toObject();
     }
 
-    let carEfficiency = await prisma.$queryRaw`
+    const carEfficiency = await prisma.$queryRaw`
         WITH batt AS (                    
             SELECT
                 strftime("%Y-%m-%d", cs.datetime, 'localtime') AS datetime,
-                c.batterySize,
+                c.battery_size,
                 cs.batteryPercent,
                 ROUND(CASE
                     WHEN odometerUnit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
@@ -158,16 +162,16 @@ router.get("/car", async (req, res) => {
                 ROUND( (batteryPercent  - LAG(batteryPercent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
             FROM CarStatus cs
             JOIN Car c ON
-                c.id = cs.carId
+                c.id = cs.car_id
             WHERE
-                cs.carId = ${Number(id)}
+                cs.car_id = ${Number(id)}
             GROUP BY 1,2,3
             ORDER BY cs.datetime DESC
         )
         SELECT b.datetime,
             SUM(b.distance_travelled) AS distance_travelled,
-            batterySize * (SUM(battery_percent_used)/100) AS kwh_used,
-            ROUND(SUM(b.distance_travelled) / (batterySize * (SUM(battery_percent_used)/100)), 2) AS mpkwh
+            battery_size * (SUM(battery_percent_used)/100) AS kwh_used,
+            ROUND(SUM(b.distance_travelled) / (battery_size * (SUM(battery_percent_used)/100)), 2) AS mpkwh
         FROM batt b
         WHERE battery_percent_used > 0
         GROUP BY 1
@@ -176,11 +180,11 @@ router.get("/car", async (req, res) => {
 
     res.render("garage/car", {
         page_title: `${car.make} ${car.model}`,
-        car: car,
+        car,
         carStatus: carStatus[0],
-        carTrips: carTrips,
-        carEfficiency: carEfficiency,
-        monthsOwned: monthsOwned,
+        carTrips,
+        carEfficiency,
+        monthsOwned,
     });
 });
 
