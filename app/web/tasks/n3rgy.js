@@ -60,9 +60,9 @@ const fetchUsage = async (startDate, endDate) => {
             try {
                 const insertedData = await prisma.electricity.create({
                     data: {
-                        datetime: dt,
                         datetime_start: dtStart,
-                        kwh: value.value,
+                        datetime_end: dt,
+                        kwh_imported: value.value,
                         granularity: data.granularity,
                         source: "n3rgy",
                     },
@@ -132,7 +132,7 @@ const fetchProduction = async (startDate, endDate) => {
             try {
                 rowId = await prisma.electricity.findFirst({
                     where: {
-                        datetime: dt,
+                        datetime_end: dt,
                         granularity: data.granularity,
                     },
                     select: {

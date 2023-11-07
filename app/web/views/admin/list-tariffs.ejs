@@ -1,5 +1,12 @@
-<h3>Tariffs</h3>
-<p><a href="/admin/add-tariff" class="btn btn-success">Add new</a></p>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h3>Tariffs</h3>
+    </div>
+    <div class="col-md-6">
+        <span class="float-end"><a href="/admin/add-tariff" class="btn btn-success"><i class="fas fa-plus-circle mr-2"></i>Add New Supplier</a></span>
+    
+    </div>
+</div>
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
@@ -13,12 +20,12 @@
     <tbody>
         <% for (tariff of tariffs) { %>
         <tr>
-            <td><%= tariff.supplier %></td>
+            <td><%= tariff.name %></td>
             <td><%= tariff.tariff_name %></td>
             <td>
                 <small>
                     <ul>
-                    <% for (let rate of tariff.rates) { %>
+                    <% for (let rate of tariff.energy_rates) { %>
                         <li><%= rate["rate_type"][0].toUpperCase() + rate["rate_type"].substring(1) %>: <%= rate.cost %>p / kWh</li>
                     <% } %>
                     <% if (tariff.tariff_type == "import") { %>
@@ -38,9 +45,9 @@
                 </small>
             </td>
             <td>
-                <a href="/admin/add-rate?supplier_id=<%= tariff.id %>">Add rate</a> |
-                <a href="/admin/edit-tariff?id=<%= tariff.id %>">Edit</a> |
-                <a href="/admin/delete-tariff?id=<%= tariff.id %>">Delete</a>
+                <a href="/admin/add-rate?supplier_id=<%= tariff.id %>" class="btn btn-primary mr-2 btn-sm"><i class="fas fa-plus-circle mr-2"></i>Add Rate</a>
+                <a href="/admin/edit-tariff?id=<%= tariff.id %>" class="btn btn-warning mr-2 btn-sm"><i class="fas fa-pencil mr-2"></i>Edit</a>
+                <a href="/admin/delete-tariff?id=<%= tariff.id %>" class="btn btn-danger mr-2 btn-sm"><i class="fas fa-trash mr-2"></i>Delete</a>
             </td>
         </tr>
         <% } %>

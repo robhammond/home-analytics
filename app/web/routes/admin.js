@@ -11,6 +11,7 @@ router.get("/", async (req, res) => {
     const appEnv = process.env.APP_ENV;
     const envDb = process.env.HA_DB_URL;
     const envDate = new Date();
+
     res.render("admin", {
         page_title: "Admin",
         appEnv,
@@ -19,9 +20,88 @@ router.get("/", async (req, res) => {
     });
 });
 
+router.get("/energy/api/init", async (req, res) => {
+    const {
+        mpan, serial_number, api_key, auth_header,
+    } = req.query;
+    const api_id = parseInt(req.query.api_id, 10);
+
+    console.log(mpan);
+    console.log(serial_number);
+    console.log(api_key);
+
+    if (api_id === 2) {
+        try {
+            await prisma.apiCredentials.update({
+                where: {
+                    api_id_key: {
+                        api_id,
+                        key: "mpan",
+                    },
+                },
+                data: {
+                    value: mpan,
+                },
+            });
+        } catch (error) {
+            console.log(`Error updating mpan: ${error.message}`);
+        }
+        try {
+            await prisma.apiCredentials.update({
+                where: {
+                    api_id_key: {
+                        api_id,
+                        key: "serial_number",
+                    },
+                },
+                data: {
+                    value: serial_number,
+                },
+            });
+        } catch (error) {
+            console.log(`Error updating serial_number: ${error.message}`);
+        }
+        try {
+            await prisma.apiCredentials.update({
+                where: {
+                    api_id_key: {
+                        api_id,
+                        key: "api_key",
+                    },
+                },
+                data: {
+                    value: api_key,
+                },
+            });
+        } catch (error) {
+            console.log(`Error updating api_key: ${error.message}`);
+        }
+    } else if (api_id === 1) {
+        try {
+            await prisma.apiCredentials.update({
+                where: {
+                    api_id_key: {
+                        api_id,
+                        key: "auth_header",
+                    },
+                },
+                data: {
+                    value: auth_header,
+                },
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    } else {
+        console.error("API ID not found!");
+    }
+
+    res.redirect("/");
+});
+
 router.get("/add-rate", async (req, res) => {
     const { supplier_id } = req.query;
-    const tariff = await prisma.supplier.findFirst({
+    const tariff = await prisma.energySupplier.findFirst({
         where: {
             id: Number(supplier_id),
         },
@@ -33,7 +113,7 @@ router.post("/add-rate", async (req, res) => {
     const {
         supplier_id, rate_type, cost, start_time, end_time,
     } = req.body;
-    const rates_res = await prisma.rates.create({
+    const rates_res = await prisma.energyRate.create({
         data: {
             supplier: {
                 connect: { id: Number(supplier_id) },
@@ -56,23 +136,27 @@ router.get("/add-tariff", async (req, res) => {
 });
 
 router.get("/edit-tariff", async (req, res) => {
-    const supplier = await prisma.supplier.findFirst({
-        where: {
-            id: Number(req.query.id),
-        },
-        include: {
-            rates: true,
-        },
-    });
+    try {
+        const supplier = await prisma.energySupplier.findFirst({
+            where: {
+                id: Number(req.query.id),
+            },
+            include: {
+                energy_rates: true,
+            },
+        });
 
-    if (supplier.supplier_start) {
-        supplier.supplier_start = supplier.supplier_start.toISOString().substring(0, 10);
-    }
-    if (supplier.supplier_end) {
-        supplier.supplier_end = supplier.supplier_end.toISOString().substring(0, 10);
-    }
+        if (supplier.supplier_start) {
+            supplier.supplier_start = supplier.supplier_start.toISOString().substring(0, 10);
+        }
+        if (supplier.supplier_end) {
+            supplier.supplier_end = supplier.supplier_end.toISOString().substring(0, 10);
+        }
 
-    res.render("admin/edit-tariff", { page_title: "Admin", supplier });
+        res.render("admin/edit-tariff", { page_title: "Admin", supplier });
+    } catch (err) {
+        res.status(500);
+    }
 });
 
 router.post("/edit-tariff", async (req, res) => {
@@ -80,23 +164,23 @@ router.post("/edit-tariff", async (req, res) => {
         id, tariff_name, tariff_type, supplier, standing_charge, supplier_start, supplier_end,
     } = req.body;
 
-    if (supplier_start == "") {
+    if (supplier_start === "") {
         supplier_start = null;
     } else {
         supplier_start = new Date(supplier_start).toISOString();
     }
-    if (supplier_end == "") {
+    if (supplier_end === "") {
         supplier_end = null;
     } else {
         supplier_end = new Date(supplier_end).toISOString();
     }
-    if (standing_charge == "") {
+    if (standing_charge === "") {
         standing_charge = null;
     } else {
         standing_charge = parseFloat(standing_charge);
     }
 
-    const supplier_res = await prisma.supplier.update({
+    const supplier_res = await prisma.energySupplier.update({
         where: {
             id: Number(id),
         },
@@ -117,7 +201,7 @@ router.post("/add-tariff", async (req, res) => {
     let {
         tariff_name,
         tariff_type,
-        supplier,
+        name,
         cost,
         standing_charge,
         currency,
@@ -128,26 +212,26 @@ router.post("/add-tariff", async (req, res) => {
         rate_type,
     } = req.body;
 
-    if (supplier_start == "") {
+    if (supplier_start === "") {
         supplier_start = null;
     } else {
         supplier_start = new Date(supplier_start);
     }
-    if (supplier_end == "") {
+    if (supplier_end === "") {
         supplier_end = null;
     } else {
         supplier_end = new Date(supplier_end);
     }
-    if (standing_charge == "") {
+    if (standing_charge === "") {
         standing_charge = null;
     } else {
         standing_charge = parseFloat(standing_charge);
     }
 
     try {
-        const supplier_res = await prisma.supplier.create({
+        const supplier_res = await prisma.energySupplier.create({
             data: {
-                supplier,
+                name,
                 tariff_name,
                 tariff_type,
                 standing_charge,
@@ -155,35 +239,21 @@ router.post("/add-tariff", async (req, res) => {
                 supplier_end,
             },
         });
-        try {
-            const rates_res = await prisma.rates.create({
-                data: {
-                    supplier_id: supplier_res.id,
-                    rate_type,
-                    cost: parseFloat(cost),
-                    currency,
-                    start_time,
-                    end_time,
-                },
-            });
-        } catch (e) {
-            console.log(e);
-        }
+        res.redirect("/admin/list-tariffs");
     } catch (e) {
         console.log(e);
+        res.status(500);
     }
-
-    res.redirect("/admin/list-tariffs");
 });
 
 router.get("/delete-tariff", async (req, res) => {
     try {
-        const rates = await prisma.rates.deleteMany({
+        const rates = await prisma.energyRate.deleteMany({
             where: {
                 supplier_id: Number(req.query.id),
             },
         });
-        const supplier = await prisma.supplier.delete({
+        const supplier = await prisma.energySupplier.delete({
             where: {
                 id: Number(req.query.id),
             },
@@ -196,16 +266,22 @@ router.get("/delete-tariff", async (req, res) => {
 });
 
 router.get("/list-tariffs", async (req, res) => {
-    const tariffs = await prisma.supplier.findMany({
-        include: {
-            rates: true,
-        },
-        orderBy: [
-            {
-                supplier_start: "desc",
+    let tariffs = [];
+    try {
+        tariffs = await prisma.energySupplier.findMany({
+            include: {
+                energy_rates: true,
             },
-        ],
-    });
+            orderBy: [
+                {
+                    supplier_start: "desc",
+                },
+            ],
+        });
+    } catch (err) {
+        // res.status(500).send("No tariffs found!");
+        console.log(err);
+    }
     res.render("admin/list-tariffs", { page_title: "List Tariffs", tariffs });
 });
 
@@ -230,16 +306,16 @@ router.post("/add-vehicle", async (req, res) => {
         date_purchased,
     } = req.body;
 
-    if (mot_date == "") {
+    if (mot_date === "") {
         mot_date = null;
     }
-    if (service_date == "") {
+    if (service_date === "") {
         service_date = null;
     }
-    if (date_purchased == "") {
+    if (date_purchased === "") {
         date_purchased = null;
     }
-    if (tax_date == "") {
+    if (tax_date === "") {
         tax_date = null;
     }
 
@@ -291,25 +367,17 @@ router.post("/edit-vehicle", async (req, res) => {
         date_purchased,
     } = req.body;
 
-    if (mot_date == "") {
+    if (mot_date === "") {
         mot_date = null;
-    } else {
-        mot_date = mot_date;
     }
-    if (tax_date == "") {
+    if (tax_date === "") {
         tax_date = null;
-    } else {
-        tax_date = tax_date;
     }
-    if (service_date == "") {
+    if (service_date === "") {
         service_date = null;
-    } else {
-        service_date = service_date;
     }
-    if (date_purchased == "") {
+    if (date_purchased === "") {
         date_purchased = null;
-    } else {
-        date_purchased = date_purchased;
     }
     const car_res = await prisma.car.update({
         data: {

@@ -5,8 +5,8 @@
 <form method="post" class="form-horizontal" role="form">
     <input type="hidden" name="id" value="<%= supplier.id %>">
     <div class="col-6 mb-3">
-		<label for="supplier" class="form-label">Supplier</label>
-        <input type="text" name="supplier" class="form-control" value="<%= supplier.supplier %>">
+		<label for="name" class="form-label">Supplier</label>
+        <input type="text" name="name" class="form-control" value="<%= supplier.name %>">
         <div class="form-text">Your electricity provider's name (ie Octopus Energy, EON, etc)</div>
 	</div>
 	<div class="col-6 mb-3">
@@ -42,7 +42,7 @@
 	</div>
     <hr>
     <h3>Rates</h3>
-    <% for (let rate of supplier.rates) { %>
+    <% for (let rate of supplier.energy_rates) { %>
         <div class="col-6 mb-3">
             <label for="rate_type" class="form-label">Rate Type</label>
             <select name="rate_type" class="form-select">

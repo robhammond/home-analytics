@@ -3,7 +3,7 @@
         <h3><%= car.make %> <%= car.model %> <%= car.variant %></h3>
         <br><br>
         <p><span class="material-icons">speed</span> <%= carStatus.odometer.toLocaleString() %> miles</p>
-        <p><span class="material-icons">battery_full</span> <%= carStatus.batteryPercent %>%</p>
+        <p><span class="material-icons">battery_full</span> <%= carStatus.battery_percent %>%</p>
         <p><span class="material-icons">route</span> <%= carStatus.estimatedRange %> miles</p>
         <% if (car.purchase_odometer) { %>
             <p><span class="material-icons">analytics</span> <b>Miles since purchase:</b> <%= (carStatus.odometer - car.purchase_odometer).toLocaleString() %> miles</p>

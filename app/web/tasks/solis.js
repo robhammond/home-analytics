@@ -11,7 +11,7 @@ async function getCreds() {
     const sql = `
     SELECT key, value
     FROM Credentials c
-    JOIN Entity e ON e.id = c.entityId
+    JOIN entities e ON e.id = c.entityId
     WHERE LOWER(e.entity_name) LIKE 'solis%'
   `;
     const creds = {};

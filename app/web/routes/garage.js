@@ -13,22 +13,22 @@ router.get("/", async (req, res) => {
             cs.car_id,
             cs.datetime,
             CASE
-                WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
+                WHEN odometer_unit = 'km' THEN ROUND(odometer * 0.62137,0)
                 ELSE ROUND(odometer,0)
             END AS odometer,
-            batteryPercent,
+            battery_percent,
             CASE
-                WHEN rangeUnit = 'km' THEN ROUND(estimatedRange * 0.62137, 0)
-                ELSE ROUND(estimatedRange,0)
-            END AS estimatedRange,
-            chargingStatus,
-            chargingTargetPercent,
-            isLocked,
+                WHEN range_unit = 'km' THEN ROUND(estimated_range * 0.62137, 0)
+                ELSE ROUND(estimated_range,0)
+            END AS estimated_range,
+            charging_status,
+            charging_target_percent,
+            is_locked,
             c.*
-        FROM CarStatus cs, 
+        FROM car_status cs, 
 	    (SELECT car_id, MAX(datetime) AS datetime
-            FROM CarStatus GROUP BY 1) max_date 
-        JOIN Car c ON
+            FROM car_status GROUP BY 1) max_date 
+        JOIN cars c ON
             cs.car_id = c.id
         WHERE
             cs.car_id = max_date.car_id 
@@ -46,13 +46,13 @@ router.get("/", async (req, res) => {
                     CAST(strftime("%d", cs.datetime, 'localtime') AS INT) AS jsDay,
                     c.id AS car_id,
                     c.battery_size,
-                    cs.batteryPercent,
+                    cs.battery_percent,
                     ROUND(CASE
-                        WHEN odometerUnit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
+                        WHEN odometer_unit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
                         ELSE (odometer - LAG(odometer, 1) OVER (ORDER BY datetime))
                     END, 0) AS distance_travelled,
-                    ROUND( (batteryPercent  - LAG(batteryPercent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
-                FROM CarStatus cs
+                    ROUND( (battery_percent  - LAG(battery_percent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
+                FROM car_status cs
                 JOIN Car c ON
                     c.id = cs.car_id
                 WHERE
@@ -99,23 +99,23 @@ router.get("/car", async (req, res) => {
             cs.car_id,
             cs.datetime,
             CASE
-                WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
+                WHEN odometer_unit = 'km' THEN ROUND(odometer * 0.62137,0)
                 ELSE ROUND(odometer,0)
             END AS odometer,
-            batteryPercent,
+            battery_percent,
             CASE
-                WHEN rangeUnit = 'km' THEN ROUND(estimatedRange * 0.62137, 0)
-                ELSE ROUND(estimatedRange,0)
-            END AS estimatedRange,
-            chargingStatus,
-            chargingTargetPercent,
-            isLocked
-        FROM CarStatus cs, 
+                WHEN rangeUnit = 'km' THEN ROUND(estimated_range * 0.62137, 0)
+                ELSE ROUND(estimated_range,0)
+            END AS estimated_range,
+            charging_status,
+            charging_target_percent,
+            is_locked
+        FROM car_status cs, 
 	        (
                 SELECT 
                     car_id,
                     MAX(datetime) AS datetime
-                FROM CarStatus 
+                FROM car_status 
                 WHERE car_id = ${Number(id)}
                 GROUP BY 1 
             ) max_date 
@@ -128,14 +128,14 @@ router.get("/car", async (req, res) => {
         SELECT
             strftime("%Y-%m-%d", cs.datetime, 'localtime') AS datetime,
             MAX(CASE
-                WHEN odometerUnit = 'km' THEN ROUND(odometer * 0.62137,0)
+                WHEN odometer_unit = 'km' THEN ROUND(odometer * 0.62137,0)
                 ELSE ROUND(odometer,0)
             END) AS odometer,
 			ROUND(CASE
-                WHEN odometerUnit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
+                WHEN odometer_unit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
                 ELSE (odometer - LAG(odometer, 1) OVER (ORDER BY datetime))
             END, 0) AS distance_travelled
-        FROM CarStatus cs
+        FROM car_status cs
         WHERE
             cs.car_id = ${Number(id)}
         GROUP BY 1
@@ -154,14 +154,14 @@ router.get("/car", async (req, res) => {
             SELECT
                 strftime("%Y-%m-%d", cs.datetime, 'localtime') AS datetime,
                 c.battery_size,
-                cs.batteryPercent,
+                cs.battery_percent,
                 ROUND(CASE
-                    WHEN odometerUnit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
+                    WHEN odometer_unit = 'km' THEN ((odometer * 0.62137) - LAG((odometer * 0.62137), 1) OVER (ORDER BY datetime))
                     ELSE (odometer - LAG(odometer, 1) OVER (ORDER BY datetime))
                 END, 0) AS distance_travelled,
-                ROUND( (batteryPercent  - LAG(batteryPercent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
-            FROM CarStatus cs
-            JOIN Car c ON
+                ROUND( (battery_percent  - LAG(battery_percent, 1) OVER (ORDER BY datetime)), 0) * -1 AS battery_percent_used
+            FROM car_status cs
+            JOIN cars c ON
                 c.id = cs.car_id
             WHERE
                 cs.car_id = ${Number(id)}

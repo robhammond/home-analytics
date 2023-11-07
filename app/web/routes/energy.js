@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
         SELECT 
             DISTINCT entity_type
         FROM
-            Entity
+            entities
     `;
 
     res.render("energy", {

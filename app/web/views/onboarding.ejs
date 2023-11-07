@@ -1,6 +1,6 @@
 <h1 class="h3 mb-3 text-gray-800">Setup</h1>
 
-<% if (params["energy_usage"]=='false' ) { %>
+<% if (params["energy_usage"] === 'false' ) { %>
     <div class="row">
         <div class="col-lg-12">
             <div class="card shadow mb-4">
@@ -27,20 +27,25 @@
                                             target="_blank">in your
                                             Octopus dashboard</a>.</p>
                                     <p>Then update the credentials here:</p>
-                                    <form action="/admin/api/init">
+                                    <form action="/admin/energy/api/init">
                                         <input type="hidden" name="api_id" value="2">
                                         <div class="col-6 mb-3">
                                             <label for='mpan' class='form-label'>MPAN</label>
                                             <input type="text" name="mpan" class="form-control" placeholder="12345">
+                                            <span class="form-text">Find this on your dashboard</span>
                                         </div>
                                         <div class="col-6 mb-3">
                                             <label for="serial_number" class="form-label">Serial Number</label>
                                             <input type="text" name="serial_number" class="form-control"
                                                 placeholder="12345">
+                                            <span class="form-text">Find this on your dashboard</span>
                                         </div>
                                         <div class="col-6 mb-3">
                                             <label for="api_key" class="form-label">API Key</label>
                                             <input type="text" name="api_key" class="form-control" placeholder="12345">
+                                            <span class="form-text">Find this under <a
+                                                    href="https://octopus.energy/dashboard/new/accounts/personal-details/api-access"
+                                                    target="_blank">Personal details -&gt; API Access</a></span>
                                         </div>
                                         <button type="submit" class="btn btn-primary">Save</button>
                                     </form>
@@ -81,22 +86,22 @@
             </div>
         </div>
     </div>
-<% } %>
-<% if (params["tariff"]=='false' ) { %>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Set electricity costs</h6>
-                </div>
-                <div class="card-body">
-                    <p><b><a href="/admin/add-tariff">Add a current Electricity Tariff </a></b></p>
-                    <p>In order to calculate your costs, you need to add details about your tariff
-                        first.</p>
-                    <p>You can also add historical tariffs for date ranges where you have
-                        consumption data.</p>
+    <% } %>
+    <% if (params["tariff"] === 'false' ) { %>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Set electricity costs</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><b><a href="/admin/add-tariff">Add a current Electricity Tariff </a></b></p>
+                        <p>In order to calculate your costs, you need to add details about your tariff
+                            first.</p>
+                        <p>You can also add historical tariffs for date ranges where you have
+                            consumption data.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-<% } %>
+    <% } %>

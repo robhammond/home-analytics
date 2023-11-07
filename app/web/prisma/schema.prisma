@@ -27,14 +27,15 @@ model ApiCredentials {
     key    String
     value  String
 
+    @@unique([api_id, key])
     @@map("api_credentials")
 }
 
-model Electricity {
+model GridEnergy {
     id             Int         @id @default(autoincrement())
     datetime_start DateTime
     datetime_end   DateTime // this is actually the end time for half-hourly, but should be canonical for daily etc
-    kwh            Float?
+    kwh_imported   Float?
     kwh_exported   Float?
     granularity    String
     rate           EnergyRate? @relation("import_rate", fields: [rate_id], references: [id])
@@ -43,8 +44,8 @@ model Electricity {
     export_rate_id Int?
     source         String?
 
-    @@unique([datetime_start, granularity], name: "sqlite_autoindex_electricity")
-    @@map("electricity")
+    @@unique([datetime_start, granularity], name: "sqlite_autoindex_grid_energy")
+    @@map("grid_energy")
 }
 
 model Solar {
@@ -231,22 +232,26 @@ model EntityAttributes {
     key       String
     value     String
 
+    @@unique([entity_id, key])
     @@map("entity_attributes")
 }
 
 model EntityUsage {
-    id               Int      @id @default(autoincrement())
+    id               Int         @id @default(autoincrement())
     datetime_start   DateTime
     datetime_end     DateTime
     duration_seconds Int?
     duration_minutes Int?
-    entity           Entity   @relation(fields: [entity_id], references: [id])
+    entity           Entity      @relation(fields: [entity_id], references: [id])
     entity_id        Int
+    rate             EnergyRate? @relation(fields: [rate_id], references: [id])
+    rate_id          Int?
     granularity      String
     kwh_used         Float
     energy_cost      Float?
+    source           String?
 
-    @@unique([entity_id, datetime_start, datetime_end, granularity], name: "sqlite_autoindex_entityusage")
+    @@unique([entity_id, datetime_start, granularity], name: "sqlite_autoindex_entityusage")
     @@map("entity_usage")
 }
 
@@ -258,22 +263,23 @@ model EnergySupplier {
     standing_charge Float?
     supplier_start  DateTime?
     supplier_end    DateTime?
-    rate            EnergyRate[]
+    energy_rates    EnergyRate[]
 
     @@map("energy_suppliers")
 }
 
 model EnergyRate {
-    id          Int            @id @default(autoincrement())
-    supplier    EnergySupplier @relation(fields: [supplier_id], references: [id])
-    supplier_id Int
-    rate_type   String // fixed, peak, off-peak, export
-    start_time  String?
-    end_time    String?
-    cost        Float
-    currency    String         @default("gbp")
-    import_rate Electricity[]  @relation("import_rate")
-    export_rate Electricity[]  @relation("export_rate")
+    id           Int            @id @default(autoincrement())
+    supplier     EnergySupplier @relation(fields: [supplier_id], references: [id])
+    supplier_id  Int
+    rate_type    String // fixed, peak, off-peak, export
+    start_time   String?
+    end_time     String?
+    cost         Float
+    currency     String         @default("gbp")
+    import_rate  GridEnergy[]   @relation("import_rate")
+    export_rate  GridEnergy[]   @relation("export_rate")
+    entity_usage EntityUsage[]
 
     @@map("energy_rates")
 }
@@ -298,7 +304,6 @@ model CarbonIntensity {
     @@unique([datetime_start, datetime_end, postcode], name: "sqlite_autoindex_carbonintensity")
     @@map("carbon_intensity")
 }
-
 
 // finance section
 

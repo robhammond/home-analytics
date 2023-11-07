@@ -4,8 +4,8 @@
 <h3>Add Tariff</h3>
 <form method="post" class="form-horizontal" role="form">
     <div class="col-6 mb-3">
-        <label for="supplier" class="form-label">Supplier</label>
-        <input type="text" name="supplier" class="form-control">
+        <label for="name" class="form-label">Supplier</label>
+        <input type="text" name="name" class="form-control">
         <div class="form-text">Your electricity provider's name (ie Octopus Energy, EON, etc)</div>
     </div>
     <div class="col-6 mb-3">
@@ -38,38 +38,6 @@
         <label for="supplier_end" class="form-label">Tariff End Date</label>
         <input type="date" name="supplier_end" class="form-control" placeholder="2020-02-01">
         <div class="form-text">Leave blank for your current tariff</div>
-    </div>
-    <hr>
-    <h3>Rates</h3>
-    <div class="col-8">
-        <p>Add your single fixed rate or a variable rate. If you are on a variable rate, add one rate here, then you can
-            add additional rates on the main Tariffs page.</p>
-    </div>
-    <div class="col-6 mb-3">
-        <label for="rate_type" class="form-label">Rate Type</label>
-        <select name="rate_type" class="form-select">
-            <option value="fixed">Fixed</option>
-            <option value="off-peak">Off-peak</option>
-            <option value="peak">Peak</option>
-        </select>
-    </div>
-    <div class="col-6 mb-3">
-        <label for="cost" class="form-label col-lg-3" id="cost">Cost</label>
-        <div class="input-group">
-            <input type="number" name="cost" class="form-control" pattern="^\d+(?:\.\d{1,2})?$" step="0.01">
-            <div class="input-group-text">pence / kWh</div>
-        </div>
-        <div class="form-text">Enter the rate in pence per kWh</div>
-    </div>
-    <div class="col-6 mb-3">
-        <label for="start_time" class="form-label">Start Time</label>
-        <input type="text" name="start_time" class="form-control" placeholder="hh:mm">
-        <div class="form-text">Leave blank if you are on a fixed rate</div>
-    </div>
-    <div class="col-6 mb-3">
-        <label for="end_time" class="form-label col-lg-2">End Time</label>
-        <input type="text" name="end_time" class="form-control" placeholder="hh:mm">
-        <div class="form-text">Leave blank if you are on a fixed rate</div>
     </div>
     <input type="submit" value="Add tariff &raquo;" class="btn btn-primary">
 </form>

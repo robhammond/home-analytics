@@ -45,10 +45,10 @@ const fetchRenaultData = async () => {
                     datetime: new Date(data.datetime),
                     odometer: data.odometer,
                     odometerUnit: data.odometerUnit,
-                    batteryPercent: data.batteryPercent,
+                    battery_percent: data.battery_percent,
                     estimatedRange: data.estimatedRange,
                     rangeUnit: data.rangeUnit,
-                    chargingStatus: data.chargingStatus,
+                    charging_status: data.charging_status,
                 },
             });
         } catch (e) {

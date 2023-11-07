@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // find the relevant supplier ID based on the date
 async function findsupplier_id(dateLocal, tariffType) {
     try {
-        const supplier = await prisma.supplier.findFirst({
+        const supplier = await prisma.energySupplier.findFirst({
             where: {
                 OR: [
                     {
@@ -49,14 +49,14 @@ async function findsupplier_id(dateLocal, tariffType) {
 const updateImport = async () => {
     try {
         // Fetch records where rateId is null
-        const usageRecords = await prisma.electricity.findMany({
+        const usageRecords = await prisma.gridEnergy.findMany({
             where: {
                 rateId: null,
             },
         });
 
         for (const record of usageRecords) {
-            const rateId = await computeRateId(record.datetime_start, "import");
+            const rate_id = await computeRateId(record.datetime_start, "import");
 
             try {
                 const updatedRow = await prisma.electricity.update({
@@ -64,7 +64,7 @@ const updateImport = async () => {
                         id: record.id,
                     },
                     data: {
-                        rateId,
+                        rate_id,
                     },
                 });
             } catch (e) {
@@ -84,7 +84,7 @@ const computeRateId = async (datetime_start, tariffType) => {
     const startDtLocal = startDtUtc.setZone(local_tz);
 
     const supplier_id = await findsupplier_id(startDtLocal, tariffType);
-    const supplierRates = await prisma.rates.findMany({
+    const supplierRates = await prisma.energyRate.findMany({
         where: {
             supplier: {
                 id: supplier_id,
@@ -130,23 +130,23 @@ const computeRateId = async (datetime_start, tariffType) => {
 
 const updateExport = async () => {
     try {
-        // Fetch records where exportRateId for export is be null
+        // Fetch records where export_rate_id for export is be null
         const exportRecords = await prisma.electricity.findMany({
             where: {
-                exportRateId: null,
+                export_rate_id: null,
                 kwh_exported: { not: null },
             },
         });
 
         for (const record of exportRecords) {
-            const exportRateId = await computeRateId(record.datetime_start, "export");
+            const export_rate_id = await computeRateId(record.datetime_start, "export");
             try {
-                const updatedRow = await prisma.electricity.update({
+                const updatedRow = await prisma.gridEnergy.update({
                     where: {
                         id: record.id,
                     },
                     data: {
-                        exportRateId,
+                        export_rate_id,
                     },
                 });
                 console.log(`Record updated: ${updatedRow.id}`);
