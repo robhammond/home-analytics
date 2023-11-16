@@ -272,4 +272,46 @@ router.get("/list-tariffs", async (req, res) => {
     res.render("admin/energy/list-tariffs", { page_title: "List Tariffs", tariffs });
 });
 
+router.get("/data-import", async (req, res) => {
+    let apis = [];
+    try {
+        apis = await prisma.api.findMany({
+            where: {
+                type: "energy_usage",
+            },
+            include: {
+                credentials: true,
+            },
+            orderBy: [
+                {
+                    name: "asc",
+                },
+            ],
+        });
+    } catch (err) {
+        console.log(err);
+    }
+    console.log(apis);
+    res.render("admin/energy/data-import", { page_title: "Energy Data Imports", apis });
+});
+
+router.get("/data-import/edit", async (req, res) => {
+    const { api_id } = req.query;
+    try {
+        const api = await prisma.api.findUnique({
+            where: {
+                id: Number(api_id),
+            },
+            include: {
+                credentials: true,
+            },
+        });
+        console.log(api);
+        res.render("admin/energy/data-import-edit", { page_title: "Edit Energy Data Import", api });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error fetching API");
+    }
+});
+
 module.exports = router;
