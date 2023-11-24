@@ -1,18 +1,15 @@
 const { PrismaClient } = require("@prisma/client");
 const axios = require("axios");
-const moment = require("moment-timezone");
+const { DateTime } = require("luxon");
 
 const prisma = new PrismaClient();
 const API_ROOT = "https://api.octopus.energy";
 
 const getUserDetails = async () => {
-    const creds = await prisma.credentials.findMany({
+    const creds = await prisma.apiCredentials.findMany({
         where: {
-            entity: {
-                entityName: {
-                    equals: "octopus energy",
-                    mode: "insensitive",
-                },
+            api: {
+                name: "Octopus Energy",
             },
         },
         select: {
@@ -39,57 +36,59 @@ const getUserDetails = async () => {
 };
 
 const fetchUsage = async (startDate, endDate) => {
-    if (!startDate) {
-        startDate = moment().subtract(2, "days").startOf("day").format();
+    let start_date = startDate;
+    let end_date = endDate;
+    if (!start_date) {
+        start_date = DateTime.now().minus({ days: 2 }).startOf("day").toISO();
     }
 
-    if (!endDate) {
-        endDate = moment().add(1, "day").startOf("day").format();
+    if (!end_date) {
+        end_date = DateTime.now().plus({ days: 1 }).startOf("day").toISO();
     }
 
     const creds = await getUserDetails();
 
     const requestUrl = `${API_ROOT}/v1/electricity-meter-points/${creds.mpan}/meters/${creds.serial_number}/consumption/`;
     const params = {
-        period_from: startDate,
-        period_to: endDate,
+        period_from: start_date,
+        period_to: end_date,
     };
-    const headers = {
-        Authorization: `Basic ${Buffer.from(`${creds.api_key}:`).toString("base64")}`,
+    const auth = {
+        username: creds.api_key,
+        password: "",
     };
 
-    try {
-        const res = await axios.get(requestUrl, { params, headers });
+    const res = await axios.get(requestUrl, {
+        auth,
+        params,
+    });
 
-        if (res.status === 200) {
-            const { results } = res.data;
+    if (res.status === 200) {
+        const { results } = res.data;
 
-            for (const result of results) {
-                const tmpStart = moment.tz(result.interval_start, "UTC");
-                const tmpEnd = moment.tz(result.interval_end, "UTC");
+        for (const result of results) {
+            const tmpStart = DateTime.fromISO(result.interval_start, { zone: "utc" });
+            const tmpEnd = DateTime.fromISO(result.interval_end, { zone: "utc" });
 
-                const dtStart = tmpStart.format("YYYY-MM-DD HH:mm:ss");
-                const dtEnd = tmpEnd.format("YYYY-MM-DD HH:mm:ss");
+            const dtStart = tmpStart.format("YYYY-MM-DD HH:mm:ss");
+            const dtEnd = tmpEnd.format("YYYY-MM-DD HH:mm:ss");
 
-                try {
-                    await prisma.electricity.create({
-                        data: {
-                            datetime: new Date(dtEnd),
-                            datetime_start: new Date(dtStart),
-                            kwh: result.consumption,
-                            granularity: "halfhour",
-                            source: "octopus",
-                        },
-                    });
-                } catch (e) {
-                    console.error(`Error inserting: ${e}`);
-                }
+            try {
+                await prisma.gridEnergy.create({
+                    data: {
+                        datetime_start: new Date(dtStart),
+                        datetime_end: new Date(dtEnd),
+                        kwh_imported: result.consumption,
+                        granularity: "halfhour",
+                        source: "octopus",
+                    },
+                });
+            } catch (e) {
+                console.error(`Error inserting: ${e}`);
             }
-        } else {
-            console.error(`Error fetching: ${res.status}`);
         }
-    } catch (e) {
-        console.error(e);
+    } else {
+        console.error(`Error fetching: ${res.status}`);
     }
 };
 

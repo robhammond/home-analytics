@@ -14,10 +14,10 @@
         <% for (entity of entities) { %>
             <tr>
                 <td><a href="/admin/view-entity?id=<%= entity.id %>">
-                        <%= entity.entity_name %>
+                        <%= entity.name %>
                     </a></td>
                 <td>
-                    <%= entity.entity_type %>
+                    <%= entity.type %>
                 </td>
                 <td>
                     <a href="/admin/edit-entity?id=<%= entity.id %>" class="btn btn-primary">Edit</a>

@@ -1,38 +1,43 @@
 version: "3.9"
 
 services:
-  ha_web_dev:
-    build:
-      context: ./app
-      dockerfile: ./express.dockerfile
-      args:
-        - DB_URL_WITH_PROTOCOL=file:${HA_DB_URL}
-    container_name: ha_web_dev
-    restart: unless-stopped
-    network_mode: bridge
-    environment:
-      - APP_ENV=development
-      - HA_DB_URL=${HA_DB_URL}
-      - NODE_ENV=development
-    ports:
-      - 3000:3000
-    volumes:
-      - ./app/web:/app
-      - ./app/db:/app/db
-  # ha_tasks_dev:
-  #   build:
-  #     context: ./app
-  #     dockerfile: ./tasks.dockerfile
-  #     args:
-  #       - HA_DB_URL=${HA_DB_URL}
-  #   container_name: ha_tasks_dev
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - ha_web_dev
-  #   network_mode: bridge
-  #   environment:
-  #     - APP_ENV=development
-  #     - HA_DB_URL=${HA_DB_URL}
+    ha_web_dev:
+        build:
+            context: ./app
+            dockerfile: ./express.dockerfile
+            args:
+                - DB_URL_WITH_PROTOCOL=file:${HA_DB_URL}
+        container_name: ha_web_dev
+        restart: unless-stopped
+        networks:
+            - ha_web
+        environment:
+            - APP_ENV=development
+            - HA_DB_URL=${HA_DB_URL}
+            - NODE_ENV=development
+        ports:
+            - 3000:3000
+        volumes:
+            - ./app/web:/app
+            - ./app/db:/app/db
+    # ha_tasks_dev:
+    #   build:
+    #     context: ./app
+    #     dockerfile: ./tasks.dockerfile
+    #     args:
+    #       - HA_DB_URL=${HA_DB_URL}
+    #   container_name: ha_tasks_dev
+    #   restart: unless-stopped
+    #   depends_on:
+    #     - ha_web_dev
+    #   network_mode: bridge
+    #   environment:
+    #     - APP_ENV=development
+    #     - HA_DB_URL=${HA_DB_URL}
     # volumes:
     #   - ./app/tasks:/app
     #   - ./app/db:/app/db
+networks:
+    ha_web:
+        driver: bridge
+        name: ha_web

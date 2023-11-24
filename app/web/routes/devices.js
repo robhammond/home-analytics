@@ -7,13 +7,17 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
     const dates = res.locals.dateShortcuts;
-    const devices = await prisma.entity.findMany({
-        where: {
-            entity_backend: "tasmota_mqtt",
-        },
-    });
+    try {
+        const devices = await prisma.entity.findMany({
+            where: {
+                backend: "tasmota_mqtt",
+            },
+        });
 
-    res.render("devices", { page_title: "Devices", devices, dates });
+        res.render("devices", { page_title: "Devices", devices, dates });
+    } catch (error) {
+        res.status(500).send("Error getting devices");
+    }
 });
 
 module.exports = router;

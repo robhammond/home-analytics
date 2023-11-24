@@ -12,21 +12,25 @@ router.get("/", async (req, res) => {
     const start = req.query.start || DateTime.now().minus({ days: 30 }).toFormat("yyyy-MM-dd");
     const end = req.query.end || DateTime.now().toFormat("yyyy-MM-dd");
     const filter = req.query.filter || "all";
-    const entityTypes = await prisma.$queryRaw`
-        SELECT 
-            DISTINCT entity_type
-        FROM
-            entities
-    `;
+    try {
+        const entityTypes = await prisma.$queryRaw`
+            SELECT 
+                DISTINCT type
+            FROM
+                entities
+        `;
 
-    res.render("energy", {
-        page_title: "Energy",
-        unit,
-        start,
-        end,
-        filter,
-        entityTypes,
-    });
+        res.render("energy", {
+            page_title: "Energy",
+            unit,
+            start,
+            end,
+            filter,
+            entityTypes,
+        });
+    } catch (error) {
+        res.status(500).send("Error getting entity details");
+    }
 });
 
 router.get("/insights", async (req, res) => {

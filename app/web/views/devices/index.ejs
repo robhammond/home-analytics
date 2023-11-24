@@ -18,14 +18,14 @@
                 <% for (let device of devices) { %>
                     <tr>
                         <td>
-                            <%= device.entity_name %> <a href="<%= device.entity_url %>" target="_blank"><i
+                            <%= device.name %> <a href="<%= device.url %>" target="_blank"><i
                                         class="fas fa-external-link"></i></a>
                         </td>
                         <td>
-                            <%= device.entity_type %>
+                            <%= device.type %>
                         </td>
                         <td>
-                            <%= device.entity_category %>
+                            <%= device.category %>
                         </td>
                         <td>
                             <a href="/admin/edit-entity?id=<%= device.id %>" class="btn btn-primary">Edit</a>

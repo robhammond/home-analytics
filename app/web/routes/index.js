@@ -47,9 +47,6 @@ router.get("/", async (req, res) => {
             },
         });
 
-        console.log(n3rgy_setup);
-        console.log(octopus_setup);
-
         let n3rgy = true;
         let octopus = true;
 

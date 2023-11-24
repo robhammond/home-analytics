@@ -6,20 +6,20 @@
             <tr>
                 <th>Entity Name</th>
                 <td>
-                    <%= entity.entity_name %>
+                    <%= entity.name %>
                 </td>
             </tr>
             <tr>
                 <th>Entity Type</th>
                 <td>
-                    <%= entity.entity_type %>
+                    <%= entity.type %>
                 </td>
             </tr>
-            <% if (entity.entity_url) { %>
+            <% if (entity.url) { %>
             <tr>
                 <th>Entity URL</th>
                 <td>
-                    <a href="<%= entity.entity_url %>" target="_blank"><%= entity.entity_url %></a>
+                    <a href="<%= entity.url %>" target="_blank"><%= entity.url %></a>
                 </td>
             </tr>
             <% } %>

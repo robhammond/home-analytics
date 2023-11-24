@@ -7,7 +7,6 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-// DB queries - avoid db locks
 async function dbQueryRateInfo(start, end, tryCount = 1) {
     try {
         const by_rate = await prisma.$queryRaw`
@@ -23,9 +22,9 @@ async function dbQueryRateInfo(start, end, tryCount = 1) {
                 r.id = ge.rate_id
             LEFT JOIN energy_rates r2 ON
                 r2.id = ge.export_rate_id
-            JOIN suppliers s ON
+            JOIN energy_suppliers s ON
                 s.id = r.supplier_id
-                WHERE DATE(datetime_start, 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
+                WHERE DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN DATE(${start}) AND DATE(${end})
             GROUP BY 1
             ORDER BY 1
       `;
@@ -44,7 +43,7 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
     try {
         const usageSum = await prisma.$queryRaw`
             SELECT
-                DATE(datetime_start, 'localtime') AS date,
+            DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') AS date,
                 ROUND(SUM(ge.kwh_imported),2) AS kwh,
                 ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
                 ROUND((SUM((r.cost/100) * ge.kwh_imported)),2) AS cost,
@@ -55,10 +54,10 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
                 r.id = ge.rate_id
             LEFT JOIN energy_rates r2 ON
                 r2.id = ge.export_rate_id
-            JOIN suppliers s ON
+            JOIN energy_suppliers s ON
                 s.id = r.supplier_id
             WHERE
-                date(datetime_start, 'localtime') BETWEEN
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN
                 DATE(${start}) AND DATE(${end})
             GROUP BY 1
         `;
@@ -87,10 +86,10 @@ async function dbUsageTotals(start, end, tryCount = 1) {
                 r.id = ge.rate_id
             LEFT JOIN energy_rates r2 ON
                 r2.id = ge.export_rate_id
-            JOIN suppliers s ON
+            JOIN energy_suppliers s ON
                 s.id = r.supplier_id
             WHERE
-                date(datetime_start, 'localtime') BETWEEN
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN
                 DATE(${start}) AND DATE(${end})
         `;
         return usageTotals;
@@ -115,15 +114,15 @@ async function dbDaysUsage(num_days, tryCount = 1) {
                 WHERE date < date('now', 'localtime', '-1 day') 
             )
             SELECT 
-                DATE(datetime_start, 'localtime') AS date,
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') AS date,
                 CASE
-                    WHEN strftime('%w', datetime_start, 'localtime') = '0' THEN 'Sun'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '1' THEN 'Mon'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '2' THEN 'Tue'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '3' THEN 'Wed'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '4' THEN 'Thu'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '5' THEN 'Fri'
-                    WHEN strftime('%w', datetime_start, 'localtime') = '6' THEN 'Sat'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '0' THEN 'Sun'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '1' THEN 'Mon'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '2' THEN 'Tue'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '3' THEN 'Wed'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '4' THEN 'Thu'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '5' THEN 'Fri'
+                    WHEN strftime('%w', DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')) = '6' THEN 'Sat'
                 END AS dow,
                 ROUND((s.standing_charge/100),2) AS standing_charge,
                 ROUND(SUM(ge.kwh_imported),2) AS total_kwh,
@@ -131,10 +130,10 @@ async function dbDaysUsage(num_days, tryCount = 1) {
                 ROUND((SUM((r.cost/100) * ge.kwh_imported)) + (s.standing_charge/100),2) AS total_cost
             FROM week w
             LEFT JOIN grid_energy ge
-                ON DATE(ge.datetime_start, 'localtime') = w.date
+                ON DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') = w.date
             JOIN energy_rates r ON
                 r.id = ge.rate_id
-            JOIN suppliers s ON
+            JOIN energy_suppliers s ON
                 s.id = r.supplier_id
             GROUP BY 1,2
             ORDER BY 1
@@ -153,7 +152,7 @@ async function dbDaysUsage(num_days, tryCount = 1) {
 // /////// //
 // Routes //
 router.get("/suppliers", async (req, res) => {
-    const suppliers = await prisma.supplier.findMany({});
+    const suppliers = await prisma.energySupplier.findMany({});
     res.json(suppliers);
 });
 
@@ -165,7 +164,7 @@ router.get("/solar/realtime", async (req, res) => {
                 value
             FROM Credentials c
             JOIN entities e ON
-                e.id = c.entityId
+                e.id = c.entity_id
             WHERE 
                 LOWER(e.entity_name) = 's3-wifi-st'
         `;
@@ -177,7 +176,7 @@ router.get("/solar/realtime", async (req, res) => {
         const today_rate = await prisma.$queryRaw`
             SELECT
                 cost
-            FROM suppliers s
+            FROM energy_suppliers s
             JOIN energy_rates r ON
                 r.supplier_id = s.id
             WHERE supplier_end IS NULL
@@ -241,8 +240,8 @@ router.get("/usage/sum", async (req, res) => {
         // TODO: validate it's in yyyy-mm-dd format
     }
 
-    if (unit == "day") {
-        unit = "DATE(datetime_start, 'localtime')";
+    if (unit === "day") {
+        unit = "DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime')";
     }
 
     const usageSum = await dbUsageSumInfo(start, end);
@@ -283,7 +282,7 @@ router.get("/usage/entities/days", async (req, res) => {
                 SUM(energy_cost) AS cost
             FROM entity_usage en
             JOIN entities e ON 
-                e.id = en.entityId 
+                e.id = en.entity_id 
             WHERE 
                 DATE(datetime_start, 'localtime') = DATE('now','localtime', ${num_days})
             GROUP BY 1,2
@@ -356,11 +355,11 @@ router.get("/usage/breakdown", async (req, res) => {
         `;
         const entities = await prisma.$queryRaw`
             SELECT 
-                e.entity_type,
+                e.type,
                 ROUND(SUM(kwh_used),2) AS kwh
             FROM entity_usage en
             JOIN entities e ON
-                e.id = en.entityId 
+                e.id = en.entity_id 
             WHERE 
                 DATE(datetime_start, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
@@ -439,7 +438,7 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
                 ROUND(SUM(ge.kwh_imported),2) AS total_kwh
             FROM grid_energy ge
             WHERE
-                DATE(datetime_start, 'localtime') BETWEEN
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
         `;
         const entities = await prisma.$queryRaw`
@@ -449,7 +448,7 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
                 ROUND(SUM(kwh_used),2) AS kwh
             FROM entity_usage en
             JOIN entities e ON
-                e.id = en.entityId 
+                e.id = en.entity_id 
             WHERE 
                 DATE(datetime_start, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
@@ -517,23 +516,23 @@ router.get("/usage/hourly/compare", async (req, res) => {
         const hourlyUsage = await prisma.$queryRaw`
             WITH day1 AS (
                 SELECT 
-                    strftime(${xAxis}, ge.datetime_start, 'localtime') AS hour,
+                    strftime(${xAxis}, datetime(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS hour,
                     ROUND(SUM(ge.kwh_imported), 2) AS total_kwh
                 FROM grid_energy ge
                     JOIN energy_rates r ON r.id = ge.rate_id
-                    JOIN suppliers s ON s.id = r.supplier_id
-                WHERE date(datetime_start, 'localtime') = date(${date1}, 'localtime')
+                    JOIN energy_suppliers s ON s.id = r.supplier_id
+                WHERE date(ge.datetime_start / 1000, 'unixepoch', 'localtime') = date(${date1}, 'localtime')
                 GROUP BY 1
                 ORDER BY 1
             ),
             day2 AS (
                 SELECT 
-                    strftime(${xAxis}, ge.datetime_start, 'localtime') AS hour,
+                    strftime(${xAxis}, datetime(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS hour,
                     ROUND(SUM(ge.kwh_imported), 2) AS total_kwh
                 FROM grid_energy ge
                     JOIN energy_rates r ON r.id = ge.rate_id
-                    JOIN suppliers s ON s.id = r.supplier_id
-                WHERE date(datetime_start, 'localtime') = date(${date2}, 'localtime')
+                    JOIN energy_suppliers s ON s.id = r.supplier_id
+                WHERE date(ge.datetime_start / 1000, 'unixepoch', 'localtime') = date(${date2}, 'localtime')
                 GROUP BY 1
                 ORDER BY 1
             )
@@ -624,9 +623,9 @@ router.get("/usage/heating/temperatures", async (req, res) => {
     let { end } = req.query;
     const unit = req.query.unit || "hour";
     if (!start) {
-        if (unit == "day") {
+        if (unit === "day") {
             start = DateTime.now().minus({ days: 31 }).toFormat("yyyy-MM-dd");
-        } else if (unit == "month") {
+        } else if (unit === "month") {
             start = DateTime.now().minus({ months: 13 }).toFormat("yyyy-MM-dd");
         }
     } else {
@@ -700,7 +699,7 @@ router.get("/usage/vehicles", async (req, res) => {
                     ROUND(SUM(energy_cost),2) AS cost
                 FROM entity_usage eu
                 JOIN entities e ON
-                    e.id = eu.entityId 
+                    e.id = eu.entity_id 
                 WHERE
                     e.entity_type = 'Car Charging'
                     AND DATE(datetime_start, 'localtime') BETWEEN ${start} AND ${end}
@@ -717,7 +716,7 @@ router.get("/usage/vehicles", async (req, res) => {
                     ROUND(SUM(energy_cost),2) AS cost
                 FROM entity_usage eu
                 JOIN entities e ON
-                    e.id = eu.entityId 
+                    e.id = eu.entity_id 
                 WHERE
                     e.entity_type = 'Car Charging'
                     and
@@ -781,7 +780,7 @@ router.get("/usage/main", async (req, res) => {
             if (filter === "all") {
                 usage = await prisma.$queryRaw`
                     SELECT
-                        strftime("%Y-%m-%d %H:%M", ge.datetime_start, 'localtime') AS dt,
+                        strftime("%Y-%m-%d %H:%M", DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS dt,
                         r.rate_type,
                         ROUND(SUM(ge.kwh_imported),2) AS kwh,
                         ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
@@ -793,10 +792,10 @@ router.get("/usage/main", async (req, res) => {
                         r.id = ge.rate_id
                     LEFT JOIN energy_rates r2 ON
                         r2.id = ge.export_rate_id
-                    JOIN suppliers s ON
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY 1, 2
                     ORDER BY
                         1
@@ -813,34 +812,34 @@ router.get("/usage/main", async (req, res) => {
                         r.id = ge.rate_id
                     LEFT JOIN energy_rates r2 ON
                         r2.id = ge.export_rate_id
-                    JOIN suppliers s ON
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                 `;
             } else {
                 usage = await prisma.$queryRaw`
                     WITH rate_list AS (
                         SELECT 
-                            strftime("%Y-%m-%d %H:%M", datetime_start, 'localtime') AS hhour,
+                            strftime("%Y-%m-%d %H:%M", DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS hhour,
                             rate_id
                         FROM grid_energy ge
                         WHERE
-                            DATE(datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                            DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     )
                     SELECT
-                        strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0) AS dt,
+                        strftime("%Y-%m-%d %H:%M", CAST(julianday(DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) * 48 AS INTEGER) / 48.0) AS dt,
                         r.rate_type,
                         ROUND(SUM(eu.kwh_used),4) AS kwh,
                         ROUND(SUM(r.cost/100 * eu.kwh_used),4) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
-                        hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
+                        hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
                     WHERE
-                        DATE(eu.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                         AND e.entity_type = ${filter}
                     GROUP BY 1, 2
                     ORDER BY 1
@@ -848,23 +847,23 @@ router.get("/usage/main", async (req, res) => {
                 totals = await prisma.$queryRaw`
                     WITH rate_list AS (
                         SELECT 
-                            strftime("%Y-%m-%d %H:%M", datetime_start, 'localtime') AS hhour,
+                            strftime("%Y-%m-%d %H:%M", DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS hhour,
                             rate_id
                         FROM grid_energy ge
                         WHERE
-                            DATE(datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                            DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     )
                     SELECT
                         ROUND(SUM(eu.kwh_used),4) AS kwh,
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
-                        hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
+                        hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
                     WHERE
-                        DATE(eu.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                         AND e.entity_type = ${filter}
                 `;
             }
@@ -872,7 +871,7 @@ router.get("/usage/main", async (req, res) => {
             if (filter === "all") {
                 usage = await prisma.$queryRaw`
                     SELECT
-                        strftime("%Y-%m-%d %H", ge.datetime_start, 'localtime') AS dt,
+                        strftime("%Y-%m-%d %H", DATETIME(ge.datetime_start / 1000, 'unixepoch', 'localtime')) AS dt,
                         ROUND(SUM(ge.kwh_imported),2) AS kwh,
                         ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
                         ROUND(SUM(r.cost/100 * ge.kwh_imported),2) AS cost,
@@ -887,7 +886,7 @@ router.get("/usage/main", async (req, res) => {
                     JOIN Supplier s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
                         1
                     ORDER BY
@@ -906,10 +905,10 @@ router.get("/usage/main", async (req, res) => {
                         r.id = ge.rate_id
                     LEFT JOIN energy_rates r2 ON
                         r2.id = ge.export_rate_id
-                    JOIN suppliers s ON
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                 `;
             } else {
                 // TODO: Improve performance of these queries
@@ -929,7 +928,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -953,7 +952,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -966,7 +965,7 @@ router.get("/usage/main", async (req, res) => {
             if (filter === "all") {
                 usage = await prisma.$queryRaw`
                     SELECT
-                        DATE(ge.datetime_start, 'localtime') AS dt,
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') AS dt,
                         ROUND(SUM(ge.kwh_imported),2) AS kwh,
                         ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
                         ROUND(SUM(r.cost/100 * ge.kwh_imported),2) AS cost,
@@ -977,10 +976,10 @@ router.get("/usage/main", async (req, res) => {
                         r.id = ge.rate_id
                     LEFT JOIN energy_rates r2 ON
                         r2.id = ge.export_rate_id
-                    JOIN suppliers s ON
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
                         1
                     ORDER BY
@@ -990,20 +989,20 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         ROUND(SUM(ge.kwh_imported),2) AS kwh,
                         ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
-                        ROUND((SUM((r.cost/100) * e.kwh)),2) AS cost,
-                        ROUND(IFNULL(SUM(r2.cost/100 * e.kwh_exported),0),2) AS export_return,
-                        ROUND(SUM(r.cost/100 * e.kwh) - IFNULL(SUM(r2.cost/100 * e.kwh_exported),0), 2) AS net_cost
+                        ROUND((SUM((r.cost/100) * ge.kwh_imported)),2) AS cost,
+                        ROUND(IFNULL(SUM(r2.cost/100 * ge.kwh_exported),0),2) AS export_return,
+                        ROUND(SUM(r.cost/100 * ge.kwh_imported) - IFNULL(SUM(r2.cost/100 * ge.kwh_exported),0), 2) AS net_cost
                     FROM grid_energy ge
                     JOIN energy_rates r ON
-                        r.id = e.rate_id
+                        r.id = ge.rate_id
                     LEFT JOIN energy_rates r2 ON
-                        r2.id = e.export_rate_id
-                    JOIN suppliers s ON
+                        r2.id = ge.export_rate_id
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                 `;
-            } else if (filter == "central-heating") {
+            } else if (filter === "central-heating") {
                 usage = await prisma.$queryRaw`
                     SELECT
                         strftime('%Y-%m-%d', h.datetime, 'localtime') AS dt,
@@ -1053,7 +1052,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(energy_cost),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId 
+                        e.id = eu.entity_id 
                     WHERE
                         e.entity_type = 'Car Charging'
                         and
@@ -1069,7 +1068,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(energy_cost),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId 
+                        e.id = eu.entity_id 
                     WHERE
                         e.entity_type = 'Car Charging'
                         and
@@ -1091,7 +1090,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -1115,7 +1114,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -1130,14 +1129,14 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         strftime("%Y-%m", e.datetime_start, 'localtime') AS dt,
                         ROUND(SUM(ge.kwh),2) AS kwh,
-                        ROUND(SUM(r.cost/100 * e.kwh),2) AS cost
+                        ROUND(SUM(r.cost/100 * ge.kwh_imported),2) AS cost
                     FROM grid_energy ge
                     JOIN energy_rates r ON
-                        r.id = e.rate_id
-                    JOIN suppliers s ON
+                        r.id = ge.rate_id
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                     GROUP BY
                         1
                     ORDER BY
@@ -1150,10 +1149,10 @@ router.get("/usage/main", async (req, res) => {
                     FROM grid_energy ge
                     JOIN energy_rates r ON
                         r.id = ge.rate_id
-                    JOIN suppliers s ON
+                    JOIN energy_suppliers s ON
                         s.id = r.supplier_id
                     WHERE
-                        DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                        DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
                 `;
             } else if (filter === "central-heating") {
                 usage = await prisma.$queryRaw`
@@ -1205,7 +1204,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(energy_cost),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId 
+                        e.id = eu.entity_id 
                     WHERE
                         e.entity_type = 'Car Charging'
                         and
@@ -1221,7 +1220,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(energy_cost),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId 
+                        e.id = eu.entity_id 
                     WHERE
                         e.entity_type = 'Car Charging'
                         AND DATE(datetime_start, 'localtime') BETWEEN ${start} AND ${end}
@@ -1242,7 +1241,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -1266,7 +1265,7 @@ router.get("/usage/main", async (req, res) => {
                         ROUND(SUM(r.cost/100 * eu.kwh_used),2) AS cost
                     FROM entity_usage eu
                     JOIN entities e ON
-                        e.id = eu.entityId
+                        e.id = eu.entity_id
                     JOIN rate_list e2 ON
                         hhour = strftime("%Y-%m-%d %H:%M", CAST(julianday(eu.datetime_start, 'localtime') * 48 AS INTEGER) / 48.0)
                     JOIN energy_rates r ON r.id = e2.rate_id
@@ -1452,7 +1451,7 @@ router.get("/solar/main", async (req, res) => {
 
         grid = await prisma.$queryRaw`
             SELECT
-                DATE(ge.datetime_start, 'localtime') AS dt,
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') AS dt,
                 ROUND(SUM(ge.kwh_imported),2) AS kwh,
                 ROUND(SUM(ge.kwh_exported),2) AS kwh_exported,
                 ROUND(SUM(r.cost/100 * ge.kwh_imported),2) AS cost,
@@ -1463,10 +1462,10 @@ router.get("/solar/main", async (req, res) => {
                 r.id = ge.rate_id
             left JOIN energy_rates r2 ON
                 r2.id = ge.export_rate_id
-            JOIN suppliers s ON
+            JOIN energy_suppliers s ON
                 s.id = r.supplier_id
             WHERE
-                DATE(ge.datetime_start, 'localtime') BETWEEN ${start} AND ${end}
+                DATE(ge.datetime_start / 1000, 'unixepoch', 'localtime') BETWEEN ${start} AND ${end}
             GROUP BY
                 1
             ORDER BY

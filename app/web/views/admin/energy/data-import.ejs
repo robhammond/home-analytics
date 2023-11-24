@@ -8,17 +8,27 @@
         <table class="table table-bordered">
             <tr>
                 <th>Provider</th>
-                <th>Setup</th>
+                <th>API Details</th>
             </tr>
             <% for (let api of apis) { %>
                 <tr>
                     <td><%= api.name %></td>
                     <td>
-                        <ul>
+                        <table>
                             <% for (let cred of api.credentials) { %>
-                                <li><%= cred.key %>: <%= cred.value %></li>
+                                <tr>
+                                    <td><%= cred.key %></td>
+                                    <td>
+                                        <form method="post">
+                                            <input type="hidden" name="cred_id" value="<%= cred.id %>">
+                                            <input type="text" value="<%= cred.value %>" name="value" class="form-control">
+                                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                                        </form>
+                                        
+                                    </td>
+                                </tr>
                             <% } %>
-                        </ul>
+                        </table>
                     </td>
                 </tr>
             <% } %>

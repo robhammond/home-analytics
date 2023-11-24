@@ -51,7 +51,7 @@ const updateImport = async () => {
         // Fetch records where rateId is null
         const usageRecords = await prisma.gridEnergy.findMany({
             where: {
-                rateId: null,
+                rate_id: null,
             },
         });
 
@@ -59,7 +59,7 @@ const updateImport = async () => {
             const rate_id = await computeRateId(record.datetime_start, "import");
 
             try {
-                const updatedRow = await prisma.electricity.update({
+                const updatedRow = await prisma.gridEnergy.update({
                     where: {
                         id: record.id,
                     },

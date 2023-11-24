@@ -3,12 +3,20 @@
 
 generator client {
     provider      = "prisma-client-js"
-    binaryTargets = ["native", "linux-arm64-openssl-1.1.x", "debian-openssl-1.1.x", "darwin"]
+    binaryTargets = ["native", "linux-arm64-openssl-1.1.x", "debian-openssl-1.1.x", "darwin", "debian-openssl-3.0.x"]
 }
 
 datasource db {
     provider = "sqlite"
     url      = env("DB_URL_WITH_PROTOCOL")
+}
+
+model User {
+    id       Int    @id @default(autoincrement())
+    username String @unique
+    password String
+
+    @@map("users")
 }
 
 model Api {

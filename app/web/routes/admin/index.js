@@ -153,13 +153,13 @@ router.post("/add-entity", async (req, res) => {
     try {
         await prisma.entity.create({
             data: {
-                entity_name,
-                entity_type,
-                entity_category,
-                entity_backend,
-                entity_url,
-                entity_image,
-                entity_location,
+                name: entity_name,
+                type: entity_type,
+                category: entity_category,
+                backend: entity_backend,
+                url: entity_url,
+                image: entity_image,
+                location: entity_location,
             },
         });
         res.redirect("/admin/list-entities");
@@ -175,17 +175,22 @@ router.get("/list-entities", async (req, res) => {
 });
 
 router.get("/view-entity", async (req, res) => {
-    const entity = await prisma.entity.findFirst({
-        where: {
-            id: Number(req.query.id),
-        },
-    });
-    const creds = await prisma.credentials.findMany({
-        where: {
-            entityId: Number(req.query.id),
-        },
-    });
-    res.render("admin/view-entity", { page_title: "View Entity", entity, creds });
+    try {
+        const entity = await prisma.entity.findFirst({
+            where: {
+                id: Number(req.query.id),
+            },
+        });
+        const creds = await prisma.entityAttributes.findMany({
+            where: {
+                entity_id: Number(req.query.id),
+            },
+        });
+        res.render("admin/view-entity", { page_title: "View Entity", entity, creds });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Server Error");
+    }
 });
 
 router.get("/edit-entity", async (req, res) => {
@@ -207,13 +212,13 @@ router.post("/edit-entity", async (req, res) => {
                 id: Number(id),
             },
             data: {
-                entity_name,
-                entity_type,
-                entity_category,
-                entity_backend,
-                entity_url,
-                entity_image,
-                entity_location,
+                name: entity_name,
+                type: entity_type,
+                category: entity_category,
+                backend: entity_backend,
+                url: entity_url,
+                image: entity_image,
+                location: entity_location,
             },
         });
         res.redirect("/admin/list-entities");

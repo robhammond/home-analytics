@@ -99,11 +99,11 @@
 
 <script>
     $(document).ready(function () {
-        // loadTodayUsage('<%= dates["yday"] %>', "<%= dates['today'] %>");
-        // loadUsagePie("<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
-        // loadUsageByRateTable("<%= dates['today'] %>", "<%= dates['today'] %>", "table#today-usage");
-        // loadUsageByRateTable("<%= dates['yday'] %>", "<%= dates['yday'] %>", "table#yday-usage");
-        // loadUsageTable("day", "<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
+        loadTodayUsage('<%= dates["yday"] %>', "<%= dates['today'] %>");
+        loadUsagePie("<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
+        loadUsageByRateTable("<%= dates['today'] %>", "<%= dates['today'] %>", "table#today-usage");
+        loadUsageByRateTable("<%= dates['yday'] %>", "<%= dates['yday'] %>", "table#yday-usage");
+        loadUsageTable("day", "<%= dates['minus8d'] %>", "<%= dates['yday'] %>");
     });
 </script>
 <script src="/js/main.js"></script>

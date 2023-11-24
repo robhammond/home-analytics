@@ -295,22 +295,21 @@ router.get("/data-import", async (req, res) => {
     res.render("admin/energy/data-import", { page_title: "Energy Data Imports", apis });
 });
 
-router.get("/data-import/edit", async (req, res) => {
-    const { api_id } = req.query;
+router.post("/data-import", async (req, res) => {
+    const { cred_id, value } = req.body;
     try {
-        const api = await prisma.api.findUnique({
+        await prisma.apiCredentials.update({
             where: {
-                id: Number(api_id),
+                id: Number(cred_id),
             },
-            include: {
-                credentials: true,
+            data: {
+                value,
             },
         });
-        console.log(api);
-        res.render("admin/energy/data-import-edit", { page_title: "Edit Energy Data Import", api });
+        res.redirect("back");
     } catch (err) {
         console.log(err);
-        res.status(500).send("Error fetching API");
+        res.status(500).message("Error Updating Creds");
     }
 });
 

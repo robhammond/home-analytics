@@ -5,9 +5,12 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const expressLayouts = require("express-ejs-layouts");
+const session = require("express-session");
 const { DateTime } = require("luxon");
+// const SQLiteStore = require("connect-sqlite3")(session);
 
 const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 const energyRouter = require("./routes/energy");
 const solarRouter = require("./routes/solar");
@@ -17,7 +20,22 @@ const devicesRouter = require("./routes/devices");
 const piRouter = require("./routes/pi");
 const apiRouter = require("./routes/api");
 
+const ensureAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        return next();
+    }
+    res.redirect("/login");
+};
+
 const app = express();
+
+app.use(session({
+    // store: new SQLiteStore({ db: "sessions.db", dir: "./app/db" }), // customize db path
+    secret: "your-secret-key", // a secret key for signing the session ID cookie
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something is stored
+    cookie: { secure: false }, // set to true if using https
+}));
 
 // local variables reset at each request
 app.use((req, res, next) => {
@@ -55,6 +73,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+// app.use(ensureAuthenticated);
+app.use("/", authRouter);
 app.use("/admin", adminRouter);
 app.use("/energy", energyRouter);
 app.use("/solar", solarRouter);

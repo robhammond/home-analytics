@@ -25,12 +25,15 @@ const fetchUsage = async (startDate, endDate) => {
     let authHeader;
 
     try {
-        const res = await prisma.credentials.findFirst({
+        const res = await prisma.apiCredentials.findFirst({
             where: {
-                key: "auth_header",
-                entity: {
-                    entity_name: "n3rgy",
+                api: {
+                    name: "n3rgy",
                 },
+            },
+            select: {
+                key: true,
+                value: true,
             },
         });
         authHeader = res.value;
@@ -58,7 +61,7 @@ const fetchUsage = async (startDate, endDate) => {
             console.log(dtStart);
 
             try {
-                const insertedData = await prisma.electricity.create({
+                await prisma.gridEnergy.create({
                     data: {
                         datetime_start: dtStart,
                         datetime_end: dt,
@@ -99,12 +102,15 @@ const fetchProduction = async (startDate, endDate) => {
     let authHeader;
 
     try {
-        const res = await prisma.credentials.findFirst({
+        const res = await prisma.apiCredentials.findFirst({
             where: {
-                key: "auth_header",
-                entity: {
-                    entity_name: "n3rgy",
+                api: {
+                    name: "n3rgy",
                 },
+            },
+            select: {
+                key: true,
+                value: true,
             },
         });
         authHeader = res.value;
@@ -130,7 +136,7 @@ const fetchProduction = async (startDate, endDate) => {
             // const dtStart = DateTime.fromSQL(ts).minus({ minutes: 30 }).toISO();
             let rowId;
             try {
-                rowId = await prisma.electricity.findFirst({
+                rowId = await prisma.gridEnergy.findFirst({
                     where: {
                         datetime_end: dt,
                         granularity: data.granularity,
@@ -143,7 +149,7 @@ const fetchProduction = async (startDate, endDate) => {
                 console.error(`Error finding: ${e}`);
             }
             try {
-                const updatedRow = await prisma.electricity.update({
+                const updatedRow = await prisma.gridEnergy.update({
                     where: {
                         id: rowId.id,
                     },
