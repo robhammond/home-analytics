@@ -73,13 +73,13 @@ router.get("/", async (req, res) => {
     }
 
     res.render("index", {
-        page_title: "Home",
+        title: "Home",
         dates: res.locals.dateShortcuts,
     });
 });
 
 router.get("/onboarding", async (req, res) => {
-    res.render("onboarding", { page_title: "Setup", params: req.query });
+    res.render("onboarding", { title: "Setup", params: req.query });
 });
 
 module.exports = router;

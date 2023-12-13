@@ -14,7 +14,7 @@ router.get("/register", async (req, res) => {
             return res.redirect("/login");
         }
 
-        res.render("register", { page_title: "Register", layout: "layouts/auth-layout" });
+        res.render("register", { title: "Register", layout: "layouts/auth-layout" });
     } catch (error) {
         res.status(500).send("An error occurred.");
     }
@@ -50,7 +50,7 @@ router.post("/register", async (req, res) => {
 });
 
 router.get("/login", async (req, res) => {
-    res.render("login", { page_title: "Login", layout: "layouts/auth-layout" });
+    res.render("login", { title: "Login", layout: "layouts/auth-layout" });
 });
 
 router.post("/login", async (req, res) => {

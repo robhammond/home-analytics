@@ -1,0 +1,194 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+</div>
+<div class="row">
+    <div class="col-md-5">
+        <form role="form">
+            <select name="month" onchange="this.form.submit();" class="form-select mb-3">
+                <% for (let year=2023; year>= 2022; year--) { %>
+                    <% for (let month=12; month>= 1; month--) { %>
+                        <option value="<%= year %>-<%= month.toString().padStart(2, '0') %>" <% if
+                            (yearmonth==`${year}-${month.toString().padStart(2, '0' )}`) { %>selected<% } %>>
+                                <%= new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' ,
+                                    year: 'numeric' }) %>
+                        </option>
+                    <% } %>
+                <% } %>
+            </select>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xl-12 col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Trends</h6>
+            </div>
+            <div class="card-body">
+                <div id="lineChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">This Month</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <% for (let tag of tag_agg) { %>
+                        <tr>
+                            <td><a href="/tags/report?id=<%= tag.tag_id %>&amp;month=<%= yearmonth %>">
+                                    <%= tag.tag_name %>
+                                </a></td>
+                            <td style="text-align:right"><%= formatCurrency(tag.amount) %>
+                            </td>
+                        </tr>
+                        <% } %>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <div id="myPieChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Doughnut Chart
+    let pieData = <%- JSON.stringify(tag_agg) %>;
+    let pieLabels = pieData.map(e => e.tag_name);
+    let pieAmounts = pieData.map(e => e.amount);
+
+    Highcharts.chart('myPieChart', {
+        chart: {
+            type: 'pie',
+            options3d: {
+                enabled: true,
+                alpha: 45
+            }
+        },
+        title: null,
+        plotOptions: {
+            pie: {
+                innerSize: '80%',
+                depth: 45
+            }
+        },
+        tooltip: {
+            pointFormat: '{point.name}: <b>{point.y}</b>',
+            formatter: function () {
+                return `<b>${this.point.name}</b><br>£${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+            },
+            borderWidth: 1
+        },
+        series: [{
+            data: pieLabels.map((label, i) => ({
+                name: label,
+                y: pieAmounts[i]
+            }))
+        }]
+    });
+
+    // Line Chart
+    let lineResults = <%- JSON.stringify(tag_trends) %>;
+    let months = [...new Set(lineResults.map(result => result.month))].sort();
+    let categories = [...new Set(lineResults.map(result => result.category))];
+
+    const lineData = {};
+
+    lineResults.forEach(result => {
+        if (!lineData[result.category]) {
+            lineData[result.category] = new Array(months.length).fill(0);
+        }
+        const monthIndex = months.indexOf(result.month);
+        lineData[result.category][monthIndex] = result.amount;
+    });
+
+    const lineSeries = categories.map(category => ({
+        name: category,
+        data: lineData[category]
+    }));
+
+    Highcharts.chart('lineChart', {
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            categories: months,
+            title: {
+                text: 'Date'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Amount'
+            },
+            labels: {
+                formatter: function () {
+                    return '£' + Highcharts.numberFormat(this.value, 0, ',', ',');
+                }
+            },
+            stackLabels: {
+                enabled: true,
+                formatter: function () {
+                    return '£' + Highcharts.numberFormat(this.total, 0, ',', ',');
+                },
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function () {
+                return `<b>${this.series.name}</b><br>${this.x}: £${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+            },
+            borderWidth: 1
+        },
+        plotOptions: {
+            area: {
+                stacking: "normal"
+            },
+            line: {
+                fillOpacity: 0.3,
+                marker: {
+                    enabled: true,
+                    radius: 3
+                }
+            },
+            series: {
+                events: {
+                    legendItemClick: function (e) {
+                        if (e.browserEvent.ctrlKey || e.browserEvent.metaKey) {
+                            // Hide all series
+                            this.chart.series.forEach(function (series) {
+                                series.setVisible(false, false);
+                            });
+                            // Show only the clicked series
+                            this.setVisible(true, false);
+                            // Redraw the chart
+                            this.chart.redraw();
+                            return false; // Prevent the default toggle behavior
+                        }
+                    }
+                }
+            },
+        },
+        series: lineSeries
+    });
+
+</script>

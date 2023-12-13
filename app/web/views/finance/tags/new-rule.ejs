@@ -1,0 +1,37 @@
+<h1>Create a New Rule</h1>
+<form action="/tags/rules" method="POST" class="my-3">
+    <label for="agent_id" class="form-label">Agent:</label>
+    <select class="form-select" id="agent_id" name="agent_id" required>
+        <% agents.forEach(function(agent) { %>
+            <option value="<%= agent.id %>">
+                <%= agent.name %>
+            </option>
+            <% }); %>
+    </select>
+
+    <div class="mb-3">
+        <label for="reference" class="form-label">Reference:</label>
+        <input type="text" id="reference" name="reference" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="tag_id" class="form-label">Tag:</label>
+        <select class="form-select" id="tag_id" name="tag_id" required>
+            <% tags.forEach(function(tag) { %>
+                <option value="<%= tag.id %>">
+                    <%= tag.name %>
+                </option>
+                <% }); %>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="transaction_id" class="form-label">Transaction ID:</label>
+        <input type="text" id="transaction_id" name="transaction_id" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+<script>
+    $(document).ready(function () {
+        $('#agent_id').select2();
+        $('#tag_id').select2();
+    });
+</script>

@@ -1,0 +1,71 @@
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+</div>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Tags</h6>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <div class="row">
+            <ul>
+                <li><a href="/tags/chart">Tag Report</a></li>
+                <li><a href="/tags/rules/home">Tagging Rules</a></li>
+            </ul>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let tag of tags) { %>
+                    <tr>
+                        <td>
+                            <a href="/tags/report?id=<%= tag.id %>"><%= tag.name %></a>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Tag Mappings</h6>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <div class="row">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Spending Category</th>
+                        <th>Tag</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let cat of spending_categories) { %>
+                    <tr>
+                        <td><a href="/spending/categories?category=<%= cat.spending_category %>">
+                                <%= cat.spending_category %>
+                            </a></td>
+                        <td>
+                            <%= cat.tag_name %>
+                        </td>
+                        <td><a href="/tags/map-tag?spending_category=<%= cat.spending_category %>">map tag</a></td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

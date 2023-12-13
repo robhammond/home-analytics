@@ -1,0 +1,265 @@
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+</div>
+<div class="row">
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            This Month</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= formatCurrency(total_spend) %>
+                        </div>
+                    </div>
+                    <!--div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Average Monthly Spend</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= formatCurrency(avg_spend) %>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 50%"
+                                        aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Sth</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            sth
+                        </div>
+                    </div>
+                    <!--div class="col-auto">
+                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xl-12 col-lg-12">
+        <!-- Area Chart -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Area Chart</h6>
+            </div>
+            <div class="card-body">
+                <div id="monthlySpendingChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Tags</h6>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+                <form role="form" class="form form-horizontal">
+                    <input type="hidden" name="id" value="<%= tag_id %>">
+                    <select name="month" onchange="this.form.submit();" class="form-select mb-3">
+                        <% for (let year=2023; year>= 2022; year--) { %>
+                            <% for (let month=12; month>= 1; month--) { %>
+                                <option value="<%= year %>-<%= month.toString().padStart(2, '0') %>" <% if
+                                    (yearmonth==`${year}-${month.toString().padStart(2, '0' )}`) { %>selected<% } %>>
+                                        <%= new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' ,
+                                            year: 'numeric' }) %>
+                                </option>
+                                <% } %>
+                                    <% } %>
+                    </select>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Merchant</th>
+                        <th>Spend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let m of tag_agg) { %>
+                        <tr>
+                            <td><a href="/agent?id=<%= Number(m.counter_party_id) %>">
+                                    <%= m.counter_party %>
+                                </a></td>
+                            <td style="text-align:right;"><%= formatCurrency(m.amount) %>
+                            </td>
+                        </tr>
+                        <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function number_format(number, decimals, dec_point, thousands_sep) {
+        // *     example: number_format(1234.56, 2, ',', ' ');
+        // *     return: '1 234,56'
+        number = (number + '').replace(',', '').replace(' ', '');
+        var n = !isFinite(+number) ? 0 : +number,
+            prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+            sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+            dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+            s = '',
+            toFixedFix = function (n, prec) {
+                var k = Math.pow(10, prec);
+                return '' + Math.round(n * k) / k;
+            };
+        // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+        s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+        if (s[0].length > 3) {
+            s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+        }
+        if ((s[1] || '').length < prec) {
+            s[1] = s[1] || '';
+            s[1] += new Array(prec - s[1].length + 1).join('0');
+        }
+        return s.join(dec);
+    }
+    const results = <%- JSON.stringify(tag_trends) %>;
+    const months = [...new Set(results.map(result => result.month))].sort();
+    const categories = [...new Set(results.map(result => result.counter_party))];
+
+    const data = {};
+
+    results.forEach(result => {
+        if (!data[result.counter_party]) {
+            data[result.counter_party] = new Array(months.length).fill(0);
+        }
+        const monthIndex = months.indexOf(result.month);
+        data[result.counter_party][monthIndex] = result.amount;
+    });
+
+    const seriesData = categories.map(counter_party => ({
+        name: counter_party,
+        data: data[counter_party]
+    }));
+
+    Highcharts.chart('monthlySpendingChart', {
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            categories: months,
+            title: {
+                text: 'Month'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Spending'
+            },
+            min: 0,
+            labels: {
+                formatter: function () {
+                    return '£' + Highcharts.numberFormat(this.value, 0, ',', ',');
+                }
+            },
+            stackLabels: {
+                enabled: true,
+                formatter: function () {
+                    return '£' + Highcharts.numberFormat(this.total, 0, ',', ',');
+                },
+            },
+        },
+        tooltip: {
+            formatter: function () {
+                return `<b>${this.series.name}</b><br>${this.x}: £${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+            },
+            borderWidth: 1
+        },
+        plotOptions: {
+            area: {
+                stacking: "normal"
+            },
+            series: {
+                events: {
+                    legendItemClick: function (e) {
+                        if (e.browserEvent.ctrlKey || e.browserEvent.metaKey) {
+                            // Hide all series
+                            this.chart.series.forEach(function (series) {
+                                series.setVisible(false, false);
+                            });
+                            // Show only the clicked series
+                            this.setVisible(true, false);
+                            // Redraw the chart
+                            this.chart.redraw();
+                            return false; // Prevent the default toggle behavior
+                        }
+                    }
+                }
+            },
+        },
+        legend: {
+            // layout: 'vertical',
+            // align: 'bottom',
+        },
+        series: seriesData
+    });
+</script>

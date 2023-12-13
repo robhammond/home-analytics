@@ -1,0 +1,64 @@
+<div class="container py-5">
+    <h1 class="mb-3">
+        <%= title %>
+    </h1>
+    <a href="/">Home</a>
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-3">Parent Agent: <%= parentAgent.name %>
+            </h2>
+            <form action="/agent/<%= parentAgent.id %>/aliases" method="POST">
+                <h3>Set Aliases</h3>
+                <input class="form-control mb-3" type="text" id="filter" placeholder="Filter agents"
+                    onkeyup="filterAgents()" value="<%= parentAgent.name.toLowerCase() %>">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="selectAll" onchange="selectAllCheckboxes()">
+                    <label class="form-check-label" for="selectAll">Select All</label>
+                </div>
+                <div id="checkbox-list">
+                    <% allAgents.forEach(agent=> { %>
+                        <% if (agent.id !==parentAgent.id) { %>
+                            <div class="form-check checkbox-item" data-name="<%= agent.name.toLowerCase() %>">
+                                <input class="form-check-input" type="checkbox" id="agent-<%= agent.id %>"
+                                    name="aliases" value="<%= agent.id %>">
+                                <label class="form-check-label" for="agent-<%= agent.id %>">
+                                    <%= agent.name %>
+                                </label>
+                            </div>
+                            <% } %>
+                                <% }) %>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Set Aliases</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterAgents() {
+        const filter = document.getElementById('filter').value.toLowerCase();
+        const checkboxList = document.getElementById('checkbox-list');
+        const checkboxes = Array.from(checkboxList.getElementsByClassName('checkbox-item'));
+
+        checkboxes.forEach(checkbox => {
+            const name = checkbox.dataset.name;
+            checkbox.style.display = name.includes(filter) ? '' : 'none';
+        });
+    }
+
+    function selectAllCheckboxes() {
+        const selectAll = document.getElementById('selectAll').checked;
+        const checkboxList = document.getElementById('checkbox-list');
+        const checkboxes = Array.from(checkboxList.getElementsByClassName('checkbox-item'));
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.style.display !== 'none') {
+                const input = checkbox.getElementsByTagName('input')[0];
+                input.checked = selectAll;
+            }
+        });
+    }
+
+
+    filterAgents(); // Call the function on page load
+</script>

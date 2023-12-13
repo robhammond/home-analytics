@@ -93,7 +93,7 @@ router.get("/add-rate", async (req, res) => {
             id: Number(supplier_id),
         },
     });
-    res.render("admin/energy/add-rate", { page_title: "Admin", supplier_id, tariff });
+    res.render("admin/energy/add-rate", { title: "Admin", supplier_id, tariff });
 });
 
 router.post("/add-rate", async (req, res) => {
@@ -119,7 +119,7 @@ router.post("/add-rate", async (req, res) => {
 });
 
 router.get("/add-tariff", async (req, res) => {
-    res.render("admin/energy/add-tariff", { page_title: "Add Tariff" });
+    res.render("admin/energy/add-tariff", { title: "Add Tariff" });
 });
 
 router.get("/edit-tariff", async (req, res) => {
@@ -140,7 +140,7 @@ router.get("/edit-tariff", async (req, res) => {
             supplier.supplier_end = supplier.supplier_end.toISOString().substring(0, 10);
         }
 
-        res.render("admin/energy/edit-tariff", { page_title: "Edit Tariff", supplier });
+        res.render("admin/energy/edit-tariff", { title: "Edit Tariff", supplier });
     } catch (err) {
         res.status(500);
     }
@@ -269,48 +269,7 @@ router.get("/list-tariffs", async (req, res) => {
         // res.status(500).send("No tariffs found!");
         console.log(err);
     }
-    res.render("admin/energy/list-tariffs", { page_title: "List Tariffs", tariffs });
-});
-
-router.get("/data-import", async (req, res) => {
-    let apis = [];
-    try {
-        apis = await prisma.api.findMany({
-            where: {
-                type: "energy_usage",
-            },
-            include: {
-                credentials: true,
-            },
-            orderBy: [
-                {
-                    name: "asc",
-                },
-            ],
-        });
-    } catch (err) {
-        console.log(err);
-    }
-    console.log(apis);
-    res.render("admin/energy/data-import", { page_title: "Energy Data Imports", apis });
-});
-
-router.post("/data-import", async (req, res) => {
-    const { cred_id, value } = req.body;
-    try {
-        await prisma.apiCredentials.update({
-            where: {
-                id: Number(cred_id),
-            },
-            data: {
-                value,
-            },
-        });
-        res.redirect("back");
-    } catch (err) {
-        console.log(err);
-        res.status(500).message("Error Updating Creds");
-    }
+    res.render("admin/energy/list-tariffs", { title: "List Tariffs", tariffs });
 });
 
 module.exports = router;

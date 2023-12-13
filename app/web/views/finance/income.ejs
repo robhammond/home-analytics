@@ -1,0 +1,91 @@
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+            class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+</div>
+<div class="row">
+
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Income</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= formatCurrency(income_total) %>
+                        </div>
+                    </div>
+                    <!--div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Income</h6>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+                <form role="form">
+                    <select name="month" onchange="this.form.submit();" class="form-select mb-3">
+                        <% for (let year=2023; year>= 2022; year--) { %>
+                            <% for (let month=12; month>= 1; month--) { %>
+                                <option value="<%= year %>-<%= month.toString().padStart(2, '0') %>" <% if
+                                    (yearmonth==`${year}-${month.toString().padStart(2, '0' )}`) { %>selected<% } %>>
+                                        <%= new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' ,
+                                            year: 'numeric' }) %>
+                                </option>
+                                <% } %>
+                                    <% } %>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <!-- <th>Category</th> -->
+                        <th>Incoming</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <% for (let row of transactions) { %>
+                        <tr>
+                            <td>
+                                <%= row.month %>
+                            </td>
+                            <td>
+                                <a href="/agent?id=<%= row.agent_id %>">
+                                    <%= row.counter_party %> - <%= row.reference %>
+                                </a>
+                            </td>
+                            <!--td>
+                                
+                            </td-->
+                            <td align="right"><%= formatCurrency(row.amount) %>
+                            </td>
+                        </tr>
+                        <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

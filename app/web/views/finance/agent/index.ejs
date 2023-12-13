@@ -1,0 +1,261 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+            class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+</div>
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Name</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= agent.name %>
+                        </div>
+                    </div>
+                    <!--div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Average Monthly Spend</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= formatCurrency(avg_monthly_spend) %>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 50%"
+                                        aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Agent Type</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= agent.type %>
+                        </div>
+                    </div>
+                    <!--div class="col-auto">
+                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Transactions &amp; Trends</h6>
+    </div>
+    <div class="card-body">
+
+        <div id="myChart" width="400" height="200"></div>
+        <hr>
+        <h4>Transactions</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-sm">
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Reference</th>
+                    <th>Amount</th>
+                    <th>Tag</th>
+                </tr>
+                <% for (let tran of transactions) { %>
+                    <tr>
+
+                        <td title="<%= tran.id %>">
+                            <%= tran.date_str %>
+                        </td>
+                        <td>
+                            <%= tran.spending_category %>
+                        </td>
+                        <td>
+                            <%= tran.reference %>
+                        </td>
+                        <td align="right"><%= formatCurrency(tran.amount) %>
+                        </td>
+                        <td><a href="/transaction/update?id=<%= tran.id %>&amp;action=one-off">One-off</a> |
+                            <a href="/transaction/update?id=<%= tran.id %>&amp;action=regular">regular</a> |
+                            <a href="/transaction/update?id=<%= tran.id %>&amp;action=essential">essential</a>
+                        </td>
+                    </tr>
+                    <% } %>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-6 col-md-6 mb-6">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Settings</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/agent/update">
+                <input type="hidden" name="id" value="<%= agent.id %>">
+                <div class="form-check ">
+                    <input type="checkbox" name="ignore" id="ignore" value="1" <% if (agent.ignore) { %>
+                    checked<% } %> class="form-check-input">
+                        <label class="form-check-label" for="ignore">Ignore?</label>
+                </div>
+                <div class="form-check ">
+                    <input type="checkbox" name="one_off" id="one_off" value="1" <% if (agent.one_off) { %>
+                    checked<% } %> class="form-check-input">
+                        <label class="form-check-label" for="one_off">One off?</label><br>
+                </div>
+                <div class="form-check ">
+                    <input type="checkbox" name="essential" id="essential" value="1" <% if (agent.essential) { %>
+                    checked<% } %> class="form-check-input">
+                        <label class="form-check-label" for="essential">Essential</label><br>
+                </div>
+                <hr>
+                <div>
+                    <label for="flexRating" class="form-label">Flex Rating (1= Essential, 5=Cut it)</label>
+                    <input type="range" class="form-range" name="flex_rating" min="1" max="5" id="flexRating"
+                        value="<%= agent.flex_rating || 3 %>" oninput="this.nextElementSibling.value = this.value">
+                    <center><output class="mb-2">
+                            <%= agent.flex_rating || 3 %>
+                        </output></center>
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+
+            <hr>
+            <h5>Aliases</h5>
+            <ul>
+                <% for (let child of children) {%>
+                    <li><a href="?<%= child.id %>">
+                            <%= child.name %>
+                        </a></li>
+                    <%}%>
+            </ul>
+            <a href="/agent/<%=agent.id%>/aliases">Set aliases</a>
+            <hr>
+            <p>Always tag with</p>
+            <form role="form" action="/agent/set-tag" method="post">
+                <input type="hidden" name="agent_id" value="">
+                <select name="tag_id" class="form-select mb-3">
+                    <% for (let tag of tags) { %>
+                        <option value="<%= tag.tag_id %>">
+                            <%= tag.name %>
+                        </option>
+                        <% } %>
+                </select>
+                <button type="submit" class="btn btn-primary">Tag</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetching data
+    const results = <%- JSON.stringify(transaction_aggs) %>;
+    const dates = results.map(result => result.date_str);
+    const amounts = results.map(result => result.amount);
+
+    Highcharts.chart('myChart', {
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: null // No title
+        },
+        xAxis: {
+            type: 'datetime',
+            title: {
+                text: 'Date'
+            },
+            labels: {
+                formatter: function () {
+                    const date = new Date(this.value);
+                    return Highcharts.dateFormat('%b %Y', date);
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Amount'
+            },
+            labels: {
+                formatter: function () {
+                    return '£' + Highcharts.numberFormat(this.value, 0, ',', ',');
+                }
+            },
+            min: 0
+        },
+        tooltip: {
+            formatter: function () {
+                return `<b>${Highcharts.dateFormat('%b %Y', this.x)}</b><br>£${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+            },
+            borderWidth: 1
+        },
+        series: [{
+            name: 'Cost',
+            data: results.map(result => [new Date(result.date_str).getTime(), result.amount]),  // Convert to timestamp
+            color: 'rgb(75, 192, 192)',
+            connectNulls: false,  // Break the line at null points
+            marker: {
+                enabled: true  // Show markers on the line
+            },
+        }],
+        plotOptions: {
+            line: {
+                marker: {
+                    enabled: false
+                }
+            }
+        },
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 800
+                }
+            }]
+        }
+    });
+
+</script>

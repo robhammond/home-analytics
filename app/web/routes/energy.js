@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
         `;
 
         res.render("energy", {
-            page_title: "Energy",
+            title: "Energy",
             unit,
             start,
             end,
@@ -40,7 +40,7 @@ router.get("/insights", async (req, res) => {
     const filter = req.query.filter || "all";
 
     res.render("energy/insights", {
-        page_title: "Energy Insights",
+        title: "Energy Insights",
         unit,
         start,
         end,

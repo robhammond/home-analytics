@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 router.get("/", async (req, res) => {
     res.render("pi", {
         layout: "./layouts/fullscreen",
-        page_title: "Pi Display",
+        title: "Pi Display",
         dates: res.locals.dateShortcuts,
     });
 });

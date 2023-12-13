@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
     const filter = req.query.filter || "all";
 
     res.render("heating", {
-        page_title: "Heating",
+        title: "Heating",
         unit,
         start,
         end,

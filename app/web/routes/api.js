@@ -379,7 +379,7 @@ router.get("/usage/breakdown", async (req, res) => {
         const hw = await prisma.$queryRaw`
             SELECT 
                 ROUND(SUM(kwh_consumed),2) AS kwh
-            FROM hotwater
+            FROM hot_water
             WHERE
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
@@ -467,7 +467,7 @@ router.get("/usage/breakdown/by-device", async (req, res) => {
         const hw = await prisma.$queryRaw`
             SELECT 
                 ROUND(SUM(kwh_consumed),2) AS kwh
-            FROM hotwater
+            FROM hot_water
             WHERE
                 DATE(datetime, 'localtime') BETWEEN
                     DATE(${start}) AND DATE(${end})
@@ -582,7 +582,7 @@ router.get("/usage/heating", async (req, res) => {
                     ROUND(SUM(h.kwh_produced),2) AS heating_kwh_produced,
                     ROUND(SUM(hw.hot_water_cop),2) AS hot_water_cop,
                     ROUND(SUM(h.heating_cop),2) AS heating_cop
-                FROM HotWater hw
+                FROM hot_water hw
                 JOIN Heating h ON 
                     h.datetime = hw.datetime
                     AND h.granularity = hw.granularity
@@ -601,7 +601,7 @@ router.get("/usage/heating", async (req, res) => {
                 ROUND(SUM(h.kwh_produced),2) AS heating_kwh_produced,
                 ROUND(SUM(hw.hot_water_cop),2) AS hot_water_cop,
                 ROUND(SUM(h.heating_cop),2) AS heating_cop
-            FROM HotWater hw
+            FROM hot_water hw
             JOIN Heating h ON 
                 h.datetime = hw.datetime
                 AND h.granularity = hw.granularity
@@ -1029,7 +1029,7 @@ router.get("/usage/main", async (req, res) => {
                         strftime('%Y-%m-%d', h.datetime, 'localtime') AS dt,
                         ROUND(SUM(h.kwh_consumed),2) AS kwh,
                         0.0 AS cost
-                    FROM HotWater h
+                    FROM hot_water h
                     WHERE
                         h.granularity = 'daily'
                         AND DATE(h.datetime, 'localtime') BETWEEN ${start} AND ${end}
@@ -1039,7 +1039,7 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         ROUND(SUM(h.kwh_consumed),2) AS kwh,
                         0.0 AS cost
-                    FROM HotWater h
+                    FROM hot_water h
                     WHERE
                         h.granularity = 'daily'
                         AND DATE(h.datetime, 'localtime') BETWEEN ${start} AND ${end}
@@ -1181,7 +1181,7 @@ router.get("/usage/main", async (req, res) => {
                         strftime('%Y-%m', h.datetime, 'localtime') AS dt,
                         ROUND(SUM(h.kwh_consumed),2) AS kwh,
                         0.0 AS cost
-                    FROM HotWater h
+                    FROM hot_water h
                     WHERE
                         h.granularity = 'daily'
                         AND DATE(h.datetime, 'localtime') BETWEEN ${start} AND ${end}
@@ -1191,7 +1191,7 @@ router.get("/usage/main", async (req, res) => {
                     SELECT
                         ROUND(SUM(h.kwh_consumed),2) AS kwh,
                         0.0 AS cost
-                    FROM HotWater h
+                    FROM hot_water h
                     WHERE
                         h.granularity = 'daily'
                         AND DATE(h.datetime, 'localtime') BETWEEN ${start} AND ${end}

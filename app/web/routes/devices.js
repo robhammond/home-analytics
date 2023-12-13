@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
             },
         });
 
-        res.render("devices", { page_title: "Devices", devices, dates });
+        res.render("devices", { title: "Devices", devices, dates });
     } catch (error) {
         res.status(500).send("Error getting devices");
     }

@@ -1,0 +1,67 @@
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h1 class="h3 mb-2 text-gray-800">Data Import APIs</h1>
+    </div>
+    <div class="col-md-6">
+        <span class="float-end"><a href="/admin/add-api" class="btn btn-success"><i class="fas fa-plus-circle mr-2"></i>Add API</a></span>
+    </div>
+</div>
+<div class="card shadow mb-4">
+    <div class="card-header">APIs</div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr>
+                <th>API Name</th>
+                <th>API Type</th>
+                <th>API Keys</th>
+            </tr>
+            <% for (let api of apis) { %>
+                <tr>
+                    <td>
+                        <%= api.name %>
+                    </td>
+                    <td>
+                        <%= api.type %>
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-12">
+                                <table class="table table-condensed">
+                                    <% for (let cred of api.credentials) { %>
+                                        <tr>
+                                            <td>
+                                                <%= cred.key %>
+                                            </td>
+                                            <td>
+                                                <form method="post">
+                                                    <input type="hidden" name="cred_id" value="<%= cred.id %>">
+                                                    <div class="input-group">
+                                                        <input type="text" value="<%= cred.value %>" name="value"
+                                                            class="form-control">
+                                                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                    <tr>
+                                        <td colspan="2">
+                                            <form method="post" action="/admin/add-api-key">
+                                                <input type="hidden" name="api_id" value="<%= api.id %>">
+                                                <div class="input-group mb-3">
+                                                    <input type="text" class="form-control" placeholder="Key" name="new_key">
+                                                    <input type="text" class="form-control" placeholder="Value" name="new_value">
+                                                    <button type="submit" class="btn btn-success btn-sm">Add</button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <% } %>
+        </table>
+    </div>
+</div>

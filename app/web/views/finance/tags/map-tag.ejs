@@ -1,0 +1,14 @@
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+</div>
+<div class="row">
+
+    <form method="post">
+        <input type="text" value="<%= spending_category %>" name="spending_category" readonly>
+        <input type="text" value="" name="tag" class="form-control">
+        <button class="btn btn-primary" role="button" type="submit">Submit</button>
+    </form>
+</div>

@@ -82,7 +82,7 @@ router.get("/", async (req, res) => {
     }
 
     res.render("garage", {
-        page_title: "Garage", cars, carEfficiency, dates,
+        title: "Garage", cars, carEfficiency, dates,
     });
 });
 
@@ -179,7 +179,7 @@ router.get("/car", async (req, res) => {
     `;
 
     res.render("garage/car", {
-        page_title: `${car.make} ${car.model}`,
+        title: `${car.make} ${car.model}`,
         car,
         carStatus: carStatus[0],
         carTrips,

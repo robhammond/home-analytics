@@ -8,6 +8,7 @@ const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const { DateTime } = require("luxon");
 // const SQLiteStore = require("connect-sqlite3")(session);
+const date = new Date();
 
 const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
@@ -19,6 +20,7 @@ const garageRouter = require("./routes/garage");
 const devicesRouter = require("./routes/devices");
 const piRouter = require("./routes/pi");
 const apiRouter = require("./routes/api");
+const financeRouter = require("./routes/finance");
 
 const ensureAuthenticated = (req, res, next) => {
     if (req.session.user) {
@@ -72,6 +74,19 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// set variables
+app.use((req, res, next) => {
+    res.locals.currentMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    next();
+});
+
+app.locals.formatCurrency = (num) => parseFloat(num).toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+
+app.locals.convertToBST = (utcDate) => {
+    const dt = DateTime.fromMillis(utcDate.getTime(), { zone: "UTC" }).setZone("Europe/London");
+    return dt;
+};
+
 app.use("/", indexRouter);
 // app.use(ensureAuthenticated);
 app.use("/", authRouter);
@@ -83,6 +98,7 @@ app.use("/garage", garageRouter);
 app.use("/devices", devicesRouter);
 app.use("/pi", piRouter);
 app.use("/api", apiRouter);
+app.use("/finance", financeRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -97,7 +113,7 @@ app.use((err, req, res, next) => {
 
     // render the error page
     res.status(err.status || 500);
-    res.render("error", { page_title: "Error!" });
+    res.render("error", { title: "Error!" });
 });
 
 module.exports = app;

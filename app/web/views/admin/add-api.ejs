@@ -1,0 +1,27 @@
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h1 class="h3 mb-2 text-gray-800">Add API</h1>
+    </div>
+</div>
+<div class="card shadow mb-4">
+    <div class="card-header"></div>
+    <div class="card-body">
+
+        <form method="post" class="form-horizontal" role="form">
+            <div class="col-6 mb-3">
+                <label for="api_name" class="form-label">API Name</label>
+                <input type="text" name="api_name" class="form-control" placeholder="Ecodan">
+                <div class="form-text">The name of the device or service</div>
+            </div>
+            <div class="col-6 mb-3">
+                <label for="api_type" class="form-label">API Type</label>
+                <select name="api_type" class="form-select">
+                    <option value="energy_usage">Energy Usage</option>
+                    <option value="bank_account">Bank Account</option>
+                </select>
+                <div class="form-text">The type of API service</div>
+            </div>
+            <input type="submit" value="Add API &raquo;" class="btn btn-primary">
+        </form>
+    </div>
+</div>

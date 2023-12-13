@@ -1,0 +1,53 @@
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <%= title %>
+    </h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+            class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+</div>
+<div class="row">
+    <form action="/insurance/add" method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label">Insurance Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="type" class="form-label">Insurance Type</label>
+            <select class="form-select" id="type" name="type">
+                <option value="home">Home</option>
+                <option value="car">Car</option>
+                <option value="breakdown">Breakdown</option>
+                <option value="travel">Travel</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="policy_no" class="form-label">Policy Number</label>
+            <input type="text" class="form-control" id="policy_no" name="policy_no">
+        </div>
+        <div class="mb-3">
+            <label for="monthly_payment" class="form-label">Monthly Payment</label>
+            <input type="number" class="form-control" id="monthly_payment" name="monthly_payment" step="0.01">
+        </div>
+        <div class="mb-3">
+            <label for="start_date" class="form-label">Start Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+        </div>
+        <div class="mb-3">
+            <label for="end_date" class="form-label">End Date</label>
+            <input type="date" class="form-control" id="end_date" name="end_date">
+        </div>
+        <div class="mb-3">
+            <label for="dom_due" class="form-label">Day of Month Due</label>
+            <input type="date" class="form-control" id="dom_due" name="dom_due">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" id="status" name="status">
+                <option value="" disabled selected>Select a status</option>
+                <option value="active">Active</option>
+                <option value="closed">Closed</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Insurance</button>
+    </form>
+</div>
