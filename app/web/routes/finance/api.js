@@ -46,7 +46,6 @@ router.get("/transactions", async (req, res) => {
             -- AND t.SOURCE != 'INTERNAL_TRANSFER'
             AND ((t.status = 'SETTLED') OR (t.status IS NULL))
             AND t.spending_category NOT IN ('SAVING', 'DEBT_REPAYMENT')
-            AND t.agent_id NOT IN (457, 119, 549, 25, 141, 19)
             AND a.ignore IS FALSE
             AND a.one_off IS FALSE
             AND t.one_off_cost IS FALSE

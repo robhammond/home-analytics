@@ -111,13 +111,13 @@ router.get("/", async (req, res, next) => {
         }
     }
 
-    const tags = await prisma.tag.findMany({
+    const tags = await prisma.financeTag.findMany({
         orderBy: {
             name: "asc",
         },
     });
 
-    res.render("agent", {
+    res.render("finance/agent", {
         title: "Agent",
         agent,
         children,
@@ -155,7 +155,7 @@ router.get("/:id/aliases", async (req, res) => {
     const { id } = req.params;
     const parentAgent = await prisma.agent.findUnique({ where: { id: Number(id) } });
     const allAgents = await prisma.agent.findMany();
-    res.render("agent/aliases", { title: "Set Aliases", parentAgent, allAgents });
+    res.render("finance/agent/aliases", { title: "Set Aliases", parentAgent, allAgents });
 });
 
 router.post("/:id/aliases", async (req, res) => {
@@ -168,7 +168,7 @@ router.post("/:id/aliases", async (req, res) => {
         where: { id: { in: aliases.map(Number) } },
         data: { parent_id: Number(id) },
     });
-    res.redirect(`/agent?id=${id}`);
+    res.redirect(`/finance/agent?id=${id}`);
 });
 
 module.exports = router;

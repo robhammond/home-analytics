@@ -47,7 +47,7 @@ async function applyAllRules() {
     }
 }
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (req, res) => {
     const spending_categories = await prisma.$queryRaw`
         SELECT
             spending_category,
@@ -66,10 +66,10 @@ router.get("/", async (req, res, next) => {
             name: "asc",
         },
     });
-    res.render("tags", { title: "Tags", spending_categories, tags });
+    res.render("finance/tags", { title: "Tags", spending_categories, tags });
 });
 
-router.get("/chart", async (req, res, next) => {
+router.get("/chart", async (req, res) => {
     const month = req.query.month || res.locals.currentMonth;
     const tag_names = await prisma.financeTag.findMany({});
 
@@ -119,7 +119,7 @@ router.get("/chart", async (req, res, next) => {
         GROUP BY 1,2
         ORDER BY 1
     `;
-    res.render("tags/chart", {
+    res.render("finance/tags/chart", {
         title: "Tag agg",
         tag_agg,
         yearmonth: month,
@@ -128,7 +128,7 @@ router.get("/chart", async (req, res, next) => {
     });
 });
 
-router.get("/report", async (req, res, next) => {
+router.get("/report", async (req, res) => {
     const tag_id = Number(req.query.id);
     const yearmonth = req.query.month || res.locals.currentMonth;
 
@@ -233,7 +233,7 @@ router.get("/report", async (req, res, next) => {
     }
     avg_spend = (avg_spend / 13).toFixed(2);
 
-    res.render("tags/report", {
+    res.render("finance/tags/report", {
         title: `Tag report - ${tag.name}`,
         tag_agg,
         tag_trends: trendResultsArray,
@@ -244,12 +244,12 @@ router.get("/report", async (req, res, next) => {
     });
 });
 
-router.get("/map-tag", async (req, res, next) => {
+router.get("/map-tag", async (req, res) => {
     const { spending_category } = req.query;
-    res.render("tags/map-tag", { title: "Map Tags", spending_category });
+    res.render("finance/tags/map-tag", { title: "Map Tags", spending_category });
 });
 
-router.post("/map-tag", async (req, res, next) => {
+router.post("/map-tag", async (req, res) => {
     const { spending_category, tag } = req.body;
 
     let tagId;
@@ -278,7 +278,7 @@ router.post("/map-tag", async (req, res, next) => {
         console.log(`Error inserting record: ${e}`);
     }
 
-    res.redirect("/tags");
+    res.redirect("/finance/tags");
 });
 
 router.get("/rules/home", async (req, res, next) => {
@@ -300,7 +300,7 @@ router.get("/rules/home", async (req, res, next) => {
 router.get("/rules/new", async (req, res) => {
     const tags = await prisma.financeTag.findMany({ orderBy: { name: "asc" } });
     const agents = await prisma.agent.findMany({ orderBy: { name: "asc" } });
-    res.render("tags/new-rule", { tags, agents });
+    res.render("finance/tags/new-rule", { tags, agents });
 });
 
 // Route to render the edit rule form
@@ -308,7 +308,7 @@ router.get("/rules/edit/:id", async (req, res) => {
     const rule = await prisma.financeRule.findUnique({ where: { id: Number(req.params.id) } });
     const tags = await prisma.financeTag.findMany({ orderBy: { name: "asc" } });
     const agents = await prisma.agent.findMany({ orderBy: { name: "asc" } });
-    res.render("tags/edit-rule", { rule, tags, agents });
+    res.render("finance/tags/edit-rule", { rule, tags, agents });
 });
 
 // Create a new rule

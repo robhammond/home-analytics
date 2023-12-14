@@ -25,28 +25,51 @@
         Energy
     </div>
     <li class="nav-item">
-        <a class="nav-link" href="/energy/">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEnergy" aria-expanded="false" aria-controls="collapseEnergy">
             <i class="fas fa-fw fa-bolt-lightning"></i>
-            <span>Energy Usage</span></a>
+            <span>Energy</span>
+        </a>
+        <div id="collapseEnergy" class="collapse" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/energy/"><i class="fas fa-fw fa-bolt-lightning"></i> Energy Usage</a>
+                <a class="collapse-item" href="/solar/"><i class="fas fa-fw fa-sun"></i> Solar</a>
+                <a class="collapse-item" href="/heating/"><i class="fas fa-fw fa-temperature-half"></i> Heating</a>
+            </div>
+        </div>
     </li>
+    <hr class="sidebar-divider">
+    <div class="sidebar-heading">
+        Finance
+    </div>
     <li class="nav-item">
-        <a class="nav-link" href="/solar/">
-            <i class="fas fa-fw fa-sun"></i>
-            <span>Solar</span></a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="/heating/">
-            <i class="fas fa-fw fa-temperature-half"></i>
-            <span>Heating</span></a>
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFinance" aria-expanded="false" aria-controls="collapseFinance">
+            <i class="fas fa-fw fa-bank"></i>
+            <span>Finance</span>
+        </a>
+        <div id="collapseFinance" class="collapse" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/finance/"><i class="fas fa-fw fa-money-bills"></i> Home</a>
+                <a class="collapse-item" href="/finance/income/"><i class="fas fa-fw fa-wallet"></i> Income</a>
+                <a class="collapse-item" href="/finance/spending/"><i class="fas fa-fw fa-credit-card"></i> Spending</a>
+                <a class="collapse-item" href="/finance/trends/"><i class="fas fa-fw fa-money-bill-trend-up"></i> Trends</a>
+                <a class="collapse-item" href="/finance/tags/"><i class="fas fa-fw fa-tag"></i> Tags</a>
+            </div>
+        </div>
     </li>
     <hr class="sidebar-divider">
     <div class="sidebar-heading">
         Cars
     </div>
     <li class="nav-item">
-        <a class="nav-link" href="/garage/">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCars" aria-expanded="false" aria-controls="collapseCars">
             <i class="fas fa-fw fa-car"></i>
-            <span>Garage</span></a>
+            <span>Cars</span>
+        </a>
+        <div id="collapseCars" class="collapse" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" href="/garage/"><i class="fas fa-fw fa-car"></i> Garage</a>
+            </div>
+        </div>
     </li>
     <hr class="sidebar-divider">
     <div class="sidebar-heading">
@@ -56,7 +79,8 @@
         <a class="nav-link" href="/devices/">
             <i class="fas fa-fw fa-plug"></i>
             <span>Devices</span></a>
-    </li>
+        </li>
+    <hr class="sidebar-divider">
     <li class="nav-item">
         <a class="nav-link" href="/admin/">
             <i class="fas fa-fw fa-gears"></i>

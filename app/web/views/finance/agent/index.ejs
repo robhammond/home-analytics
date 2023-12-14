@@ -31,7 +31,8 @@
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                             Average Monthly Spend</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= formatCurrency(avg_monthly_spend) %>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <%= formatCurrency(avg_monthly_spend) %>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -116,11 +117,12 @@
                         <td>
                             <%= tran.reference %>
                         </td>
-                        <td align="right"><%= formatCurrency(tran.amount) %>
+                        <td align="right">
+                            <%= formatCurrency(tran.amount) %>
                         </td>
-                        <td><a href="/transaction/update?id=<%= tran.id %>&amp;action=one-off">One-off</a> |
-                            <a href="/transaction/update?id=<%= tran.id %>&amp;action=regular">regular</a> |
-                            <a href="/transaction/update?id=<%= tran.id %>&amp;action=essential">essential</a>
+                        <td><a href="/finance/transaction/update?id=<%= tran.id %>&amp;action=one-off">One-off</a> |
+                            <a href="/finance/transaction/update?id=<%= tran.id %>&amp;action=regular">regular</a> |
+                            <a href="/finance/transaction/update?id=<%= tran.id %>&amp;action=essential">essential</a>
                         </td>
                     </tr>
                     <% } %>
@@ -135,7 +137,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Settings</h6>
         </div>
         <div class="card-body">
-            <form method="post" action="/agent/update">
+            <form method="post" action="/finance/agent/update">
                 <input type="hidden" name="id" value="<%= agent.id %>">
                 <div class="form-check ">
                     <input type="checkbox" name="ignore" id="ignore" value="1" <% if (agent.ignore) { %>
@@ -173,19 +175,21 @@
                         </a></li>
                     <%}%>
             </ul>
-            <a href="/agent/<%=agent.id%>/aliases">Set aliases</a>
+            <a href="/finance/agent/<%=agent.id%>/aliases">Set aliases</a>
             <hr>
             <p>Always tag with</p>
-            <form role="form" action="/agent/set-tag" method="post">
+            <form role="form" action="/finance/agent/set-tag" method="post">
                 <input type="hidden" name="agent_id" value="">
-                <select name="tag_id" class="form-select mb-3">
-                    <% for (let tag of tags) { %>
-                        <option value="<%= tag.tag_id %>">
-                            <%= tag.name %>
-                        </option>
-                        <% } %>
-                </select>
-                <button type="submit" class="btn btn-primary">Tag</button>
+                <div class="input-group">
+                    <select name="tag_id" class="form-select">
+                        <% for (let tag of tags) { %>
+                            <option value="<%= tag.tag_id %>">
+                                <%= tag.name %>
+                            </option>
+                            <% } %>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Tag</button>
+                </div>
             </form>
         </div>
     </div>
@@ -196,66 +200,66 @@
     const results = <%- JSON.stringify(transaction_aggs) %>;
     const dates = results.map(result => result.date_str);
     const amounts = results.map(result => result.amount);
-
-    Highcharts.chart('myChart', {
-        chart: {
-            type: 'line'
-        },
-        title: {
-            text: null // No title
-        },
-        xAxis: {
-            type: 'datetime',
-            title: {
-                text: 'Date'
+    $(document).ready(function () {
+        Highcharts.chart('myChart', {
+            chart: {
+                type: 'line'
             },
-            labels: {
-                formatter: function () {
-                    const date = new Date(this.value);
-                    return Highcharts.dateFormat('%b %Y', date);
-                }
-            }
-        },
-        yAxis: {
             title: {
-                text: 'Amount'
+                text: null // No title
             },
-            labels: {
-                formatter: function () {
-                    return '£' + Highcharts.numberFormat(this.value, 0, ',', ',');
+            xAxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                },
+                labels: {
+                    formatter: function () {
+                        const date = new Date(this.value);
+                        return Highcharts.dateFormat('%b %Y', date);
+                    }
                 }
             },
-            min: 0
-        },
-        tooltip: {
-            formatter: function () {
-                return `<b>${Highcharts.dateFormat('%b %Y', this.x)}</b><br>£${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+            yAxis: {
+                title: {
+                    text: 'Amount'
+                },
+                labels: {
+                    formatter: function () {
+                        return '£' + Highcharts.numberFormat(this.value, 0, ',', ',');
+                    }
+                },
+                min: 0
             },
-            borderWidth: 1
-        },
-        series: [{
-            name: 'Cost',
-            data: results.map(result => [new Date(result.date_str).getTime(), result.amount]),  // Convert to timestamp
-            color: 'rgb(75, 192, 192)',
-            connectNulls: false,  // Break the line at null points
-            marker: {
-                enabled: true  // Show markers on the line
+            tooltip: {
+                formatter: function () {
+                    return `<b>${Highcharts.dateFormat('%b %Y', this.x)}</b><br>£${Highcharts.numberFormat(this.y, 2, '.', ',')}`;
+                },
+                borderWidth: 1
             },
-        }],
-        plotOptions: {
-            line: {
+            series: [{
+                name: 'Cost',
+                data: results.map(result => [new Date(result.date_str).getTime(), result.amount]),  // Convert to timestamp
+                color: 'rgb(75, 192, 192)',
+                connectNulls: false,  // Break the line at null points
                 marker: {
-                    enabled: false
+                    enabled: true  // Show markers on the line
+                },
+            }],
+            plotOptions: {
+                line: {
+                    marker: {
+                        enabled: false
+                    }
                 }
+            },
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 800
+                    }
+                }]
             }
-        },
-        responsive: {
-            rules: [{
-                condition: {
-                    maxWidth: 800
-                }
-            }]
-        }
+        });
     });
-
 </script>

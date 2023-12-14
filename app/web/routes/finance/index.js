@@ -15,9 +15,8 @@ router.use("/agent", agentRoutes);
 router.use("/spending", spendingRoutes);
 router.use("/tags", tagsRoutes);
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (req, res) => {
     const month = req.query.month || res.locals.currentMonth;
-    const { ignore } = req.query;
 
     const income = await prisma.$queryRaw`
         SELECT
@@ -28,18 +27,8 @@ router.get("/", async (req, res, next) => {
         WHERE
             direction = 'IN'  -- or whatever value indicates incoming transactions in your DATABASE
             AND SOURCE != 'INTERNAL_TRANSFER'
-            AND t.agent_id  IN (
-                457,
-                119,
-                113,
-                210,232,638,
-                549,
-                25,
-                141,
-                19
-            )
-            group by 1 
-            order by 1
+            GROUP BY 1 
+            ORDER BY 1
     `;
 
     const outgoings = await prisma.$queryRaw`
@@ -57,7 +46,6 @@ router.get("/", async (req, res, next) => {
             -- AND t.SOURCE != 'INTERNAL_TRANSFER'
             AND ((t.status = 'SETTLED') OR (t.status IS NULL))
             AND t.spending_category NOT IN ('SAVING', 'DEBT_REPAYMENT')
-            AND t.agent_id NOT IN (457, 119, 549, 25, 141, 19)
             AND a.ignore IS FALSE
             AND a.one_off IS FALSE
             AND t.one_off_cost IS FALSE
@@ -67,8 +55,6 @@ router.get("/", async (req, res, next) => {
         ORDER BY
             1
     `;
-    console.log(income);
-    // console.log(income);
     res.render("finance/index", {
         title: "Overview",
         outgoings,
@@ -77,57 +63,52 @@ router.get("/", async (req, res, next) => {
     });
 });
 
-
-
-router.get("/income", async (req, res, next) => {
+router.get("/income", async (req, res) => {
     const month = req.query.month || res.locals.currentMonth;
-    const transactions = await prisma.$queryRaw`
-        SELECT
-            strftime('%Y-%m', datetime(round(date / 1000), 'unixepoch')) AS month,
-            CASE 
-                WHEN a.parent_id IS NOT NULL THEN ap.name
-                ELSE t.counter_party
-            END as counter_party,
-            CASE
-                WHEN a.parent_id IS NOT NULL THEN ap.id
-                ELSE t.agent_id
-            END AS agent_id,
-            reference,
-            SUM(amount) as amount
-        FROM
-            finance_transactions t
-        LEFT JOIN 
-            finance_agents a ON t.agent_id = a.id
-        LEFT JOIN
-            finance_agents ap ON a.parent_id = ap.id
-        WHERE
-            direction = 'IN'  -- or whatever value indicates incoming transactions in your DATABASE
-            AND SOURCE != 'INTERNAL_TRANSFER'
-            AND t.agent_id  IN (
-                457,
-                119,
-                113,
-                210,232,638,
-                549,
-                25,
-                141,
-                19
-            )
-            AND strftime('%Y-%m', datetime(round(date / 1000), 'unixepoch')) = ${month}
-        GROUP BY
-            1,2,3,4
-        ORDER BY month desc;
-    `;
-    let income_total = 0;
-    for (const t of transactions) {
-        income_total += t.amount;
+
+    try {
+        const transactions = await prisma.$queryRaw`
+            SELECT
+                strftime('%Y-%m', datetime(round(date / 1000), 'unixepoch')) AS month,
+                CASE 
+                    WHEN a.parent_id IS NOT NULL THEN ap.name
+                    ELSE t.counter_party
+                END as counter_party,
+                CASE
+                    WHEN a.parent_id IS NOT NULL THEN ap.id
+                    ELSE t.agent_id
+                END AS agent_id,
+                reference,
+                SUM(amount) as amount
+            FROM
+                finance_transactions t
+            LEFT JOIN 
+                finance_agents a ON t.agent_id = a.id
+            LEFT JOIN
+                finance_agents ap ON a.parent_id = ap.id
+            WHERE
+                direction = 'IN'  -- or whatever value indicates incoming transactions in your DATABASE
+                AND source != 'INTERNAL_TRANSFER'
+                AND a.ignore IS FALSE
+                AND strftime('%Y-%m', datetime(round(date / 1000), 'unixepoch')) = ${month}
+            GROUP BY
+                1,2,3,4
+            ORDER BY month desc;
+        `;
+        let income_total = 0;
+        for (const t of transactions) {
+            income_total += t.amount;
+        }
+        res.render("finance/income", {
+            title: "Income",
+            transactions,
+            yearmonth: month,
+            income_total,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching income");
     }
-    res.render("income", {
-        title: "Income",
-        transactions,
-        yearmonth: month,
-        income_total,
-    });
 });
 
 router.get("/transaction/update", async (req, res, next) => {
@@ -192,8 +173,8 @@ router.get("/trends", async (req, res, next) => {
     // categories = [...new Set(categories)];
 
     // console.log(transactions);
-    res.render("trends", {
-        title: "trends",
+    res.render("finance/trends", {
+        title: "Finance Trends",
         grouped_spending,
     });
 });

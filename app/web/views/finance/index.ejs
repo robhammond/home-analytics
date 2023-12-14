@@ -171,7 +171,8 @@
     </div>
 </div-->
 <script>
-    const income = <%- JSON.stringify(income) %>;
+    $(document).ready(function() {
+        const income = <%- JSON.stringify(income) %>;
     const spending = <%- JSON.stringify(outgoings) %>;
 
     const categories = ['income', 'spending'];
@@ -275,7 +276,8 @@
             }]
         }
     });
-
+    });
 </script>
+
 <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
 <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>

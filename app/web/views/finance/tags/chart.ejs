@@ -44,7 +44,7 @@
                 <table class="table table-bordered table-striped">
                     <% for (let tag of tag_agg) { %>
                         <tr>
-                            <td><a href="/tags/report?id=<%= tag.tag_id %>&amp;month=<%= yearmonth %>">
+                            <td><a href="/finance/tags/report?id=<%= tag.tag_id %>&amp;month=<%= yearmonth %>">
                                     <%= tag.tag_name %>
                                 </a></td>
                             <td style="text-align:right"><%= formatCurrency(tag.amount) %>
@@ -68,7 +68,6 @@
 </div>
 
 <script>
-    // Doughnut Chart
     let pieData = <%- JSON.stringify(tag_agg) %>;
     let pieLabels = pieData.map(e => e.tag_name);
     let pieAmounts = pieData.map(e => e.amount);
@@ -174,15 +173,12 @@
                 events: {
                     legendItemClick: function (e) {
                         if (e.browserEvent.ctrlKey || e.browserEvent.metaKey) {
-                            // Hide all series
                             this.chart.series.forEach(function (series) {
                                 series.setVisible(false, false);
                             });
-                            // Show only the clicked series
                             this.setVisible(true, false);
-                            // Redraw the chart
                             this.chart.redraw();
-                            return false; // Prevent the default toggle behavior
+                            return false;
                         }
                     }
                 }

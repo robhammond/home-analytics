@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const axios = require("axios");
 const { DateTime } = require("luxon");
 
+const { updateImport, updateExport } = require("./update-rates");
+
 const prisma = new PrismaClient();
 const API_ROOT = "https://api.octopus.energy";
 
@@ -70,14 +72,15 @@ const fetchUsage = async (startDate, endDate) => {
             const tmpStart = DateTime.fromISO(result.interval_start, { zone: "utc" });
             const tmpEnd = DateTime.fromISO(result.interval_end, { zone: "utc" });
 
-            const dtStart = tmpStart.format("YYYY-MM-DD HH:mm:ss");
-            const dtEnd = tmpEnd.format("YYYY-MM-DD HH:mm:ss");
+            const dtStart = String(tmpStart.toISO());
+            const dtEnd = String(tmpEnd.toISO());
+            console.log(dtStart);
 
             try {
                 await prisma.gridEnergy.create({
                     data: {
-                        datetime_start: new Date(dtStart),
-                        datetime_end: new Date(dtEnd),
+                        datetime_start: dtStart,
+                        datetime_end: dtEnd,
                         kwh_imported: result.consumption,
                         granularity: "halfhour",
                         source: "octopus",
@@ -90,6 +93,7 @@ const fetchUsage = async (startDate, endDate) => {
     } else {
         console.error(`Error fetching: ${res.status}`);
     }
+    updateImport();
 };
 
 (async () => {

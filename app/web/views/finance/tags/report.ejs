@@ -1,12 +1,9 @@
-<!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">
         <%= title %>
     </h1>
 </div>
 <div class="row">
-
-    <!-- Earnings (Monthly) Card Example -->
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
@@ -141,7 +138,7 @@
                 <tbody>
                     <% for (let m of tag_agg) { %>
                         <tr>
-                            <td><a href="/agent?id=<%= Number(m.counter_party_id) %>">
+                            <td><a href="/finance/agent?id=<%= Number(m.counter_party_id) %>">
                                     <%= m.counter_party %>
                                 </a></td>
                             <td style="text-align:right;"><%= formatCurrency(m.amount) %>
@@ -156,8 +153,6 @@
 
 <script>
     function number_format(number, decimals, dec_point, thousands_sep) {
-        // *     example: number_format(1234.56, 2, ',', ' ');
-        // *     return: '1 234,56'
         number = (number + '').replace(',', '').replace(' ', '');
         var n = !isFinite(+number) ? 0 : +number,
             prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
@@ -242,15 +237,12 @@
                 events: {
                     legendItemClick: function (e) {
                         if (e.browserEvent.ctrlKey || e.browserEvent.metaKey) {
-                            // Hide all series
                             this.chart.series.forEach(function (series) {
                                 series.setVisible(false, false);
                             });
-                            // Show only the clicked series
                             this.setVisible(true, false);
-                            // Redraw the chart
                             this.chart.redraw();
-                            return false; // Prevent the default toggle behavior
+                            return false;
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800"><%= title %></h1>
-    <a href="/api/transactions?yearmonth=<%= yearmonth %>&amp;yearmonth_end=<%= yearmonth %>" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Export Transactions</a>
+    <a href="/finance/api/transactions?yearmonth=<%= yearmonth %>&amp;yearmonth_end=<%= yearmonth %>" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Export Transactions</a>
 </div>
 <div class="row">
     <div class="col-xl-3 col-md-6 mb-4">
@@ -127,14 +127,14 @@
                             <%= row.month %>
                         </td>
                         <td>
-                            <a href="/agent?id=<%= row.agent_id %>"><%= row.counter_party %></a>
+                            <a href="/finance/agent?id=<%= row.agent_id %>"><%= row.counter_party %></a>
                         </td>
                         <td align="right"><%= formatCurrency(row.amount) %></td>
-                        <td><% if (row.one_off) {%>one off<%} else if (row.essential) {%>essential<%} else {%>reg <%}%></td>
+                        <!--td><% if (row.one_off) {%>one off<%} else if (row.essential) {%>essential<%} else {%>reg <%}%></td-->
                                     <!--td>
-                                        <a href="/transaction/update?id=<%= row.id %>&amp;action=one-off">One-off</a> |
-                            <a href="/transaction/update?id=<%= row.id %>&amp;action=regular">regular</a> |
-                            <a href="/transaction/update?id=<%= row.id %>&amp;action=essential">essential</a>
+                                        <a href="/finance/transaction/update?id=<%= row.id %>&amp;action=one-off">One-off</a> |
+                            <a href="/finance/transaction/update?id=<%= row.id %>&amp;action=regular">regular</a> |
+                            <a href="/finance/transaction/update?id=<%= row.id %>&amp;action=essential">essential</a>
                             </td-->
                     </tr>
                     <% } %>
@@ -148,7 +148,7 @@
 <!--div class="row">
     <div class="col-md-6">
         <div>
-            <a href="/trends">Trends</a>
+            <a href="/finance/trends">Trends</a>
         </div>
         <div>
             <a href="?month=2023-01">January</a> |

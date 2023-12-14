@@ -4,55 +4,58 @@
         <%= title %>
     </h1>
 </div>
-<div class="row">
-    <h1 class="my-3">Rules</h1>
-    <a href="/tags/rules/new" class="btn btn-primary mb-3">Create a New Rule</a>
-    <button id="apply-rules-button" class="btn btn-secondary mb-3">Apply Rules</button>
-
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Agent</th>
-                <th scope="col">Reference</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% rules.forEach(function(rule) { %>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Rules</h6>
+    </div>
+    <div class="card-body">
+        <a href="/finance/tags/rules/new" class="btn btn-primary mb-3">Create a New Rule</a>
+        <button id="apply-rules-button" class="btn btn-secondary mb-3">Apply Rules</button>
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>
-                        <%= rule.agent %>
-                    </td>
-                    <td>
-                        <%= rule.reference %>
-                    </td>
-                    <td>
-                        <a href="/tags/rules/edit/<%= rule.id %>" class="btn btn-primary">Edit</a>
-                        <form action="/tags/rules/<%= rule.id %>" method="POST" style="display:inline;">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </td>
+                    <th scope="col">Agent</th>
+                    <th scope="col">Reference</th>
+                    <th scope="col">Actions</th>
                 </tr>
-                <% }); %>
-        </tbody>
-    </table>
-    <hr>
-    <table class="table table-bordered table-striped">
-        <% for( let tag of tags ) { %>
-            <tr>
-                <td><a href="/tags/report?id=<%= tag.id %>">
-                        <%= tag.name %>
-                    </a></td>
-                <td><a href="/tags/rules/set?id=<%= tag.id %>" class="btn btn-primary">Set Rule</a></td>
-            </tr>
-            <% } %>
-    </table>
-
+            </thead>
+            <tbody>
+                <% rules.forEach(function(rule) { %>
+                    <tr>
+                        <td>
+                            <%= rule.agent %>
+                        </td>
+                        <td>
+                            <%= rule.reference %>
+                        </td>
+                        <td>
+                            <a href="/finance/tags/rules/edit/<%= rule.id %>" class="btn btn-primary">Edit</a>
+                            <form action="/finance/tags/rules/<%= rule.id %>" method="POST" style="display:inline;">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }); %>
+            </tbody>
+        </table>
+        <hr>
+        <table class="table table-bordered table-striped">
+            <% for( let tag of tags ) { %>
+                <tr>
+                    <td><a href="/finance/tags/report?id=<%= tag.id %>">
+                            <%= tag.name %>
+                        </a></td>
+                    <td><a href="/finance/tags/rules/set?id=<%= tag.id %>" class="btn btn-primary">Set Rule</a></td>
+                </tr>
+                <% } %>
+        </table>
+    </div>
 </div>
+
 <script>
     document.getElementById('apply-rules-button').addEventListener('click', async () => {
-        const response = await fetch('/tags/rules/apply', { method: 'POST' });
+        const response = await fetch('/finance/tags/rules/apply', { method: 'POST' });
         const result = await response.json();
         alert(result.message);
     });

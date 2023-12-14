@@ -1,4 +1,3 @@
-<!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">
         <%= title %>
@@ -7,8 +6,6 @@
             class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
 </div>
 <div class="row">
-
-    <!-- Earnings (Monthly) Card Example -->
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
@@ -73,15 +70,12 @@
                                 <%= row.month %>
                             </td>
                             <td>
-                                <a href="/agent?id=<%= row.agent_id %>">
+                                <a href="/finance/agent?id=<%= row.agent_id %>">
                                     <%= row.counter_party %> - <%= row.reference %>
                                 </a>
                             </td>
-                            <!--td>
-                                
-                            </td-->
-                            <td align="right"><%= formatCurrency(row.amount) %>
-                            </td>
+                            <td style="text-align: right;"><%= formatCurrency(row.amount) %></td>
+                            <td><!--a href="#">Ignore Party</a> <a href="#">Ignore transaction</a--></td>
                         </tr>
                         <% } %>
                 </tbody>
