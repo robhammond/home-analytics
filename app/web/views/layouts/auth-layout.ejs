@@ -59,6 +59,24 @@
 </head>
 
 <body>
+    <% if (messages.info) { %>
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <%= messages.info %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if (messages.warning) { %>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <%= messages.warning %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if (messages.error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= messages.error %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
     <main class="form-signin w-100 m-auto">
         <%- body %>
     </main>

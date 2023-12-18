@@ -8,14 +8,13 @@ const prisma = new PrismaClient();
 router.get("/register", async (req, res) => {
     try {
         const user = await prisma.user.findFirst();
-
         if (user) {
-        // Redirect to login if a user already exists
-            return res.redirect("/login");
+            req.flash("info", "User already exists, please login");
+            res.redirect("/login");
         }
-
         res.render("register", { title: "Register", layout: "layouts/auth-layout" });
     } catch (error) {
+        console.error(error);
         res.status(500).send("An error occurred.");
     }
 });
@@ -31,21 +30,25 @@ router.post("/register", async (req, res) => {
         });
 
         if (existingUser) {
-            return res.send("User already exists.");
+            req.flash("info", "User already exists");
+            res.redirect("back");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
                 username,
                 password: hashedPassword,
             },
         });
 
-        res.redirect("/login");
+        req.session.user = { id: user.id, username: user.username };
+
+        res.redirect("/");
     } catch (error) {
-        res.status(500).send("Error in registration.");
+        console.error(error);
+        res.status(500).send("Error registering user");
     }
 });
 
@@ -64,19 +67,21 @@ router.post("/login", async (req, res) => {
         });
 
         if (!user) {
-            return res.send("User not found.");
+            req.flash("error", "User not found");
+            res.redirect("back");
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (isPasswordValid) {
-            // Login success
             req.session.user = { id: user.id, username: user.username };
-            res.send("Login successful!");
+            res.redirect("/");
         } else {
-            res.send("Incorrect password.");
+            req.flash("error", "Incorrect password, please try again");
+            res.redirect("back");
         }
     } catch (error) {
+        console.error(error);
         res.status(500).send("An error occurred.");
     }
 });

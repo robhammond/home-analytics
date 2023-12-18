@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
+const flash = require("express-flash");
 const { DateTime } = require("luxon");
 // const SQLiteStore = require("connect-sqlite3")(session);
 const date = new Date();
@@ -68,6 +69,7 @@ app.set("view engine", "ejs");
 app.use(expressLayouts);
 app.set("layout", "./layouts/layout");
 
+app.use(flash());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -77,6 +79,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // set variables
 app.use((req, res, next) => {
     res.locals.currentMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    res.locals.user = req.session.user || null;
     next();
 });
 
@@ -87,9 +90,9 @@ app.locals.convertToBST = (utcDate) => {
     return dt;
 };
 
-app.use("/", indexRouter);
-// app.use(ensureAuthenticated);
 app.use("/", authRouter);
+app.use(ensureAuthenticated);
+app.use("/", indexRouter);
 app.use("/admin", adminRouter);
 app.use("/energy", energyRouter);
 app.use("/solar", solarRouter);
