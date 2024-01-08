@@ -1,8 +1,8 @@
 <form data-form-type="login" method="post">
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-
+    <input type="hidden" name="returnUrl" value="<%= returnUrl %>">
     <div class="form-floating">
-        <input type="username" class="form-control" id="floatingInput" placeholder="Username" name="username">
+        <input type="username" class="form-control" id="floatingInput" placeholder="Username" name="username" autofocus>
         <label for="floatingInput">Username</label>
     </div>
     <div class="form-floating">

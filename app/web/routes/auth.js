@@ -53,11 +53,12 @@ router.post("/register", async (req, res) => {
 });
 
 router.get("/login", async (req, res) => {
-    res.render("login", { title: "Login", layout: "layouts/auth-layout" });
+    const returnUrl = req.query.returnUrl || "/";
+    res.render("login", { title: "Login", layout: "layouts/auth-layout", returnUrl });
 });
 
 router.post("/login", async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, returnUrl } = req.body;
 
     try {
         const user = await prisma.user.findUnique({
@@ -75,7 +76,7 @@ router.post("/login", async (req, res) => {
 
         if (isPasswordValid) {
             req.session.user = { id: user.id, username: user.username };
-            res.redirect("/");
+            res.redirect(returnUrl);
         } else {
             req.flash("error", "Incorrect password, please try again");
             res.redirect("back");
@@ -89,6 +90,7 @@ router.post("/login", async (req, res) => {
 router.get("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
+            console.error(err);
             return res.redirect("/");
         }
         res.clearCookie("connect.sid"); // The name of the cookie used may vary.

@@ -8,7 +8,8 @@ const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const flash = require("express-flash");
 const { DateTime } = require("luxon");
-// const SQLiteStore = require("connect-sqlite3")(session);
+const SQLiteStore = require("connect-sqlite3")(session);
+
 const date = new Date();
 
 const indexRouter = require("./routes/index");
@@ -27,17 +28,20 @@ const ensureAuthenticated = (req, res, next) => {
     if (req.session.user) {
         return next();
     }
-    res.redirect("/login");
+    res.redirect(`/login?returnUrl=${req.originalUrl}`);
 };
 
 const app = express();
 
 app.use(session({
-    // store: new SQLiteStore({ db: "sessions.db", dir: "./app/db" }), // customize db path
+    store: new SQLiteStore({ db: "prod.db", dir: "/app/db" }),
     secret: "your-secret-key", // a secret key for signing the session ID cookie
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something is stored
-    cookie: { secure: false }, // set to true if using https
+    cookie: {
+        secure: false, // set to true if using https
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    },
 }));
 
 // local variables reset at each request

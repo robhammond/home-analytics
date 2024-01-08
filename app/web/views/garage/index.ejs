@@ -2,62 +2,79 @@
     <h1 class="h3 mb-0 text-gray-800">Garage</h1>
 </div>
 
-<div class="row">
-<% for (let car of cars) { %>
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary"><%= car.make %> <%= car.model %></h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <img src="<%= car.image_url %>" class="card-image-top" style="max-width:200px;">
+<% if (cars.length > 0) { %>
+    <div class="row">
+        <% for (let car of cars) { %>
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><%= car.make %> <%= car.model %></h6>
                     </div>
-                    <div class="col-lg-6">
-                        <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
-                        <p><span class="material-icons">battery_full</span> <%= car.battery_percent %>%</p>
-                        <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
-                        <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary stretched-link">View</a>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <img src="<%= car.image_url %>" class="card-image-top" style="max-width:200px;">
+                            </div>
+                            <div class="col-lg-6">
+                                <p><span class="material-icons">speed</span> <%= car.odometer.toLocaleString() %> miles</p>
+                                <p><span class="material-icons">battery_full</span> <%= car.battery_percent %>%</p>
+                                <p><span class="material-icons">route</span> <%= car.estimatedRange %> miles</p>
+                                <a href="/garage/car?id=<%=car.id%>" class="btn btn-primary stretched-link">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+    <% if (carEfficiency.length > 0) { %>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Efficiency Stats - Last Month</h3>
+                <div class="row">
+                    <div class="col-md-4"><div id="sumMiles"></div></div>
+                    <div class="col-md-4"><div id="avgEffic"></div></div>
+                    <div class="col-md-4"><div id="kwhUsed"></div></div>
+                    <div class="col-md-4"><div id="kwhCharged"></div></div>
+                    <div class="col-md-4"><div id="kwhCost"></div></div>
+                    <div class="col-md-4"><div id="costPerMile"></div></div>
+                </div>
+                <p>The chart below shows the distance travelled and efficiency gained by the cars in your garage</p>
+                <div id="carEfficiency"></div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table table-sm table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Miles Driven</th>
+                                    <th>kWh Used</th>
+                                    <th>Miles / kWh</th>
+                                </tr>
+                            </thead>
+                            <tbody id="carPerformance"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-<% } %>
-</div>
-<% if (carEfficiency.length > 0) { %>
-    <hr>
-<div class="row">
-    <div class="col-md-12">
-        <h3>Efficiency Stats - Last Month</h3>
-        <div class="row">
-            <div class="col-md-4"><div id="sumMiles"></div></div>
-            <div class="col-md-4"><div id="avgEffic"></div></div>
-            <div class="col-md-4"><div id="kwhUsed"></div></div>
-            <div class="col-md-4"><div id="kwhCharged"></div></div>
-            <div class="col-md-4"><div id="kwhCost"></div></div>
-            <div class="col-md-4"><div id="costPerMile"></div></div>
-        </div>
-        <p>The chart below shows the distance travelled and efficiency gained by the cars in your garage</p>
-        <div id="carEfficiency"></div>
-        <div class="row">
-            <div class="col-md-12">
-                <table class="table table-sm table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Miles Driven</th>
-                            <th>kWh Used</th>
-                            <th>Miles / kWh</th>
-                        </tr>
-                    </thead>
-                    <tbody id="carPerformance"></tbody>
-                </table>
+    <% } %>
+<% } else { %>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">No vehicles!</h6>
+            </div>
+            <div class="card-body">
+                Try adding one in the <a href="/admin/list-vehicles">admin area</a>
             </div>
         </div>
     </div>
-</div>
+<% } %>
+
+
+<% if (carEfficiency.length > 0) { %>
 <script>
 $(document).ready(function() {
     <% let sumMiles = 0;
