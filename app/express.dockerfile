@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     openssl \
     libssl-dev
 
-COPY ./web/package*.json .
+COPY ./web/package*.json ./
 RUN mkdir ./node_modules
 RUN chown -R node:node /app/
 COPY --chown=node:node  ./web .
