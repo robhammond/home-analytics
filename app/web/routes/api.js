@@ -24,7 +24,7 @@ async function dbQueryRateInfo(start, end, tryCount = 1) {
       `;
         return by_rate;
     } catch (e) {
-        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 10) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbQueryRateInfo(start, end, tryCount + 1); // Retry the query
@@ -58,7 +58,7 @@ async function dbUsageSumInfo(start, end, tryCount = 1) {
         `;
         return usageSum;
     } catch (e) {
-        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 10) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbUsageSumInfo(start, end, tryCount + 1); // Retry the query
@@ -90,7 +90,7 @@ async function dbUsageTotals(start, end, tryCount = 1) {
         `;
         return usageTotals;
     } catch (e) {
-        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 10) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbUsageTotals(start, end, tryCount + 1); // Retry the query
@@ -137,7 +137,7 @@ async function dbDaysUsage(num_days, tryCount = 1) {
         `;
         return days_usage;
     } catch (e) {
-        if (e.code === "SQLITE_BUSY" && tryCount < 3) {
+        if (e.code === "SQLITE_BUSY" && tryCount < 10) {
             console.log("Database is locked, retrying...");
             await new Promise((resolve) => setTimeout(resolve, 1000));
             return dbDaysUsage(num_days, tryCount + 1); // Retry the query
